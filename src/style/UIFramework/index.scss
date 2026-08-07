@@ -1,0 +1,71 @@
+:root {
+  --el-border-radius-base: 2px !important;
+  --el-color-primary: var(--theme-color) !important;
+}
+
+.el-drawer__header {
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0 !important;
+  padding: 0 1rem !important;
+  color: var(--sys-text-color) !important;
+  border-bottom: solid 1px var(--sys-border-color);
+}
+.el-drawer__title {
+  font-family: YouSheBiaoTiHei, serif;
+  font-size: 18px !important;
+}
+
+.el-tabs__header {
+  margin-bottom: 0 !important;
+  font-family: YouSheBiaoTiHei, serif;
+}
+
+.el-tabs__nav-scroll {
+  padding: 0 1rem;
+}
+.el-tabs__item {
+  font-size: 16px !important;
+}
+.el-segmented__group {
+  border: solid 1px var(--theme-color);
+}
+
+.el-tabs__nav-wrap:after {
+  height: 1px !important;
+}
+
+.el-card__body {
+  height: 100%;
+  padding: 0 !important;
+}
+
+.el-menu {
+  background: transparent !important;
+}
+
+/* ========= 侧边栏菜单悬浮 ========= */
+.el-menu-item:hover {
+  background: var(--theme-hover) !important;
+}
+
+/* ========= 仅默认按钮悬浮，保留 primary/danger 等类型的原生 hover ========= */
+.el-button:not([type]):hover,
+.el-button--default:hover {
+  background-color: var(--theme-hover) !important;
+}
+
+/* ========= 下拉菜单项悬浮 ========= */
+.el-dropdown-menu__item:hover {
+  background-color: var(--hover-bg) !important;
+}
+
+.el-sub-menu__title:hover {
+  background: var(--theme-hover) !important;
+}
+
+.el-dropdown,
+.el-dropdown * {
+  outline: none !important;
+}

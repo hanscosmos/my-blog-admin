@@ -1,0 +1,12 @@
+html.purple {
+  --theme-color: #8b5cf6;
+  --theme-hover: rgba(139, 92, 246, 0.15);
+  --theme-card-bg: #581c87;
+}
+
+html.light.purple {
+  --theme-bg: #f5f3ff;
+}
+html.dark.purple {
+  --theme-bg: #2a1e3c;
+}

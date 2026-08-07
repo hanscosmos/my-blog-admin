@@ -1,0 +1,126 @@
+/* ========= 编辑器整体背景与文字 ========= */
+html.dark {
+  .v-md-editor__preview-wrapper {
+    background-color: #333339 !important;
+  }
+  .line-numbers-mode {
+    overflow-y: hidden;
+    margin: 16px 0;
+  }
+  .vuepress-markdown-body {
+    background-color: #333339;
+    color: var(--sys-text-color);
+    transition: all 0.3s ease;
+    padding: 16px 32px;
+    border-radius: 8px;
+  }
+
+  /* ========= 标题 ========= */
+  .vuepress-markdown-body h1,
+  .vuepress-markdown-body h2,
+  .vuepress-markdown-body h3,
+  .vuepress-markdown-body h4,
+  .vuepress-markdown-body h5,
+  .vuepress-markdown-body h6 {
+    color: var(--sys-text-color);
+    margin-top: 1.2em;
+    margin-bottom: 0.6em;
+    font-weight: 600;
+  }
+
+  /* ========= 链接 ========= */
+  .vuepress-markdown-body a {
+    color: var(--theme-color);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .vuepress-markdown-body a:hover {
+    text-decoration: underline;
+  }
+
+  /* ========= 引用块 ========= */
+  .vuepress-markdown-body blockquote {
+    border-left: 3px solid var(--theme-color);
+    padding-left: 12px;
+    color: var(--text-secondary);
+    background-color: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+    margin: 0.8em 0;
+  }
+
+  /* ========= 分割线 ========= */
+  .vuepress-markdown-body hr {
+    border-color: #3f3f46;
+    margin: 1.2em 0;
+  }
+
+  /* ========= 代码块 ========= */
+  .vuepress-markdown-body pre {
+    background-color: #1f1f1f;
+    color: var(--sys-text-color);
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+  }
+
+  .vuepress-markdown-body code {
+    background-color: var(--code-bg);
+    color: var(--sys-text-color);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ========= 表格 ========= */
+  .vuepress-markdown-body table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--table-border);
+    margin: 1em 0;
+    color: var(--sys-text-color);
+  }
+
+  .vuepress-markdown-body th {
+    background-color: var(--table-header-bg);
+    color: var(--sys-text-color);
+    padding: 8px;
+    border: 1px solid var(--table-border);
+  }
+
+  .vuepress-markdown-body td {
+    background-color: var(--sys-bg-color);
+    color: var(--sys-text-color);
+    padding: 8px;
+    border: 1px solid var(--table-border);
+  }
+
+  /* ========= 列表 ========= */
+  .vuepress-markdown-body ul li,
+  .vuepress-markdown-body ol li {
+    margin: 0.4em 0;
+  }
+
+  /* ========= 图片 ========= */
+  .vuepress-markdown-body img {
+    max-width: 100%;
+    border-radius: 4px;
+    margin: 8px 0;
+  }
+
+  /* ========= 强调文本 ========= */
+  .vuepress-markdown-body strong {
+    color: var(--sys-text-color);
+  }
+
+  .vuepress-markdown-body em {
+    color: var(--text-secondary);
+  }
+
+  /* ========= 表情、任务列表等 ========= */
+  .vuepress-markdown-body .emoji {
+    vertical-align: middle;
+  }
+
+  .vuepress-markdown-body input[type='checkbox'] {
+    accent-color: var(--theme-color);
+  }
+}

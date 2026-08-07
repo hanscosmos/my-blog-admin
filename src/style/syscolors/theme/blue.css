@@ -1,0 +1,12 @@
+html.blue {
+  --theme-color: #3b82f6;
+  --theme-hover: rgba(59, 130, 246, 0.15);
+  --theme-card-bg: #1e3a8a;
+}
+
+html.blue.light {
+  --theme-bg: #f0f5ff;
+}
+html.blue.dark {
+  --theme-bg: #1e293b;
+}

@@ -1,0 +1,11 @@
+@import url('./mode/dark.css');
+@import url('./mode/light.css');
+@import url('./theme/blue.css');
+@import url('./theme/green.css');
+@import url('./theme/red.css');
+@import url('./theme/pink.css');
+@import url('./theme/purple.css');
+
+:root {
+  --hover-bg: var(--theme-hover) !important;
+}

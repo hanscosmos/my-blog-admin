@@ -1,0 +1,12 @@
+html.pink {
+  --theme-color: #ec4899;
+  --theme-hover: rgba(236, 72, 153, 0.15);
+  --theme-card-bg: #831843;
+}
+
+html.light.pink {
+  --theme-bg: #fff0f6;
+}
+html.dark.pink {
+  --theme-bg: #2c1e2b;
+}

@@ -1,0 +1,12 @@
+html.green {
+  --theme-color: #22c55e;
+  --theme-hover: rgba(34, 197, 94, 0.15);
+  --theme-card-bg: #166534;
+}
+
+html.light.green {
+  --theme-bg: #f0fff4;
+}
+html.dark.green {
+  --theme-bg: #1b2a1e;
+}

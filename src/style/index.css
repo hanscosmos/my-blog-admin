@@ -1,0 +1,69 @@
+@import url('./common/reset.css');
+@import url('./common/index.scss');
+@import url('./UIFramework/index.scss');
+@import url('./UIFramework/md-editor.scss');
+@import url('./syscolors/index.css');
+
+:root {
+  --sys-border-size: 6px;
+  --sys-box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.1);
+}
+
+@font-face {
+  font-family: 'roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(../assets/font/roboto/Roboto-Medium.ttf);
+}
+
+@font-face {
+  font-family: 'NotoSansSC';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(../assets/font/notoSansSC/NotoSansSC-Regular.ttf);
+}
+
+@font-face {
+  font-family: 'ZCOOLKuaiLe';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(../assets/font/zcool/ZCOOLKuaiLe-Regular.ttf);
+}
+
+@font-face {
+  font-family: 'Ali FangYuan';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(../assets/font/ali/ailifangyuan.ttf);
+}
+
+@font-face {
+  font-family: 'YouSheBiaoTiHei';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(../assets/font/YouSheBiaoTiHei/YouSheBiaoTiHei.ttf);
+}
+
+.font-beauty {
+  font-family: roboto, serif;
+}
+
+.font-title {
+  font-family: YouSheBiaoTiHei, serif;
+}
+
+.col-filled {
+  flex: 1;
+  height: 0;
+  overflow: auto;
+}
+
+.row-filled {
+  flex: 1;
+  width: 0;
+}

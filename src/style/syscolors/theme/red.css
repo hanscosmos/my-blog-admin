@@ -1,0 +1,11 @@
+html.red {
+  --theme-color: #ef4444;
+  --theme-hover: rgba(239, 68, 68, 0.15);
+  --theme-card-bg: #7f1d1d;
+}
+html.light.red {
+  --theme-bg: #fff5f5;
+}
+html.dark.red {
+  --theme-bg: #3c1e1e;
+}
