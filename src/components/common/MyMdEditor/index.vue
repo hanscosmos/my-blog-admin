@@ -1,6 +1,7 @@
 <template>
   <div class="my-md-editor w-full h-full">
     <v-md-editor
+      ref="editorRef"
       v-model="text"
       height="100%"
       placeholder="请输入内容……"
@@ -28,8 +29,29 @@ const getText = () => {
   return text.value;
 };
 
+const editorRef = ref();
+
 const setText = (content: string) => {
   text.value = content;
+};
+
+const insertAtCursor = (insertText: string) => {
+  const textarea = editorRef.value?.$el?.querySelector('textarea') as HTMLTextAreaElement | null;
+  if (textarea) {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const before = text.value.substring(0, start);
+    const after = text.value.substring(end);
+    text.value = before + insertText + after;
+    nextTick(() => {
+      textarea.focus();
+      const newCursorPos = start + insertText.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    });
+  } else {
+    // fallback: 追加到末尾
+    text.value += insertText;
+  }
 };
 
 const uploadImageHandler = (
@@ -50,7 +72,7 @@ const uploadImageHandler = (
   });
 };
 
-defineExpose({ getText, setText });
+defineExpose({ getText, setText, insertAtCursor });
 </script>
 <style lang="scss" scoped>
 :deep(.v-md-textarea-editor textarea) {

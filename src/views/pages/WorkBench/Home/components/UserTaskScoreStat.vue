@@ -1,11 +1,11 @@
 <template>
-  <BaseLineChart
+  <BaseBarLineChart
     title="个人表现趋势"
     x-data-key="date"
     y-data-key="score"
     :get-data-fn="getDataFn"
     unit="分"
-  ></BaseLineChart>
+  ></BaseBarLineChart>
 </template>
 
 <script setup lang="ts">

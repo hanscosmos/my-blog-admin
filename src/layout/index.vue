@@ -8,8 +8,8 @@
         <SideBar v-if="!route.meta.hideSide"></SideBar>
       </div>
       <div class="flex flex-col flex-1 w-0">
-        <div class="h-16">
-          <TabBar v-if="!route.meta.hideTab"></TabBar>
+        <div v-if="!route.meta.hideTab && tabVisible" class="h-16">
+          <TabBar ></TabBar>
         </div>
         <div class="content-wrapper flex-1 h-0 overflow-auto">
           <div v-if="isOpenStore" class="wh-full overflow-auto">
@@ -33,9 +33,11 @@ import SideBar from './components/SideBar/index.vue';
 import TopBar from './components/TopBar/index.vue';
 import TabBar from './components/TabBar/index.vue';
 import { useSystemStore } from '@/store/system';
+import { useTabListStore } from '@/store/tab/tabList';
 
 const route = useRoute();
 const { isSideExpand, isOpenStore } = storeToRefs(useSystemStore());
+const { visible: tabVisible } = storeToRefs(useTabListStore());
 const disabledStoreRoutes = ['ArticleDetail', 'UpdateArticle', 'Home'];
 const sideWidth = computed(() => {
   return isSideExpand.value ? '14rem' : '4rem';

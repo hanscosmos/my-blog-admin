@@ -12,11 +12,12 @@
         ><MyIcon name="add-four" class="mr-2"></MyIcon>发布</my-button
       >
     </div>
-    <div class="edit-wrapper flex-1 h-0">
+    <div class="edit-wrapper flex-1 h-0 relative">
       <my-md-editor
         ref="mdEditorRef"
         @save="releaseArticleHandler"
       ></my-md-editor>
+      <VoiceInputBar @insert="handleVoiceInsert" />
     </div>
   </div>
   <ArticleFormDrawer
@@ -28,6 +29,7 @@
 <script lang="ts" setup>
 import { pinyin } from 'pinyin-pro';
 import ArticleFormDrawer from '@/views/pages/Article/components/ArticleFormDrawer/index.vue';
+import VoiceInputBar from '@/views/pages/Article/components/VoiceInputBar/index.vue';
 import { ElMessage } from 'element-plus';
 import {
   addArticleApi,
@@ -94,6 +96,10 @@ const releaseArticleHandler = async () => {
     res.data && ElMessage.success(res.msg);
     router.push({ name: 'UpdateArticle', query: { id: res.data } });
   }
+};
+
+const handleVoiceInsert = (text: string) => {
+  mdEditorRef.value.insertAtCursor(text);
 };
 
 const initArticleDetailHandler = async () => {

@@ -20,6 +20,19 @@
             />
           </div>
         </div>
+        <div class="settings-tab setting-item mb-4">
+          <div class="settings-title mb-4 font-title">系统标签页</div>
+          <div class="setting-content font-beauty">
+            <el-switch
+              v-model="tabVisible"
+              inline-prompt
+              size="large"
+              active-text="显示"
+              inactive-text="隐藏"
+              @change="toggleTabVisible"
+            />
+          </div>
+        </div>
         <div class="settings-mode setting-item mb-4">
           <div class="settings-title mb-4 font-title">系统模式</div>
           <div class="setting-content font-beauty">
@@ -59,12 +72,19 @@
 </template>
 <script lang="ts" setup>
 import { useSystemStore } from '@/store/system';
+import { useTabListStore } from '@/store/tab/tabList';
 import { storeToRefs } from 'pinia';
 import type { SysModeType, SysThemeType } from '@/store/system/type';
 
 const visible = ref(false);
 const { mode, theme, isOpenStore } = storeToRefs(useSystemStore());
 const { initModeAndTheme, changeMode, changeTheme } = useSystemStore();
+const { toggleVisible } = useTabListStore();
+const { visible: tabVisible } = storeToRefs(useTabListStore());
+
+const toggleTabVisible = (val: boolean) => {
+  toggleVisible(val);
+};
 const modeList: DictType[] = [
   { label: '浅色', value: 'light' },
   { label: '深色', value: 'dark' },

@@ -9,3 +9,8 @@
 :root {
   --hover-bg: var(--theme-hover) !important;
 }
+.section-wrapper {
+  background-color: var(--sys-box-bg-color);
+  border-radius: 0.5rem;
+  padding:  0.5rem 1rem;
+}

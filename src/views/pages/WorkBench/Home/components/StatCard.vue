@@ -2,16 +2,14 @@
   <div class="wh-full p-4 flex flex-col justify-between">
     <div class="flex items-center justify-between">
       <div class="flex items-center">
-        <my-icon
-          :name="currentType.icon"
-          :size="16"
-          class="mr-2 relative top-1px"
-        />
+        <my-icon :name="currentType.icon" :size="16" class="mr-2 relative top-1px" />
         <span class="text-base">{{ currentType.title }}</span>
       </div>
       <el-dropdown trigger="hover" @command="handleCommand">
         <span class="hover-text wrapper-solid-text">
-          <el-icon class=""><More /></el-icon>
+          <el-icon class="">
+            <More />
+          </el-icon>
         </span>
         <template #dropdown>
           <el-dropdown-menu>
@@ -26,23 +24,17 @@
     <!-- 中间：总数 -->
     <div class="flex-1 flex flex-col items-center justify-center">
       <div class="text-4xl">
-        <span class="mx-2 font-beauty">{{ statInfo.count }}</span
-        >{{ currentType.unit }}
+        <span class="mx-2 font-beauty">{{ statInfo.count }}</span>{{ currentType.unit }}
       </div>
     </div>
 
     <!-- 下部分：变化趋势 -->
     <div class="flex items-center justify-between text-sm">
       <div class="text-sm">
-        本{{ currentRangeName }}：<span
-          >{{ statInfo.this }}{{ currentType.unit }}</span
-        >
+        本{{ currentRangeName }}：<span>{{ statInfo.this }}{{ currentType.unit }}</span>
       </div>
       <div class="flex items-center">
-        <my-icon
-          :name="statInfo.diff >= 0 ? 'up' : 'down'"
-          class="mr-2"
-        ></my-icon>
+        <my-icon :name="statInfo.diff >= 0 ? 'up' : 'down'" class="mr-2"></my-icon>
         <span>
           <span class="font-bold">{{ Math.abs(statInfo.diff) }}</span>
           {{ currentType.unit }}
@@ -55,7 +47,6 @@
 <script lang="ts" setup>
 import { getSysStatApi } from '@/api/system/sys';
 import { StatEnum } from '@/types/sys/enum';
-import { defineProps } from 'vue';
 
 const props = defineProps<{
   type: StatEnum;

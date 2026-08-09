@@ -1,59 +1,52 @@
 <template>
-  <div class="p-5 pr-0 wh-full flex flex-col overflow-auto">
-    <el-row class="!w-full" :gutter="20">
-      <el-col :span="16">
-        <div class="wrapper-filter-item h-200px mb-5">
+  <div class="p-6 pr-0 wh-full flex flex-col overflow-auto">
+    <el-row class="!w-full" :gutter="24">
+      <el-col :span="15">
+        <div class="wrapper-filter-item h-240px">
           <HomeOverview></HomeOverview>
         </div>
-        <el-card class="h-420px">
-          <ArticlePublishStat></ArticlePublishStat>
-        </el-card>
       </el-col>
-      <el-col :span="8">
-        <div class="h-200px flex mb-5">
-          <div class="wrapper-solid-item flex-1 w-0 mr-5">
+      <el-col :span="9">
+        <div class="h-240px flex">
+          <div class="section-wrapper flex-1 w-0 mr-5">
             <StatCard :type="StatEnum.Article"></StatCard>
           </div>
-          <div class="wrapper-solid-item flex-1 w-0">
+          <div class="section-wrapper flex-1 w-0">
             <StatCard :type="StatEnum.User"></StatCard>
           </div>
         </div>
-        <div class="h-200px flex mb-5">
-          <div class="wrapper-solid-item flex-1 w-0 mr-5">
-            <StatCard :type="StatEnum.ArticleDraft"></StatCard>
-          </div>
-          <div class="wrapper-solid-item flex-1 w-0">
-            <StatCard :type="StatEnum.UserTask"></StatCard>
-          </div>
+      </el-col>
+    </el-row>
+    <el-row :gutter="24" class="!w-full mt-6">
+      <el-col :span="24">
+        <div class="h-424px section-wrapper">
+          <ArticlePublishStat></ArticlePublishStat>
         </div>
-        <el-card class="h-200px"></el-card>
       </el-col>
     </el-row>
-    <el-row :gutter="20" class="!w-full mt-5">
+
+    <el-row :gutter="24" class="!w-full mt-6">
       <el-col :span="8">
-        <el-card class="h-600px">
+        <div class="h-600px section-wrapper">
           <RecentUserTask></RecentUserTask>
-        </el-card>
+        </div>
       </el-col>
       <el-col :span="8">
-        <el-card class="h-600px">
+        <div class="h-600px section-wrapper">
           <HotArticle></HotArticle>
-        </el-card>
+        </div>
       </el-col>
       <el-col :span="8">
-        <el-card class="h-600px">
+        <div class="h-600px section-wrapper">
           <ActiveUser></ActiveUser>
-        </el-card>
+        </div>
       </el-col>
     </el-row>
-    <el-row :gutter="20" class="!w-full mt-5">
-      <el-col :span="12">
-        <el-card class="h-400px">
+    <el-row :gutter="24" class="!w-full mt-6">
+      <el-col :span="24">
+        <div class="h-400px section-wrapper">
           <UserTaskScoreStat></UserTaskScoreStat>
-        </el-card>
-      </el-col>
-      <el-col :span="12">
-        <el-card class="h-400px"> </el-card>
+        </div>
       </el-col>
     </el-row>
   </div>
