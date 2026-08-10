@@ -1,15 +1,11 @@
 <template>
   <div class="my-search-panel wh-full flex flex-col">
-    <div v-if="!hideHeader" class="my-search-panel-header p-4 border-bottom">
+    <div v-if="!hideHeader" class="my-search-panel-header p-4 pb-2">
       <slot name="header"></slot>
     </div>
 
     <div class="my-search-panel-body flex-1 h-0 overflow-auto">
-      <div
-        v-if="loading || dataExist"
-        v-loading="loading"
-        class="data-container wh-full"
-      >
+      <div v-if="loading || dataExist" v-loading="loading" class="data-container wh-full">
         <slot></slot>
       </div>
       <div v-else class="wh-full">

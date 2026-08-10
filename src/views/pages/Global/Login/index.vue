@@ -125,7 +125,8 @@ const loginHandler = () => {
       if (isFailed === 0) {
         ElMessage.success('登录成功');
         isLogin.value = true;
-        userInfo.value = { ...data.userInfo };
+        // ensure id is set explicitly to avoid duplicate key from spread
+        userInfo.value = { ...data.userInfo, id: data.userInfo?.id ?? '' };
         csrfToken.value = data.csrfToken;
         setCookie('csrftoken', csrfToken.value);
         token.value = data.token;

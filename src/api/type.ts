@@ -1,5 +1,6 @@
 export type ResLoginType = {
   userInfo: {
+    id: string;
     nickName: string;
     avatar: string;
     bgCover: string | null;

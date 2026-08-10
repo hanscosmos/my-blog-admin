@@ -1,9 +1,14 @@
 <template>
   <div class="side-bar w-full h-full flex flex-col">
-    <div
-      class="flex-1 h-0 overflow-auto pb-16"
-      :class="{ 'is-collapse': !isSideExpand }"
-    >
+    <div class="flex-1 h-0 overflow-auto pb-16" :class="{ 'is-collapse': !isSideExpand }">
+      <div class="xy-center h-16">
+        <span class="flex items-center w-full px-6">
+          <FoldBtn></FoldBtn>
+          <span class="font-title text-xl ml-5 flex-shrink-0 relative top-2px hover-text" @click="goBackToIndex">
+            博客后台
+          </span>
+        </span>
+      </div>
       <el-menu :collapse="!isSideExpand">
         <div v-for="item in menuTreeList" :key="item.id">
           <template v-if="item.type === '1'">
@@ -13,18 +18,10 @@
                 <span ml="5">{{ item.name }}</span>
               </template>
 
-              <el-menu-item
-                v-for="subItem in item.children"
-                :key="subItem.id"
-                :class="{ 'weak-active-item': subItem.route === route.name }"
-                @click="gotoRelatedPage(subItem)"
-              >
+              <el-menu-item v-for="subItem in item.children" :key="subItem.id"
+                :class="{ 'weak-active-item': subItem.route === route.name }" @click="gotoRelatedPage(subItem)">
                 <template #title>
-                  <img
-                    v-if="subItem.icon"
-                    :src="subItem.icon"
-                    class="ml-1 icon-item"
-                  />
+                  <img v-if="subItem.icon" :src="subItem.icon" class="ml-1 icon-item" />
                   <span ml="4">{{ subItem.name }}</span>
                 </template>
               </el-menu-item>
@@ -50,6 +47,8 @@ import { storeToRefs } from 'pinia';
 import { ElMessage } from 'element-plus';
 import { useMenuStore } from '@/store/menu';
 import { MenuItemType } from '@/api/authority/menu/type';
+import FoldBtn from './components/FoldBtn/index.vue';
+
 
 const { isSideExpand } = storeToRefs(useSystemStore());
 const { menuTreeList } = storeToRefs(useMenuStore());
@@ -65,21 +64,29 @@ const gotoRelatedPage = (item: MenuItemType) => {
     return ElMessage.warning('该路由尚未添加');
   }
 };
+
+
+const goBackToIndex = () => {
+  router.push({ name: 'Home' });
+};
 </script>
 <style lang="scss" scoped>
 .side-bar {
   border-right: solid 1px var(--sys-border-color);
   overflow: hidden;
-  background-color: var(--sys-box-bg-color);
+  background: var(--sys-box-bg-color);
 }
+
 :deep(.el-menu) {
   border-right: none !important;
 }
+
 .is-collapse {
   :deep(.el-sub-menu__icon-arrow) {
     display: none;
   }
 }
+
 .icon-item {
   width: 20px;
   height: 20px;

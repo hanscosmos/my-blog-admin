@@ -7,7 +7,9 @@
       </span>
       <el-dropdown trigger="hover" @command="handleCommand">
         <span class="hover-text">
-          <el-icon><More /></el-icon>
+          <el-icon>
+            <More />
+          </el-icon>
         </span>
         <template #dropdown>
           <el-dropdown-menu>
@@ -18,19 +20,13 @@
       </el-dropdown>
     </div>
     <el-scrollbar class="flex-1 h-0 overflow-auto">
-      <div
-        v-for="(item, index) in taskList"
-        :key="index"
-        class="timeline-item flex items-center justify-between mb-4 px-5"
-      >
+      <div v-for="(item, index) in taskList" :key="index"
+        class="timeline-item flex items-center justify-between mb-4 px-5">
         <div class="w-full flex items-start gap-4">
-          <div
-            class="xy-center w-10px h-10px rounded-full relative top-4px"
-            :style="{
-              background: item.style.color,
-              outline: `2px solid ${item.style.borderColor}`,
-            }"
-          ></div>
+          <div class="xy-center w-10px h-10px rounded-full relative top-4px" :style="{
+            background: item.style.color,
+            outline: `2px solid ${item.style.borderColor}`,
+          }"></div>
           <div class="flex-1 w-0">
             <div class="font-bold text-xs text-gray-500 mb-2 flex items-center">
               <span>{{ dateDiff(item.endTime as string) }}前</span>
@@ -82,7 +78,7 @@ const handleCommand = (command: string) => {
       getRecentTask();
       break;
     case 'more':
-      router.push('/user-profile');
+      router.push({ name: 'UserCenter' });
       break;
   }
 };
@@ -94,6 +90,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .timeline-item {
   position: relative;
+
   &::before {
     content: '';
     position: absolute;

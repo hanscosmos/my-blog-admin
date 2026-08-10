@@ -1,15 +1,16 @@
 <template>
-  <div class="app-layout-wrapper flex flex-col wh-full">
-    <div class="top-bar-wrapper">
-      <TopBar></TopBar>
+  <div class="app-layout-wrapper flex wh-full">
+    <div class="side-bar-wrapper" :style="{ width: sideWidth }">
+      <SideBar v-if="!route.meta.hideSide"></SideBar>
     </div>
-    <div class="main-wrapper flex-1 h-0 flex">
-      <div class="side-bar-wrapper" :style="{ width: sideWidth }">
-        <SideBar v-if="!route.meta.hideSide"></SideBar>
+
+    <div class="main-wrapper flex-1 w-0 flex flex-col">
+      <div class="top-bar-wrapper">
+        <TopBar></TopBar>
       </div>
-      <div class="flex flex-col flex-1 w-0">
+      <div class="flex flex-col flex-1 h-0">
         <div v-if="!route.meta.hideTab && tabVisible" class="h-16">
-          <TabBar ></TabBar>
+          <TabBar></TabBar>
         </div>
         <div class="content-wrapper flex-1 h-0 overflow-auto">
           <div v-if="isOpenStore" class="wh-full overflow-auto">
@@ -48,12 +49,15 @@ const sideWidth = computed(() => {
   .side-bar-wrapper {
     transition: all ease 0.2s;
   }
+
   .content-wrapper {
     background-color: var(--sys-bg-color);
   }
 
   .top-bar-wrapper {
+    border-bottom: solid 1px var(--sys-border-color);
     height: 4rem;
+    background-color: var(--sys-bg-color);
     display: flex;
     align-items: center;
     justify-content: space-between;

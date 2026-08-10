@@ -1,12 +1,12 @@
 <template>
   <div class="p-6 pr-0 wh-full flex flex-col overflow-auto">
     <el-row class="!w-full" :gutter="24">
-      <el-col :span="15">
-        <div class="wrapper-filter-item h-240px">
+      <el-col :span="24">
+        <div class="wrapper-filter-item h-200px">
           <HomeOverview></HomeOverview>
         </div>
       </el-col>
-      <el-col :span="9">
+      <!-- <el-col :span="9">
         <div class="h-240px flex">
           <div class="section-wrapper flex-1 w-0 mr-5">
             <StatCard :type="StatEnum.Article"></StatCard>
@@ -15,7 +15,7 @@
             <StatCard :type="StatEnum.User"></StatCard>
           </div>
         </div>
-      </el-col>
+      </el-col> -->
     </el-row>
     <el-row :gutter="24" class="!w-full mt-6">
       <el-col :span="24">

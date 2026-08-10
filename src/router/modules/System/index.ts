@@ -29,7 +29,7 @@ export const SystemRouteList: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/user-profile',
+    path: '/blogger-profile',
     name: 'BloggerProfile',
     component: () => import('@/views/pages/System/BloggerProfile/index.vue'),
     meta: {

@@ -22,7 +22,7 @@ const { mode } = storeToRefs(useSystemStore());
 const mergedOption = computed(() => {
   return {
     ...props.option,
-    backgroundColor: mode.value === 'dark' ? '#1f1f1f' : '#ffffff',
+    backgroundColor: mode.value === 'dark' ? '#35363f' : '#ffffff',
     textStyle: {
       color: mode.value === 'dark' ? '#ffffff' : '#333333',
     },
