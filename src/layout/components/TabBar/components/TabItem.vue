@@ -1,8 +1,8 @@
 <template>
   <div class="tab-item ml-2">
     <el-dropdown trigger="contextmenu" placement="bottom-start" :hide-on-click="true">
-      <span ref="tabItemRef" class="tag-item"
-        :class="{ 'strong-active-item': currentTab.id === item.id }" @click="selectTabItem(item)">
+      <span ref="tabItemRef" class="tag-item" :class="{ 'strong-active-item': currentTab.id === item.id }"
+        @click="selectTabItem(item)">
         <MyIcon :name="item.icon" class="mr-2"></MyIcon>
         <span class="flex-1">{{ item.name }}</span>
         <MyIcon v-if="item.id !== 'Home'" name="close" size="10" class="close-icon hover-weak-wrapper p-2px rounded-sm"
@@ -124,34 +124,61 @@ onMounted(() => {
 });
 </script>
 <style lang="scss" scoped>
+// ── Tab wrapper ──────────────────────────────────────────────
 .tab-item {
   flex-shrink: 0;
   margin-right: 0;
+  position: relative; // anchor for inverted-corner pseudo-elements
 
-  // Chrome-style tab separators: thin vertical line between tabs
-  // Place separator on each tab's right edge, but hide it for:
-  // - the active tab itself
-  // - the tab immediately before the active tab
-  &:not(:last-child) .tag-item {
-    &::after {
-      content: '';
-      position: absolute;
-      right: 0;
-      top: 25%;
-      height: 50%;
-      width: 1px;
-      background-color: rgba(0, 0, 0, 0.13);
-      border-radius: 0.5px;
-      z-index: 1;
-    }
+  // ── Bottom connector strip for the active tab ──
+  // Covers the tab-bar's bottom border so the active tab appears
+  // to merge with the content area below.
+  &:has(.strong-active-item)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 3px;
+    background-color: var(--sys-bg-color);
+    z-index: 6;
   }
-  // Hide separator on active tab and the tab before it
-  &:has(+ .tab-item .strong-active-item) .tag-item::after,
-  .tag-item.strong-active-item::after {
+
+  // ── Right inverted corner (on the wrapper, aligned with tab's right edge) ──
+  &:has(.strong-active-item)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 8px;
+    height: 8px;
+    background: transparent;
+    border-radius: 0 0 0 8px; // curves the bottom-left corner of this square
+    box-shadow: -4px 4px 0 0 var(--sys-bg-color);
+    z-index: 4;
+  }
+
+  // ── Tab separators (between inactive tabs) ──
+  &:not(:last-child) .tag-item:not(.strong-active-item)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 25%;
+    height: 50%;
+    width: 1px;
+    background-color: var(--sys-border-color);
+    opacity: 0.6;
+    border-radius: 0.5px;
+    z-index: 1;
+  }
+
+  // Hide separator on the tab immediately before the active tab
+  &:has(+ .tab-item .strong-active-item) .tag-item::after {
     display: none;
   }
 }
 
+// ── The tab itself ───────────────────────────────────────────
 .tag-item {
   min-width: 140px;
   max-width: 220px;
@@ -165,52 +192,44 @@ onMounted(() => {
   transition: background-color 0.2s ease, color 0.2s ease;
   padding: 0 12px;
   border: none;
-  // Chrome tabs: rounded top corners, flat bottom that connects to content
+  // Chrome tabs: rounded top corners, flat bottom
   border-radius: 8px 8px 0 0;
   // Inactive: transparent, blending into the tab strip
   background-color: transparent;
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--sys-text-secondary-color);
   position: relative;
   margin-top: 4px;
   white-space: nowrap;
-  overflow: hidden;
+  overflow: visible; // allow pseudo-elements to render outside
   text-overflow: ellipsis;
   z-index: 1;
 
-  // Chrome hover on inactive tab: subtle lightening
+  // ── Hover on inactive tab ──
+  // Uses a neutral semi-transparent gray that works in both light & dark modes
   &:hover:not(.strong-active-item) {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(128, 128, 128, 0.1);
+    color: var(--sys-text-color);
   }
 
   // ===== ACTIVE TAB — Chrome style =====
   &.strong-active-item {
-    background-color: var(--sys-bg-color, #ffffff);
-    color: rgba(0, 0, 0, 0.9);
+    background-color: var(--sys-bg-color);
+    color: var(--sys-text-color);
+    font-weight: 500;
     margin-top: 0;
     z-index: 5;
-    // Sides + top border via box-shadow, bottom stays open
+    overflow: visible; // allow inverted corners to render outside
+
+    // Sides + top border via box-shadow; bottom stays open
     box-shadow:
-      1px 0 0 0 rgba(0, 0, 0, 0.12),
-      -1px 0 0 0 rgba(0, 0, 0, 0.12),
-      0 -1px 0 0 rgba(0, 0, 0, 0.12);
-    // Also lift active tab slightly with a soft shadow
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.04));
+      1px 0 0 0 var(--sys-border-color),
+      -1px 0 0 0 var(--sys-border-color),
+      0 -1px 0 0 var(--sys-border-color);
+
+    // ── Left inverted corner ──
   }
 
-  // Bottom connector: covers the tab strip border so the active tab
-  // appears to be one piece with the content area below
-  &.strong-active-item::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -1px;
-    height: 2px;
-    background-color: var(--sys-bg-color, #ffffff);
-    z-index: 2;
-  }
-
+  // ── Inner text container ──
   .flex-1 {
     min-width: 0;
     overflow: hidden;
@@ -223,24 +242,25 @@ onMounted(() => {
     justify-content: center;
   }
 
+  // ── Close icon ──
   .close-icon,
-  .hover-weak-wrapper > .my-icon {
+  .hover-weak-wrapper>.my-icon {
     opacity: 0.4;
     transition: opacity 0.15s ease, background-color 0.15s ease;
   }
 
   &:hover .close-icon,
-  &:hover > .my-icon {
+  &:hover>.my-icon {
     opacity: 0.75;
   }
 
   &.strong-active-item .close-icon,
-  &.strong-active-item > .my-icon {
+  &.strong-active-item>.my-icon {
     opacity: 0.55;
   }
 
   &.strong-active-item:hover .close-icon,
-  &.strong-active-item:hover > .my-icon {
+  &.strong-active-item:hover>.my-icon {
     opacity: 0.85;
   }
 
@@ -255,7 +275,7 @@ onMounted(() => {
   }
 
   .close-icon:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(128, 128, 128, 0.2);
     opacity: 1 !important;
   }
 }

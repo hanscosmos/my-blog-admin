@@ -26,20 +26,18 @@ const { scrollRef, parentRef, isShowBtn, clickLeftHandle, clickRightHandle } =
 </script>
 <style lang="scss" scoped>
 .tab-bar {
-
   z-index: 10;
   position: relative;
-  // Chrome-style tab strip: subtle tint over the base background
-  // to distinguish the tab area from the content below
+  // Chrome-style tab strip: subtle tint over the base background.
+  // Uses a neutral semi-transparent overlay that works in both light & dark modes.
   background:
     linear-gradient(to bottom,
-      rgba(0, 0, 0, 0.03),
-      rgba(0, 0, 0, 0.01)),
+      rgba(128, 128, 128, 0.06),
+      rgba(128, 128, 128, 0.01)),
     var(--sys-bg-color);
   // Bottom border: the active tab will "break through" this line
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid var(--sys-border-color);
   padding: 0 8px;
-  // Clip so pseudo-elements from tabs that overlap don't cause scroll
   overflow: visible;
 
   .scroll-left,
@@ -50,13 +48,13 @@ const { scrollRef, parentRef, isShowBtn, clickLeftHandle, clickRightHandle } =
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(0, 0, 0, 0.4);
+    color: var(--sys-text-secondary-color);
     transition: color 0.2s ease;
   }
 
   .scroll-left:hover,
   .scroll-right:hover {
-    color: rgba(0, 0, 0, 0.7);
+    color: var(--sys-text-color);
   }
 
   &-wrapper {

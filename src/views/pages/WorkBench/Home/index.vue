@@ -2,7 +2,7 @@
   <div class="p-6 pr-0 wh-full flex flex-col overflow-auto">
     <el-row class="!w-full" :gutter="24">
       <el-col :span="24">
-        <div class="wrapper-filter-item h-200px">
+        <div class="section-wrapper h-200px">
           <HomeOverview></HomeOverview>
         </div>
       </el-col>
