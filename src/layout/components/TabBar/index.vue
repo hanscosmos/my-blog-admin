@@ -1,38 +1,15 @@
 <template>
-  <div
-    v-if="visible"
-    ref="parentRef"
-    class="h-full tab-bar flex flex-nowrap items-center relative border-bottom py-2"
-  >
-    <div
-      v-if="isShowBtn"
-      class="scroll-left hover-text border-right"
-      title="向左滑动"
-      @click="clickLeftHandle"
-    >
+  <div v-if="visible" ref="parentRef" class="h-12 tab-bar flex flex-nowrap items-center relative border-bottom py-2">
+    <div v-if="isShowBtn" class="scroll-left hover-text border-right" title="向左滑动" @click="clickLeftHandle">
       <icon-left theme="outline" size="16" class="flex items-center" />
     </div>
     <div ref="scrollRef" class="tab-bar-wrapper overflow-hidden relative">
-      <TransitionGroup
-        name="list"
-        tag="ul"
-        class="flex flex-no-wrap items-center"
-      >
-        <TabItem
-          v-for="(item, ind) in tabList"
-          :key="item.id"
-          :item="item"
-          :ind="ind"
-        ></TabItem>
+      <TransitionGroup name="list" tag="ul" class="flex flex-no-wrap items-end">
+        <TabItem v-for="(item, ind) in tabList" :key="item.id" :item="item" :ind="ind"></TabItem>
       </TransitionGroup>
     </div>
 
-    <div
-      v-if="isShowBtn"
-      class="scroll-right ml-3 hover-text border-left"
-      title="向右滑动"
-      @click="clickRightHandle"
-    >
+    <div v-if="isShowBtn" class="scroll-right ml-3 hover-text border-left" title="向右滑动" @click="clickRightHandle">
       <icon-right theme="outline" size="16" class="flex items-center" />
     </div>
   </div>
@@ -49,36 +26,70 @@ const { scrollRef, parentRef, isShowBtn, clickLeftHandle, clickRightHandle } =
 </script>
 <style lang="scss" scoped>
 .tab-bar {
-  height: 4rem;
+
   z-index: 10;
   position: relative;
+  // Chrome-style tab strip: subtle tint over the base background
+  // to distinguish the tab area from the content below
+  background:
+    linear-gradient(to bottom,
+      rgba(0, 0, 0, 0.03),
+      rgba(0, 0, 0, 0.01)),
+    var(--sys-bg-color);
+  // Bottom border: the active tab will "break through" this line
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 0 8px;
+  // Clip so pseudo-elements from tabs that overlap don't cause scroll
+  overflow: visible;
 
   .scroll-left,
   .scroll-right {
     padding: 0 8px;
     cursor: pointer;
-    height: 47px;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: rgba(0, 0, 0, 0.4);
+    transition: color 0.2s ease;
+  }
+
+  .scroll-left:hover,
+  .scroll-right:hover {
+    color: rgba(0, 0, 0, 0.7);
   }
 
   &-wrapper {
     scroll-behavior: smooth;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex: 1;
+    min-height: 100%;
+    display: flex;
+    align-items: flex-end;
+
+    // Hide the scrollbar for a cleaner Chrome look
+    &::-webkit-scrollbar {
+      height: 0;
+    }
   }
 }
+
 :deep(.el-divider--vertical) {
   width: 2px;
   border-left-width: 2px;
 }
+
 .list-enter-active,
 .list-leave-active {
   transition: all 0.3s linear;
 }
+
 .list-enter-from {
   opacity: 0;
   transform: translateY(20px);
 }
+
 .list-leave-to {
   opacity: 0;
   transform: translateY(-20px);

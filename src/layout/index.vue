@@ -9,7 +9,7 @@
         <TopBar></TopBar>
       </div>
       <div class="flex flex-col flex-1 h-0">
-        <div v-if="!route.meta.hideTab && tabVisible" class="h-16">
+        <div v-if="!route.meta.hideTab && tabVisible">
           <TabBar></TabBar>
         </div>
         <div class="content-wrapper flex-1 h-0 overflow-auto">
