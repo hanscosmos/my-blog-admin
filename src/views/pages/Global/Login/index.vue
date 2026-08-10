@@ -76,7 +76,7 @@ import { useMenu } from '@/hooks/useMenu';
 const router = useRouter();
 
 const { theme } = storeToRefs(useSystemStore());
-const { isLogin, userInfo, token, csrfToken } = storeToRefs(useUserInfoStore());
+const { isLogin, userInfo, token, refreshToken, csrfToken } = storeToRefs(useUserInfoStore());
 const { getNavMenuTreeList } = useMenu();
 
 const loginBg = computed(() => {
@@ -130,6 +130,7 @@ const loginHandler = () => {
         csrfToken.value = data.csrfToken;
         setCookie('csrftoken', csrfToken.value);
         token.value = data.token;
+        refreshToken.value = data.refreshToken;
         loading.value = false;
         await getNavMenuTreeList();
         router.push('/');

@@ -12,6 +12,19 @@ import { useUserInfoStore } from '@/store/user';
 import { getCookie } from '@/utils/tool';
 import { ElMessage } from 'element-plus';
 
+// 刷新 token 的状态管理（模块级变量，全局共享）
+let isRefreshing = false;
+let subscribers: Array<(token: string) => void> = [];
+
+function onRefreshed(newToken: string) {
+  subscribers.forEach((cb) => cb(newToken));
+  subscribers = [];
+}
+
+function addSubscriber(cb: (token: string) => void) {
+  subscribers.push(cb);
+}
+
 class Request {
   // axios 实例
   instance: AxiosInstance;
@@ -41,13 +54,80 @@ class Request {
     );
 
     this.instance.interceptors.response.use(
-      (res: AxiosResponse) => {
+      async (res: AxiosResponse) => {
         // 直接返回res，当然你也可以只返回res.data
         if (res.data.code === 401) {
-          const { clearUserData } = useUserInfoStore();
-          clearUserData();
-          setSessionStorage('tokenValid', true);
-          location.replace('/login');
+          const store = useUserInfoStore();
+          const originalRequest = res.config as any;
+
+          // 以下情况不尝试刷新，直接跳转登录：
+          // 1. 登录接口本身返回 401
+          // 2. refresh 接口本身返回 401（refresh token 也过期了）
+          // 3. 已经重试过的请求再次 401（防止死循环）
+          if (
+            originalRequest.url === '/user/login' ||
+            originalRequest.url === '/user/refresh' ||
+            originalRequest._isRetry
+          ) {
+            store.clearUserData();
+            setSessionStorage('tokenValid', true);
+            location.replace('/login');
+            return Promise.reject(res);
+          }
+
+          // 没有 refreshToken 可用，直接登出
+          if (!store.refreshToken) {
+            store.clearUserData();
+            setSessionStorage('tokenValid', true);
+            location.replace('/login');
+            return Promise.reject(res);
+          }
+
+          // 如果正在刷新中，把当前请求加入等待队列
+          if (isRefreshing) {
+            return new Promise((resolve) => {
+              addSubscriber((newToken: string) => {
+                originalRequest.headers.Authorization = newToken;
+                originalRequest._isRetry = true;
+                resolve(this.instance(originalRequest));
+              });
+            });
+          }
+
+          // 发起刷新请求
+          isRefreshing = true;
+
+          try {
+            const refreshRes: any = await this.instance.post('/user/refresh', {
+              refreshToken: store.refreshToken,
+            });
+
+            if (refreshRes.code === 0 && refreshRes.data?.token) {
+              const newToken = refreshRes.data.token;
+              // 更新 store 中的 access token
+              store.token = newToken;
+              // 通知所有等待中的请求
+              onRefreshed(newToken);
+              // 重试当前请求
+              originalRequest.headers.Authorization = newToken;
+              originalRequest._isRetry = true;
+              return this.instance(originalRequest);
+            } else {
+              // refresh 接口返回非 0 code（但不应该是 401，因为上面已经判断过了）
+              store.clearUserData();
+              setSessionStorage('tokenValid', true);
+              location.replace('/login');
+              return Promise.reject(res);
+            }
+          } catch (err) {
+            // 网络错误等异常
+            store.clearUserData();
+            setSessionStorage('tokenValid', true);
+            location.replace('/login');
+            return Promise.reject(err);
+          } finally {
+            isRefreshing = false;
+          }
         }
         if (res.data.code === 501) {
           console.log(res.data.data);
@@ -66,7 +146,11 @@ class Request {
             break;
           case 401:
             message = '未授权，请重新登录(401)';
-            // 这里可以做清空storage并跳转到登录页的操作
+            // 清空storage并跳转到登录页
+            const store = useUserInfoStore();
+            store.clearUserData();
+            setSessionStorage('tokenValid', true);
+            location.replace('/login');
             break;
           case 403:
             message = '拒绝访问(403)';

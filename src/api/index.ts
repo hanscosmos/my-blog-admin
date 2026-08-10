@@ -1,4 +1,4 @@
-import { ResLoginType } from './type';
+import { ResLoginType, ResRefreshTokenType } from './type';
 import request from '@/utils/request';
 export const loginApi = (data: {
   username: string;
@@ -6,6 +6,9 @@ export const loginApi = (data: {
   key: string;
   code: string;
 }) => request.post<ResLoginType>('/user/login', data);
+
+export const refreshTokenApi = (data: { refreshToken: string }) =>
+  request.post<ResRefreshTokenType>('/user/refresh', data);
 
 export const getValidCodeApi = (data: { key: string }) =>
   request.post<string>('/user/valid/code', data);

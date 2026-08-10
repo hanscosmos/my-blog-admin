@@ -20,12 +20,14 @@ export const useUserInfoStore = defineStore(
 
     const userId = computed(() => userInfo.value.id || '');
     const token = ref<string>('');
+    const refreshToken = ref<string>('');
     const csrfToken = ref<string>('');
     const isLogin = ref<boolean>(false);
 
     const clearUserData = () => {
       userInfo.value = { ...baseInfo };
       token.value = '';
+      refreshToken.value = '';
       csrfToken.value = '';
       isLogin.value = false;
     };
@@ -34,6 +36,7 @@ export const useUserInfoStore = defineStore(
       userId,
       userInfo,
       token,
+      refreshToken,
       csrfToken,
       isLogin,
       clearUserData,

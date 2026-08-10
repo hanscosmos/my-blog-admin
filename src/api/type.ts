@@ -9,5 +9,10 @@ export type ResLoginType = {
     loginTime: string;
   };
   token: string;
+  refreshToken: string;
   csrfToken: string;
+};
+
+export type ResRefreshTokenType = {
+  token: string;
 };
