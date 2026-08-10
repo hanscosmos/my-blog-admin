@@ -26,21 +26,21 @@
     </el-row>
 
     <el-row :gutter="24" class="!w-full mt-6">
-      <el-col :span="8">
+      <el-col :span="12">
         <div class="h-600px section-wrapper">
           <RecentUserTask></RecentUserTask>
         </div>
       </el-col>
-      <el-col :span="8">
+      <el-col :span="12">
         <div class="h-600px section-wrapper">
           <HotArticle></HotArticle>
         </div>
       </el-col>
-      <el-col :span="8">
+      <!-- <el-col :span="8">
         <div class="h-600px section-wrapper">
           <ActiveUser></ActiveUser>
         </div>
-      </el-col>
+      </el-col> -->
     </el-row>
     <el-row :gutter="24" class="!w-full mt-6">
       <el-col :span="24">

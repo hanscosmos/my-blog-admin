@@ -31,6 +31,125 @@ export interface SpeechOptions {
   maxAlternatives?: number;
 }
 
+/**
+ * 中文标点恢复 —— 基于规则的标点符号插入
+ * Web Speech API 返回的原始文本不含标点，此函数对原始文本进行后处理
+ */
+function restoreChinesePunctuation(text: string): string {
+  if (!text) return '';
+
+  let result = text;
+
+  // 1. 在常见连词/转折词前插入逗号
+  const conjunctions = [
+    '但是', '但', '然而', '不过', '可是',
+    '所以', '因此', '因而', '于是',
+    '而且', '并且', '况且', '此外', '另外',
+    '然后', '接着', '接下来', '随后',
+    '还有', '同时', '以及',
+    '否则', '不然', '要不然',
+    '总之', '总的来说', '综上所述',
+    '其实',
+    '当然',
+    '比如', '例如', '比方说',
+    '特别是', '尤其是',
+    '换句话说', '也就是说',
+    '相比之下', '相反',
+    '一方面', '另一方面',
+    '首先', '其次', '最后', '第一', '第二', '第三',
+    '因为', '由于',
+  ];
+
+  // 按长度降序排列，优先匹配更长的词
+  const sortedConjunctions = [...conjunctions].sort((a, b) => b.length - a.length);
+
+  for (const conj of sortedConjunctions) {
+    // 匹配：前面不是标点符号，后面不是标点符号
+    const escaped = conj.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(
+      `([^，。！？、；：\\n])(${escaped})([^，。！？、；：])`,
+      'g'
+    );
+    result = result.replace(regex, `$1，$2$3`);
+  }
+
+  // 2. 在句末疑问词后插入问号
+  result = result.replace(/([吗])(\s|$)/g, '$1？$2');
+  result = result.replace(/([呢])(\s|$)/g, (match, p1, p2, offset) => {
+    // 仅在接近句末（后 10 个字符内无其他标点）时转问号
+    const rest = result.substring(offset + 1);
+    if (rest.length < 10 && !/[，。！？]/.test(rest)) {
+      return `${p1}？${p2}`;
+    }
+    return match;
+  });
+
+  // 3. 在感叹词后插入感叹号
+  result = result.replace(/([啊呀啦哇哎哟])(\s|$)/g, (match, p1, p2, offset) => {
+    const rest = result.substring(offset + 1);
+    if (rest.length < 8 && !/[，。！？]/.test(rest)) {
+      return `${p1}！${p2}`;
+    }
+    return match;
+  });
+
+  // 4. 对超过 25 个字符的无标点段落，尝试在自然位置插入逗号
+  const processSegment = (segment: string): string => {
+    if (segment.length <= 25) return segment;
+
+    // 在"的"字后面插入逗号的模式：名词短语后的"的"+空格感
+    // 在"了"后面且后面是独立短句时插入逗号
+    let processed = segment;
+
+    processed = processed.replace(
+      /([^，。！？、；：\n]{3,}了)([^，。！？、；：\n]{3,})/g,
+      '$1，$2'
+    );
+
+    // 如果处理后仍超过 25 个字符且无标点，在中点附近插入逗号
+    if (processed.length > 25 && !/[，。！？、；：]/.test(processed)) {
+      const mid = Math.floor(processed.length / 2);
+      // 找到中点附近的词边界
+      let insertPos = mid;
+      for (let i = mid; i < processed.length && i < mid + 5; i++) {
+        if (/[了]/.test(processed[i])) {
+          insertPos = i + 1;
+          break;
+        }
+      }
+      processed = processed.substring(0, insertPos) + '，' + processed.substring(insertPos);
+    }
+
+    return processed;
+  };
+
+  // 按现有标点分段处理
+  const segments = result.split(/([，。！？、；：\n])/);
+  const processed: string[] = [];
+  for (let i = 0; i < segments.length; i += 2) {
+    processed.push(processSegment(segments[i]));
+    if (i + 1 < segments.length) {
+      processed.push(segments[i + 1]);
+    }
+  }
+  result = processed.join('');
+
+  // 5. 确保文本以标点结尾
+  const lastChar = result.trimEnd().slice(-1);
+  if (lastChar && !/[，。！？、；：\n]/.test(lastChar)) {
+    result = result.trimEnd() + '。';
+  }
+
+  // 6. 清理多余空白和连续的逗号
+  result = result.replace(/，+/g, '，');
+  result = result.replace(/。+/g, '。');
+  result = result.replace(/[ \t]{2,}/g, ' ');
+  result = result.replace(/，(\s*[，。！？、；：])/g, '$1');
+  result = result.replace(/[，。！？、；：]+$/g, (match) => match.slice(-1));
+
+  return result.trim();
+}
+
 export function useSpeechRecognition(options: SpeechOptions = {}) {
   const {
     lang = 'zh-CN',
@@ -47,7 +166,8 @@ export function useSpeechRecognition(options: SpeechOptions = {}) {
   const isListening = ref(false);
   const isPaused = ref(false);
   const interimText = ref('');
-  const finalText = ref('');
+  const rawFinalText = ref('');
+  const finalText = computed(() => restoreChinesePunctuation(rawFinalText.value));
   const error = ref<string | null>(null);
 
   let recognition: SpeechRecognitionInstance | null = null;
@@ -76,7 +196,7 @@ export function useSpeechRecognition(options: SpeechOptions = {}) {
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
         if (result.isFinal) {
-          finalText.value += result[0].transcript;
+          rawFinalText.value += result[0].transcript;
         } else {
           interim += result[0].transcript;
         }
@@ -181,7 +301,7 @@ export function useSpeechRecognition(options: SpeechOptions = {}) {
 
     // 如果有临时结果，合并到最终结果
     if (interimText.value) {
-      finalText.value += interimText.value;
+      rawFinalText.value += interimText.value;
       interimText.value = '';
     }
 
@@ -202,7 +322,7 @@ export function useSpeechRecognition(options: SpeechOptions = {}) {
 
     // 临时结果合并到最终结果
     if (interimText.value) {
-      finalText.value += interimText.value;
+      rawFinalText.value += interimText.value;
       interimText.value = '';
     }
 
@@ -230,7 +350,7 @@ export function useSpeechRecognition(options: SpeechOptions = {}) {
   };
 
   const clear = () => {
-    finalText.value = '';
+    rawFinalText.value = '';
     interimText.value = '';
     error.value = null;
   };

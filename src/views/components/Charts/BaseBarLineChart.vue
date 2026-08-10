@@ -7,39 +7,28 @@
         {{ title }}
       </span>
       <div class="flex items-center">
-              <!-- 图表类型切换（可通过 showToggle 隐藏） -->
-      <el-radio-group
-        v-if="showToggle"
-        v-model="currentChartType"
-        @change="$emit('update:chartType', currentChartType)"
-        size="default"
-      >
-        <el-radio-button label="bar">柱状图</el-radio-button>
-        <el-radio-button label="line">折线图</el-radio-button>
-      </el-radio-group>
+        <!-- 图表类型切换（可通过 showToggle 隐藏） -->
+        <el-radio-group v-if="showToggle" v-model="currentChartType"
+          @change="$emit('update:chartType', currentChartType)" size="default">
+          <el-radio-button label="bar">
+            <my-icon name="chart-histogram" :size="14" class="xy-center"></my-icon>
 
-      <!-- 时间范围切换 -->
-      <el-radio-group
-        v-model="rangeMode"
-        @change="onRangeChange"
-        size="default"
-        class="ml-8"
-      >
-        <el-radio-button label="week">近一周</el-radio-button>
-        <el-radio-button label="month">近一月</el-radio-button>
-        <el-radio-button label="year">近一年</el-radio-button>
-        <el-radio-button label="custom">自定义</el-radio-button>
-      </el-radio-group>
+          </el-radio-button>
+          <el-radio-button label="line">
+            <my-icon name="chart-line" :size="14" class="xy-center"></my-icon>
+          </el-radio-button>
+        </el-radio-group>
 
-      <el-date-picker
-        v-if="rangeMode === 'custom'"
-        class="ml-4"
-        v-model="customRange"
-        type="daterange"
-        start-placeholder="开始日期"
-        end-placeholder="结束日期"
-        @change="fetchData"
-      />
+        <!-- 时间范围切换 -->
+        <el-radio-group v-model="rangeMode" @change="onRangeChange" size="default" class="ml-8">
+          <el-radio-button label="week">近一周</el-radio-button>
+          <el-radio-button label="month">近一月</el-radio-button>
+          <el-radio-button label="year">近一年</el-radio-button>
+          <el-radio-button label="custom">自定义</el-radio-button>
+        </el-radio-group>
+
+        <el-date-picker v-if="rangeMode === 'custom'" class="ml-4" v-model="customRange" type="daterange"
+          start-placeholder="开始日期" end-placeholder="结束日期" @change="fetchData" />
       </div>
 
 
@@ -67,7 +56,7 @@ const props = withDefaults(defineProps<{
   chartType?: 'bar' | 'line';
   showToggle?: boolean;
 }>(), {
-  chartType: 'bar',
+  chartType: 'line',
   showToggle: true,
 });
 
