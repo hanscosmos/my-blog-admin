@@ -8,7 +8,9 @@
       <!-- 更多操作按钮（悬浮显示下拉菜单） -->
       <el-dropdown trigger="hover" @command="handleCommand">
         <span class="task-more hover-wrapper">
-          <el-icon><More /></el-icon>
+          <el-icon>
+            <More />
+          </el-icon>
         </span>
         <template #dropdown>
           <el-dropdown-menu>
@@ -20,46 +22,28 @@
     </div>
 
     <div class="task-content">
-      <div
-        v-if="task.status !== 'done'"
-        class="flex items-center gap-4 mb-2 text-xs"
-      >
-        <span class="flex items-center"
-          ><my-icon name="calendar" class="mr-2"></my-icon
-          >{{ fmtTime(task.deadline, 'YYYY/MM/DD') }}</span
-        >
-        <span
-          v-if="priorityList"
-          class="flex items-center"
-          :style="{ color: priorityColorMap[task.priority] }"
-          ><my-icon name="level" class="mr-2"></my-icon
-          >{{ getDictLabelByKey(priorityList, task.priority) }}</span
-        >
+      <div v-if="task.status !== 'done'" class="flex items-center gap-4 mb-2 text-xs">
+        <span class="flex items-center">
+          <AppIcon name="calendar" class="mr-2"></AppIcon>{{ fmtTime(task.deadline, 'YYYY/MM/DD') }}
+        </span>
+        <span v-if="priorityList" class="flex items-center" :style="{ color: priorityColorMap[task.priority] }">
+          <AppIcon name="level" class="mr-2"></AppIcon>{{ getDictLabelByKey(priorityList, task.priority) }}
+        </span>
       </div>
       <div v-else class="flex items-center gap-4 mb-2 text-xs">
-        <span v-if="task.startTime && task.endTime" class="flex items-center"
-          ><my-icon name="calendar" class="mr-2"></my-icon
-          >{{ fmtTime(task.startTime, 'MM-DD HH:mm') }}&nbsp;至&nbsp;{{
+        <span v-if="task.startTime && task.endTime" class="flex items-center">
+          <AppIcon name="calendar" class="mr-2"></AppIcon>{{ fmtTime(task.startTime, 'MM-DD HH:mm') }}&nbsp;至&nbsp;{{
             fmtTime(task.endTime, 'MM-DD HH:mm')
-          }}</span
-        >
+          }}
+        </span>
       </div>
       <p class="line-clamp-2 text-sm h-40px mb-4">{{ task.description }}</p>
       <div class="task-meta text-xs flex items-center justify-between">
-        <span v-if="statusList"
-          ><my-tag
-            :color="statusColorMap[task.status]"
-            :name="getDictLabelByKey(statusList, task.status)"
-            round
-          ></my-tag
-        ></span>
+        <span v-if="statusList"><app-tag :color="statusColorMap[task.status]"
+            :name="getDictLabelByKey(statusList, task.status)" round></app-tag></span>
 
-        <span
-          class="font-beauty text-lg"
-          :class="task.score > 0 ? 'text-red-500' : 'text-green-500'"
-        >
-          {{ Math.round(task.score * 10) / 10 }}</span
-        >
+        <span class="font-beauty text-lg" :class="task.score > 0 ? 'text-red-500' : 'text-green-500'">
+          {{ Math.round(task.score * 10) / 10 }}</span>
       </div>
     </div>
   </el-card>
@@ -121,15 +105,18 @@ const deleteUserTaskHandler = async () => {
   position: relative;
   transition: all 0.3s;
 }
+
 .task-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .task-title {
   font-weight: 600;
   font-size: 16px;
 }
+
 .task-more {
   cursor: pointer;
   display: flex;
@@ -137,6 +124,7 @@ const deleteUserTaskHandler = async () => {
   padding: 4px;
   border-radius: 50%;
 }
+
 .task-content {
   margin-top: 10px;
 }

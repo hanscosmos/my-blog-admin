@@ -1,30 +1,18 @@
 <template>
   <div class="release-article w-full h-full flex flex-col">
     <div class="wrapper-color flex items-center h-16 px-4 border-bottom">
-      <input
-        v-model="title"
-        class="flex-1 w-0 text-2xl bg-transparent"
-        placeholder="请输入文章标题..."
-        border="none"
-        outline="none"
-      />
-      <my-button @click="openDrawerHandler"
-        ><MyIcon name="add-four" class="mr-2"></MyIcon>发布</my-button
-      >
+      <input v-model="title" class="flex-1 w-0 text-2xl bg-transparent" placeholder="请输入文章标题..." border="none"
+        outline="none" />
+      <app-button @click="openDrawerHandler">
+        <AppIcon name="add-four" class="mr-2"></AppIcon>发布
+      </app-button>
     </div>
     <div class="edit-wrapper flex-1 h-0 relative">
-      <my-md-editor
-        ref="mdEditorRef"
-        @save="releaseArticleHandler"
-      ></my-md-editor>
+      <app-md-editor ref="mdEditorRef" @save="releaseArticleHandler"></app-md-editor>
       <VoiceInputBar @insert="handleVoiceInsert" />
     </div>
   </div>
-  <ArticleFormDrawer
-    ref="drawerRef"
-    :default-data="originForm"
-    @send-data="releaseArticleHandler"
-  />
+  <ArticleFormDrawer ref="drawerRef" :default-data="originForm" @send-data="releaseArticleHandler" />
 </template>
 <script lang="ts" setup>
 import { pinyin } from 'pinyin-pro';

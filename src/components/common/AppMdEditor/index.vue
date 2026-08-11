@@ -1,15 +1,7 @@
 <template>
-  <div class="my-md-editor w-full h-full">
-    <v-md-editor
-      ref="editorRef"
-      v-model="text"
-      height="100%"
-      placeholder="请输入内容……"
-      :disabled-menus="[]"
-      :left-toolbar="toolbar || defaultToolBar"
-      @save="saveHandler"
-      @upload-image="uploadImageHandler"
-    ></v-md-editor>
+  <div class="app-md-editor w-full h-full">
+    <v-md-editor ref="editorRef" v-model="text" height="100%" placeholder="请输入内容……" :disabled-menus="[]"
+      :left-toolbar="toolbar || defaultToolBar" @save="saveHandler" @upload-image="uploadImageHandler"></v-md-editor>
   </div>
 </template>
 <script lang="ts" setup>

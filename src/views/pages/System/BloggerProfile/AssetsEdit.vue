@@ -22,7 +22,7 @@
 
     <div class="mt-4 flex gap-4">
       <el-button @click="addItem">
-        <my-icon name="plus" size="14" class="mr-1" />
+        <AppIcon name="plus" size="14" class="mr-1" />
         新增资产项
       </el-button>
       <el-button type="primary" @click="saveHandler"> 保存 </el-button>

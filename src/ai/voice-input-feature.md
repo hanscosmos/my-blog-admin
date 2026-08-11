@@ -11,12 +11,12 @@
 ```
 ReleaseArticle/index.vue
   ├── <input v-model="title">           ← 文章标题
-  └── <my-md-editor ref="mdEditorRef">  ← Markdown 编辑器
+  └── <app-md-editor ref="mdEditorRef">  ← Markdown 编辑器
         └── <v-md-editor v-model="text">  ← @kangc/v-md-editor v2.3.18
               └── .v-md-textarea-editor textarea  ← 实际 DOM textarea
 ```
 
-- `MyMdEditor` 路径：[src/components/common/MyMdEditor/index.vue](../../src/components/common/MyMdEditor/index.vue)
+- `AppMdEditor` 路径：[src/components/common/AppMdEditor/index.vue](../../src/components/common/AppMdEditor/index.vue)
 - `v-md-editor` 插件配置：[src/plugins/v-md-editor/index.ts](../../src/plugins/v-md-editor/index.ts)
 - `ReleaseArticle` 路径：[src/views/pages/Article/pages/ReleaseArticle/index.vue](../../src/views/pages/Article/pages/ReleaseArticle/index.vue)
 - **当前暴露方法**：`getText()` / `setText()`（仅全量读写，无光标位置感知能力）
@@ -41,9 +41,9 @@ ReleaseArticle/index.vue
 
 ## 开发步骤
 
-### 第一步：扩展 `MyMdEditor`，增加 `insertAtCursor` 方法
+### 第一步：扩展 `AppMdEditor`，增加 `insertAtCursor` 方法
 
-**文件**：[src/components/common/MyMdEditor/index.vue](../../src/components/common/MyMdEditor/index.vue)
+**文件**：[src/components/common/AppMdEditor/index.vue](../../src/components/common/AppMdEditor/index.vue)
 **工作量**：约 0.5h
 **优先级**：必须先做
 
@@ -223,7 +223,7 @@ idle ──点击麦克风──▶ listening ──点击暂停──▶ paused
 src/
 ├── composables/
 │   └── useSpeechRecognition.ts          # 新增：语音识别逻辑封装
-├── components/common/MyMdEditor/
+├── components/common/AppMdEditor/
 │   └── index.vue                        # 修改：新增 insertAtCursor 方法
 └── views/pages/Article/
     ├── components/
@@ -239,7 +239,7 @@ src/
 
 | 步骤 | 内容 | 工作量 | 依赖 |
 |---|---|---|---|
-| 1 | `MyMdEditor` 扩展 `insertAtCursor` | 0.5h | 无 |
+| 1 | `AppMdEditor` 扩展 `insertAtCursor` | 0.5h | 无 |
 | 2 | `useSpeechRecognition` composable | 2-3h | 无 |
 | 3 | `VoiceInputBar` UI 组件 | 3-4h | 步骤 2 |
 | 4 | 集成到 ReleaseArticle | 0.5h | 步骤 1、3 |

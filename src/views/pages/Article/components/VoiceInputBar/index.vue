@@ -3,7 +3,7 @@
     <!-- 收起状态：仅显示麦克风图标按钮 -->
     <button v-if="!panelVisible && !isListening && !isPaused && !finalText" class="voice-toggle-btn"
       :disabled="disabled" :title="isListening ? '正在聆听...' : '语音录入'" @click="openPanel">
-      <MyIcon name="voice" :size="20" />
+      <AppIcon name="voice" :size="20" />
     </button>
 
     <!-- 展开面板 -->
@@ -17,7 +17,7 @@
             'mic-paused': isPaused,
             'mic-error': !!error,
           }" :disabled="disabled" @click="handleMicClick">
-            <MyIcon name="voice" :size="18" />
+            <AppIcon name="voice" :size="18" />
           </button>
           <span class="status-text text-sm">
             <template v-if="error">
@@ -38,24 +38,24 @@
         <div class="flex items-center gap-1">
           <template v-if="isListening">
             <button class="action-btn pause-btn" title="暂停" @click="pause">
-              <MyIcon name="pause" :size="16" />
+              <AppIcon name="pause" :size="16" />
             </button>
             <button class="action-btn stop-btn" title="停止" @click="handleStop">
-              <MyIcon name="power" :size="16" />
+              <AppIcon name="power" :size="16" />
             </button>
           </template>
           <template v-else-if="isPaused">
             <button class="action-btn resume-btn" title="继续" @click="resume">
-              <MyIcon name="play" :size="16" />
+              <AppIcon name="play" :size="16" />
             </button>
             <button class="action-btn stop-btn" title="停止" @click="handleStop">
-              <MyIcon name="power" :size="16" />
+              <AppIcon name="power" :size="16" />
             </button>
           </template>
           <!-- 收起按钮 -->
           <button v-if="!isListening && !isPaused" class="action-btn close-btn" title="收起"
             @click="panelVisible = false">
-            <MyIcon name="close" :size="16" />
+            <AppIcon name="close" :size="16" />
           </button>
         </div>
       </div>
@@ -76,11 +76,11 @@
       <!-- 底部操作 -->
       <div v-if="finalText" class="voice-panel-footer">
         <button class="insert-btn" @click="handleInsert">
-          <MyIcon name="check" :size="14" class="mr-1" />
+          <AppIcon name="check" :size="14" class="mr-1" />
           插入到编辑器
         </button>
         <button class="clear-btn" @click="clear">
-          <MyIcon name="delete" :size="14" class="mr-1" />
+          <AppIcon name="delete" :size="14" class="mr-1" />
           清空
         </button>
       </div>

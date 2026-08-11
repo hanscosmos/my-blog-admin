@@ -2,46 +2,32 @@
   <div class="w-full h-full flex flex-col">
     <div v-if="!editable" class="file-preview-wrapper w-full flex-1 h-0">
       <img v-if="isImage && fileUrl" :src="fileUrl" alt="" class="wh-full" />
-      <div
-        v-else-if="fileUrl"
-        class="file-info xy-center flex-col text-gray-500"
-      >
-        <my-icon name="file" size="32" />
+      <div v-else-if="fileUrl" class="file-info xy-center flex-col text-gray-500">
+        <AppIcon name="file" size="32" />
         <span class="text-sm mt-2">{{ fileName || '已上传文件' }}</span>
       </div>
       <div v-else class="w-full h-full">未上传文件</div>
     </div>
-    <div
-      v-else
-      class="w-full flex-1 h-0 hover-text hover-border border-wrapper border-dashed"
-    >
-      <el-upload
-        class="uploader deep-wrapper-item w-full h-full"
-        :accept="computedAccept"
-        :before-upload="computedBeforeUpload"
-        :show-file-list="false"
-        :http-request="uploadFileHandler"
-      >
+    <div v-else class="w-full flex-1 h-0 hover-text hover-border border-wrapper border-dashed">
+      <el-upload class="uploader deep-wrapper-item w-full h-full" :accept="computedAccept"
+        :before-upload="computedBeforeUpload" :show-file-list="false" :http-request="uploadFileHandler">
         <template v-if="isImage">
           <img v-if="fileUrl" :src="fileUrl" alt="" class="w-full h-full" />
           <div v-else class="xy-center flex-col w-full h-full">
-            <my-icon name="upload" size="24" title="上传"></my-icon>
+            <AppIcon name="upload" size="24" title="上传"></AppIcon>
             <span v-if="desc">{{ desc }}</span>
           </div>
         </template>
         <template v-else>
-          <div
-            v-if="fileUrl || defaultUrl"
-            class="xy-center flex-col text-gray-500 w-full h-full"
-          >
-            <my-icon name="file-pdf" size="32" />
+          <div v-if="fileUrl || defaultUrl" class="xy-center flex-col text-gray-500 w-full h-full">
+            <AppIcon name="file-pdf" size="32" />
             <span class="text-sm mt-2 truncate max-w-full px-4">{{
               fileName || desc
-            }}</span>
+              }}</span>
             <span class="text-xs text-gray-400 mt-1">点击重新上传</span>
           </div>
           <div v-else class="xy-center flex-col w-full h-full">
-            <my-icon name="upload" size="24" title="上传"></my-icon>
+            <AppIcon name="upload" size="24" title="上传"></AppIcon>
             <span v-if="desc">{{ desc }}</span>
           </div>
         </template>

@@ -1,18 +1,18 @@
 <template>
-  <div class="my-search-panel wh-full flex flex-col">
-    <div v-if="!hideHeader" class="my-search-panel-header p-4 pb-2">
+  <div class="app-search-panel wh-full flex flex-col">
+    <div v-if="!hideHeader" class="app-search-panel-header p-4 pb-2">
       <slot name="header"></slot>
     </div>
 
-    <div class="my-search-panel-body flex-1 h-0 overflow-auto">
+    <div class="app-search-panel-body flex-1 h-0 overflow-auto">
       <div v-if="loading || dataExist" v-loading="loading" class="data-container wh-full">
         <slot></slot>
       </div>
       <div v-else class="wh-full">
-        <my-empty-data></my-empty-data>
+        <app-empty-data></app-empty-data>
       </div>
     </div>
-    <div v-if="!hideBottom" class="my-search-panel-footer p-4">
+    <div v-if="!hideBottom" class="app-search-panel-footer p-4">
       <slot name="footer"></slot>
     </div>
   </div>

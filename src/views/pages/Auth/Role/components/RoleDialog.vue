@@ -1,18 +1,7 @@
 <template>
-  <MyDialog
-    :visible="visible"
-    width="450px"
-    :title="optType === 'add' ? '创建角色' : '修改角色'"
-    @close="closeHandler"
-    @confirm="confirmHandler"
-  >
-    <el-form
-      ref="formRef"
-      :model="form"
-      :rules="formRules"
-      label-width="110px"
-      :style="{ width: '100%' }"
-    >
+  <AppDialog :visible="visible" width="450px" :title="optType === 'add' ? '创建角色' : '修改角色'" @close="closeHandler"
+    @confirm="confirmHandler">
+    <el-form ref="formRef" :model="form" :rules="formRules" label-width="110px" :style="{ width: '100%' }">
       <el-form-item prop="name" label="角色名">
         <el-input v-model="form.name" placeholder="请输入角色名" />
       </el-form-item>
@@ -26,7 +15,7 @@
         <el-input-number v-model="form.sort" :min="0" class="!w-full" />
       </el-form-item>
     </el-form>
-  </MyDialog>
+  </AppDialog>
 </template>
 <script setup lang="ts">
 import { addRoleApi, editRoleApi } from '@/api/authority/role';
@@ -55,9 +44,9 @@ const confirmHandler = () => {
           props.optType === 'add'
             ? await addRoleApi(form.value)
             : await editRoleApi({
-                id: (props.row as RoleItemType).id,
-                ...form.value,
-              });
+              id: (props.row as RoleItemType).id,
+              ...form.value,
+            });
         if (data) {
           ElMessage.success(msg);
           emits('changeSuccess');

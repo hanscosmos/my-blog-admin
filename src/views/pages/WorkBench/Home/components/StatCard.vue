@@ -2,7 +2,7 @@
   <div class="wh-full p-4 flex flex-col justify-between">
     <div class="flex items-center justify-between">
       <div class="flex items-center">
-        <my-icon :name="currentType.icon" :size="16" class="mr-2 relative top-1px" />
+        <AppIcon :name="currentType.icon" :size="16" class="mr-2 relative top-1px" />
         <span class="text-base">{{ currentType.title }}</span>
       </div>
       <el-dropdown trigger="hover" @command="handleCommand">
@@ -34,7 +34,7 @@
         本{{ currentRangeName }}：<span>{{ statInfo.this }}{{ currentType.unit }}</span>
       </div>
       <div class="flex items-center">
-        <my-icon :name="statInfo.diff >= 0 ? 'up' : 'down'" class="mr-2"></my-icon>
+        <AppIcon :name="statInfo.diff >= 0 ? 'up' : 'down'" class="mr-2"></AppIcon>
         <span>
           <span class="font-bold">{{ Math.abs(statInfo.diff) }}</span>
           {{ currentType.unit }}

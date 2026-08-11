@@ -1,74 +1,40 @@
 <template>
   <div class="wh-full">
-    <MySearchPanel :data-exist="taskList.length > 0" :loading="loading">
+    <AppSearchPanel :data-exist="taskList.length > 0" :loading="loading">
       <template #header>
         <div class="w-full flex items-center gap-6">
           <span class="flex items-center gap-3 flex-shrink-0">
-            <my-tag size="large">任务状态</my-tag>
-            <el-select
-              v-model="searchParams.status"
-              placeholder="请选择"
-              class="!w-150px"
-              clearable
-              @change="filterUserTaskList"
-            >
-              <el-option
-                v-for="item in statusList"
-                :key="item.key"
-                :value="item.key"
-                :label="item.value"
-              ></el-option>
+            <app-tag size="large">任务状态</app-tag>
+            <el-select v-model="searchParams.status" placeholder="请选择" class="!w-150px" clearable
+              @change="filterUserTaskList">
+              <el-option v-for="item in statusList" :key="item.key" :value="item.key" :label="item.value"></el-option>
             </el-select>
           </span>
           <span class="flex items-center gap-3">
-            <my-tag size="large">任务优先级</my-tag>
-            <el-select
-              v-model="searchParams.priority"
-              placeholder="请选择"
-              class="!w-150px"
-              clearable
-              @change="filterUserTaskList"
-            >
-              <el-option
-                v-for="item in priorityList"
-                :key="item.key"
-                :value="item.key"
-                :label="item.value"
-              ></el-option>
+            <app-tag size="large">任务优先级</app-tag>
+            <el-select v-model="searchParams.priority" placeholder="请选择" class="!w-150px" clearable
+              @change="filterUserTaskList">
+              <el-option v-for="item in priorityList" :key="item.key" :value="item.key" :label="item.value"></el-option>
             </el-select>
           </span>
           <span class="flex items-center gap-3">
-            <my-tag size="large">截止日期</my-tag>
-            <el-date-picker
-              v-model="deadlineDateRange"
-              type="daterange"
-              class="!w-320px"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              range-separator="至"
-              clearable
-              @change="filterUserTaskList"
-            ></el-date-picker>
+            <app-tag size="large">截止日期</app-tag>
+            <el-date-picker v-model="deadlineDateRange" type="daterange" class="!w-320px"
+              value-format="YYYY-MM-DD HH:mm:ss" range-separator="至" clearable
+              @change="filterUserTaskList"></el-date-picker>
           </span>
         </div>
       </template>
       <template #footer>
-        <MyPagination
-          :total="total"
-          :page-number="pageConfig.pageNumber"
-          :page-size="pageConfig.pageSize"
-          @page-change="pageChangeHandler"
-        ></MyPagination>
+        <AppPagination :total="total" :page-number="pageConfig.pageNumber" :page-size="pageConfig.pageSize"
+          @page-change="pageChangeHandler"></AppPagination>
       </template>
       <ul class="list-content-wrapper p-4">
         <li v-for="item in taskList" :key="item.id">
-          <UserTaskCard
-            :task="item"
-            @edit="emits('edit', item)"
-            @delete="filterUserTaskList"
-          />
+          <UserTaskCard :task="item" @edit="emits('edit', item)" @delete="filterUserTaskList" />
         </li>
       </ul>
-    </MySearchPanel>
+    </AppSearchPanel>
   </div>
 </template>
 <script lang="ts" setup>

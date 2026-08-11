@@ -2,7 +2,7 @@
   <div class="recent-task flex flex-col wh-full">
     <div class="font-title text-xl p-4 flex items-center justify-between">
       <span class="flex items-center text-lg">
-        <my-icon name="calendar" class="mr-2" size="16"></my-icon>
+        <AppIcon name="calendar" class="mr-2" size="16"></AppIcon>
         最近事项
       </span>
       <el-dropdown trigger="hover" @command="handleCommand">
@@ -34,8 +34,13 @@
             <div class="mb-2 truncate text-sm font-bold">
               {{ item.title }}
             </div>
+            <div class="text-xs text-gray-500 mb-2">
 
-            <p class="text-xs line-clamp-2 text-gray-500 w-5/6">
+              {{ fmtTime(item.startTime as string, 'MM/DD HH:mm') }}&nbsp;至&nbsp;{{ fmtTime(item.endTime as string,
+                'MM/DD HH:mm') }}
+            </div>
+
+            <p class="text-xs line-clamp-2 text-gray-500 w-5/6" :title="item.description">
               {{ item.description }}
             </p>
           </div>

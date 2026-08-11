@@ -27,6 +27,6 @@ import MessageBtn from './components/MessageBtn/index.vue';
   align-items: center;
   justify-content: space-between;
   color: var(--sys-text-color);
-  background-color: var(--sys-bg-color);
+  background-color: var(--sys-box-bg-color);
 }
 </style>

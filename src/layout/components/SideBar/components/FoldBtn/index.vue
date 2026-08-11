@@ -1,10 +1,5 @@
 <template>
-  <MyIcon
-    :name="iconName"
-    :size="20"
-    class="hover-text"
-    @click="toggleFoldHandler"
-  ></MyIcon>
+  <AppIcon :name="iconName" :size="20" class="hover-text" @click="toggleFoldHandler"></AppIcon>
 </template>
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';

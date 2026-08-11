@@ -1,14 +1,7 @@
 <template>
-  <div class="my-dialog w-full h-full">
-    <el-dialog
-      :model-value="visible"
-      draggable
-      :title="title"
-      :width="width"
-      title-align="start"
-      :before-close="cancelHandler"
-      @close="cancelHandler"
-    >
+  <div class="app-dialog w-full h-full">
+    <el-dialog :model-value="visible" draggable :title="title" :width="width" title-align="start"
+      :before-close="cancelHandler" @close="cancelHandler">
       <template #header>
         <slot name="header"></slot>
       </template>
@@ -17,10 +10,8 @@
       </div>
       <template v-if="!hideFooter" #footer>
         <div class="flex items-center">
-          <my-button type="plain" class="mr-4" @click="cancelHandler"
-            >取消</my-button
-          >
-          <my-button type="default" @click="confirmHandler">确定</my-button>
+          <app-button type="plain" class="mr-4" @click="cancelHandler">取消</app-button>
+          <app-button type="default" @click="confirmHandler">确定</app-button>
         </div>
       </template>
     </el-dialog>
@@ -58,13 +49,16 @@ const confirmHandler = () => {
   display: flex;
   align-items: center;
 }
+
 :deep(.el-dialog__title) {
   font-size: 15px;
   font-family: YouSheBiaoTiHei, serif;
 }
+
 :deep(.el-dialog__body) {
   padding: 0 2rem;
 }
+
 :deep(.el-dialog__footer) {
   border-top: solid 1px var(--sys-border-color);
   padding: 1rem 0;
@@ -72,6 +66,7 @@ const confirmHandler = () => {
   align-items: center;
   justify-content: center;
 }
+
 :deep(.el-dialog) {
   padding: 0;
 }

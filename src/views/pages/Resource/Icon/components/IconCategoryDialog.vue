@@ -1,19 +1,8 @@
 vue
 <template>
-  <MyDialog
-    :visible="props.visible"
-    :title="dialogTitle"
-    width="400px"
-    @close="closeHandler"
-    @confirm="confirmHandler"
-  >
-    <el-form
-      ref="formRef"
-      :model="form"
-      :rules="categoryFormRules"
-      label-width="70px"
-      :style="{ width: '100%' }"
-    >
+  <AppDialog :visible="props.visible" :title="dialogTitle" width="400px" @close="closeHandler"
+    @confirm="confirmHandler">
+    <el-form ref="formRef" :model="form" :rules="categoryFormRules" label-width="70px" :style="{ width: '100%' }">
       <el-form-item prop="name" label="名称">
         <el-input v-model="form.name" placeholder="请输入名称" />
       </el-form-item>
@@ -24,7 +13,7 @@ vue
         <el-input-number v-model="form.sort" :min="0" class="!w-full" />
       </el-form-item>
     </el-form>
-  </MyDialog>
+  </AppDialog>
 </template>
 <script setup lang="ts">
 import {

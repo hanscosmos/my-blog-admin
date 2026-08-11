@@ -1,21 +1,8 @@
 <template>
-  <MyDialog
-    :visible="visible"
-    width="1000px"
-    :title="titleMap.get(optType) as string"
-    :hide-footer="optType === 'view'"
-    @close="closeHandler"
-    @confirm="confirmHandler"
-  >
-    <el-form
-      ref="formRef"
-      :model="form"
-      :rules="formRules"
-      label-width="120px"
-      :style="{ width: '100%' }"
-      :disabled="optType === 'view'"
-      inline
-    >
+  <AppDialog :visible="visible" width="1000px" :title="titleMap.get(optType) as string"
+    :hide-footer="optType === 'view'" @close="closeHandler" @confirm="confirmHandler">
+    <el-form ref="formRef" :model="form" :rules="formRules" label-width="120px" :style="{ width: '100%' }"
+      :disabled="optType === 'view'" inline>
       <el-row :gutter="32">
         <el-col :span="12">
           <el-form-item prop="summary" label="日志概要" class="w-full">
@@ -30,12 +17,7 @@
         <el-col :span="12">
           <el-form-item prop="status" label="日志状态" class="w-full">
             <el-select v-model="form.status" clearable>
-              <el-option
-                v-for="item in statusList"
-                :key="item.key"
-                :value="item.key"
-                :label="item.value"
-              >
+              <el-option v-for="item in statusList" :key="item.key" :value="item.key" :label="item.value">
               </el-option>
             </el-select>
           </el-form-item>
@@ -43,44 +25,21 @@
         <el-col :span="12">
           <el-form-item prop="releasedType" label="日志类型" class="w-full">
             <el-select v-model="form.releasedType" clearable>
-              <el-option
-                v-for="item in releasedTypeList"
-                :key="item.key"
-                :value="item.key"
-                :label="item.value"
-              >
+              <el-option v-for="item in releasedTypeList" :key="item.key" :value="item.key" :label="item.value">
               </el-option>
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item
-            prop="plannedReleaseDate"
-            label="计划发布时间"
-            class="w-full"
-          >
-            <el-date-picker
-              v-model="form.plannedReleaseDate"
-              type="date"
-              placeholder="选择日期"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              class="!w-full"
-            ></el-date-picker>
+          <el-form-item prop="plannedReleaseDate" label="计划发布时间" class="w-full">
+            <el-date-picker v-model="form.plannedReleaseDate" type="date" placeholder="选择日期"
+              value-format="YYYY-MM-DD HH:mm:ss" class="!w-full"></el-date-picker>
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item
-            prop="actualReleaseDate"
-            label="实际发布时间"
-            class="w-full"
-          >
-            <el-date-picker
-              v-model="form.actualReleaseDate"
-              type="date"
-              placeholder="选择日期"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              class="!w-full"
-            ></el-date-picker>
+          <el-form-item prop="actualReleaseDate" label="实际发布时间" class="w-full">
+            <el-date-picker v-model="form.actualReleaseDate" type="date" placeholder="选择日期"
+              value-format="YYYY-MM-DD HH:mm:ss" class="!w-full"></el-date-picker>
           </el-form-item>
         </el-col>
         <el-col :span="24">
@@ -93,22 +52,15 @@
         </el-col>
         <el-col :span="24">
           <el-form-item prop="details" label="更新详情" class="w-full">
-            <v-md-preview
-              v-if="optType === 'view'"
-              :text="form.details"
-              class="!h-300px"
-            ></v-md-preview>
-            <my-md-editor
-              v-else
+            <v-md-preview v-if="optType === 'view'" :text="form.details" class="!h-300px"></v-md-preview>
+            <app-md-editor v-else
               toolbar="undo clear | h bold italic | ul ol table hr  | link image | emoji tip todo-list"
-              ref="mdEditorRef"
-              class="!h-300px"
-            ></my-md-editor>
+              ref="mdEditorRef" class="!h-300px"></app-md-editor>
           </el-form-item>
         </el-col>
       </el-row>
     </el-form>
-  </MyDialog>
+  </AppDialog>
 </template>
 <script setup lang="ts">
 import { addUpdateLogApi, editUpdateLogApi } from '@/api/system/updateLog';
@@ -145,9 +97,9 @@ const confirmHandler = () => {
           props.optType === 'add'
             ? await addUpdateLogApi(form.value)
             : await editUpdateLogApi({
-                id: (props.row as UpdateLogItemType).id,
-                ...form.value,
-              });
+              id: (props.row as UpdateLogItemType).id,
+              ...form.value,
+            });
         if (data) {
           ElMessage.success(msg);
           emits('changeSuccess');

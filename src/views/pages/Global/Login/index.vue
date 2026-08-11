@@ -1,61 +1,32 @@
 <template>
   <div class="login-page xy-center h-full w-full">
     <div class="wrapper-item login-box rounded-xl flex">
-      <div
-        class="login-content flex-1"
-        :style="{ background: `url(${loginBg}) 100% 100% no-repeat` }"
-      >
+      <div class="login-content flex-1" :style="{ background: `url(${loginBg}) 100% 100% no-repeat` }">
         <div class="my-8 font-title text-2xl login-title">用户登录</div>
-        <el-form
-          ref="formRef"
-          :model="loginForm"
-          :rules="loginRules"
-          layout="vertical"
-          class="!w-2/3"
-          @keyup.enter="loginHandler"
-        >
+        <el-form ref="formRef" :model="loginForm" :rules="loginRules" layout="vertical" class="!w-2/3"
+          @keyup.enter="loginHandler">
           <el-form-item prop="username" class="!mb-6">
-            <el-input
-              v-model="loginForm.username"
-              placeholder="请输入用户名..."
-            />
+            <el-input v-model="loginForm.username" placeholder="请输入用户名..." />
           </el-form-item>
           <el-form-item field="password" class="!mb-6">
-            <el-input
-              v-model="loginForm.password"
-              show-password
-              placeholder="请输入密码..."
-            />
+            <el-input v-model="loginForm.password" show-password placeholder="请输入密码..." />
           </el-form-item>
           <el-form-item field="code" class="!mb-6">
             <div class="flex w-full">
-              <el-input
-                v-model="loginForm.code"
-                placeholder="请输入验证码..."
-                class="flex-1"
-              />
-              <my-tag
-                class="w-120px ml-4 xy-center font-beauty cursor-pointer"
-                size="large"
-                @click="getValidCode"
-                >{{ currentCode }}
-              </my-tag>
+              <el-input v-model="loginForm.code" placeholder="请输入验证码..." class="flex-1" />
+              <app-tag class="w-120px ml-4 xy-center font-beauty cursor-pointer" size="large" @click="getValidCode">{{
+                currentCode }}
+              </app-tag>
             </div>
           </el-form-item>
           <el-form-item>
-            <my-button
-              v-loading="loading"
-              type="default"
-              class="w-full"
-              size="large"
-              @click="loginHandler"
-              >登&nbsp;录
-            </my-button>
+            <app-button v-loading="loading" type="default" class="w-full" size="large" @click="loginHandler">登&nbsp;录
+            </app-button>
           </el-form-item>
         </el-form>
         <div class="flex items-center">
           游客账号
-          <MyButton type="text">一键登录</MyButton>
+          <AppButton type="text">一键登录</AppButton>
         </div>
       </div>
       <div class="login-intro flex-1"></div>

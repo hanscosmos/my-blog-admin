@@ -1,29 +1,13 @@
 <template>
-  <MyDialog
-    :visible="props.visible"
-    :title="dialogTitle"
-    width="500px"
-    @close="closeHandler"
-    @confirm="confirmHandler"
-  >
-    <el-form
-      ref="formRef"
-      :model="form"
-      :rules="formRules"
-      label-width="90px"
-      :style="{ width: '100%' }"
-    >
+  <AppDialog :visible="props.visible" :title="dialogTitle" width="500px" @close="closeHandler"
+    @confirm="confirmHandler">
+    <el-form ref="formRef" :model="form" :rules="formRules" label-width="90px" :style="{ width: '100%' }">
       <el-form-item prop="name" label="图标名称">
         <el-input v-model="form.name" placeholder="请输入图标名称" />
       </el-form-item>
       <el-form-item prop="category" label="图标类型">
         <el-select v-model="form.category" placeholder="请选择图标类型">
-          <el-option
-            v-for="item in props.categoryList"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-          />
+          <el-option v-for="item in props.categoryList" :key="item.id" :label="item.name" :value="item.id" />
         </el-select>
       </el-form-item>
       <el-form-item prop="source" label="图标来源">
@@ -38,15 +22,12 @@
       </el-form-item>
       <el-form-item prop="url" label="上传图标">
         <div class="w-100px h-100px">
-          <MyImageAutoUpload
-            type="icon"
-            :editable="optType === 'add'"
-            @upload-success="uploadSuccessHandler"
-          ></MyImageAutoUpload>
+          <AppImageAutoUpload type="icon" :editable="optType === 'add'" @upload-success="uploadSuccessHandler">
+          </AppImageAutoUpload>
         </div>
       </el-form-item>
     </el-form>
-  </MyDialog>
+  </AppDialog>
 </template>
 <script setup lang="ts">
 import { FormDialogPropsType, formRules, originalForm } from '../service.ts';

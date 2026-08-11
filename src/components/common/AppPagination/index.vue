@@ -1,29 +1,14 @@
 <template>
-  <div
-    class="wh-full my-pagination flex justify-between items-center"
-    :class="{ hideSize: hideSize, hideJump: hideJump }"
-  >
-    <span class="text-sm"
-      >总计<span class="text-blue-500 mx-2">{{ total }}</span
-      >条数据</span
-    >
-    <el-pagination
-      :current-page="pageNumber"
-      :page-size="pageSize"
-      :pager-count="pageCount"
-      :page-sizes="[10, 20, 30, 50]"
-      :background="background"
-      :small="isSmall"
-      :total="total"
-      layout="sizes, prev, pager, next, jumper"
-      @size-change="
+  <div class="wh-full app-pagination flex justify-between items-center"
+    :class="{ hideSize: hideSize, hideJump: hideJump }">
+    <span class="text-sm">总计<span class="text-blue-500 mx-2">{{ total }}</span>条数据</span>
+    <el-pagination :current-page="pageNumber" :page-size="pageSize" :pager-count="pageCount"
+      :page-sizes="[10, 20, 30, 50]" :background="background" :small="isSmall" :total="total"
+      layout="sizes, prev, pager, next, jumper" @size-change="
         (val: number) => pageChangeHandle({ pageNumber, pageSize: val })
-      "
-      @current-change="
+      " @current-change="
         (val: number) => pageChangeHandle({ pageNumber: val, pageSize })
-      "
-      :hide-on-single-page="hideOnePage"
-    ></el-pagination>
+      " :hide-on-single-page="hideOnePage"></el-pagination>
   </div>
 </template>
 <script setup lang="ts">

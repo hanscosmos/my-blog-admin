@@ -1,58 +1,23 @@
 <template>
-  <MyDialog
-    :visible="visible"
-    width="450px"
-    :title="optType === 'add' ? '创建用户' : '分配角色'"
-    @close="closeHandler"
-    @confirm="confirmHandler"
-  >
-    <el-form
-      ref="formRef"
-      :model="form"
-      :rules="formRules"
-      label-width="110px"
-      :style="{ width: '100%' }"
-    >
+  <AppDialog :visible="visible" width="450px" :title="optType === 'add' ? '创建用户' : '分配角色'" @close="closeHandler"
+    @confirm="confirmHandler">
+    <el-form ref="formRef" :model="form" :rules="formRules" label-width="110px" :style="{ width: '100%' }">
       <el-form-item prop="username" label="用户名">
-        <el-input
-          v-model="form.username"
-          :disabled="optType === 'edit'"
-          placeholder="请输入用户名"
-        />
+        <el-input v-model="form.username" :disabled="optType === 'edit'" placeholder="请输入用户名" />
       </el-form-item>
       <el-form-item prop="nickName" label="用户昵称">
-        <el-input
-          v-model="form.nickName"
-          :disabled="optType === 'edit'"
-          placeholder="请输入用户昵称"
-        />
+        <el-input v-model="form.nickName" :disabled="optType === 'edit'" placeholder="请输入用户昵称" />
       </el-form-item>
       <el-form-item prop="email" label="用户邮箱">
-        <el-input
-          v-model="form.email"
-          :disabled="optType === 'edit'"
-          :min="1"
-          class="!w-full"
-        />
+        <el-input v-model="form.email" :disabled="optType === 'edit'" :min="1" class="!w-full" />
       </el-form-item>
       <el-form-item prop="roleIds" label="用户角色">
-        <el-select
-          v-model="form.roleIds"
-          multiple
-          clearable
-          filterable
-          class="!w-280px"
-        >
-          <el-option
-            v-for="item in roleList"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-          ></el-option>
+        <el-select v-model="form.roleIds" multiple clearable filterable class="!w-280px">
+          <el-option v-for="item in roleList" :key="item.id" :label="item.name" :value="item.id"></el-option>
         </el-select>
       </el-form-item>
     </el-form>
-  </MyDialog>
+  </AppDialog>
 </template>
 <script setup lang="ts">
 import { ElMessage } from 'element-plus';
@@ -82,9 +47,9 @@ const confirmHandler = () => {
           props.optType === 'add'
             ? await addUserApi(form.value)
             : await setUserRoleApi({
-                userId: (props.row as UserItemType).id,
-                roleIds: form.value.roleIds,
-              });
+              userId: (props.row as UserItemType).id,
+              roleIds: form.value.roleIds,
+            });
         if (data) {
           ElMessage.success(msg);
           emits('changeSuccess');

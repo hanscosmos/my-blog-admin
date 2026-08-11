@@ -1,18 +1,7 @@
 <template>
-  <MyDialog
-    :visible="visible"
-    width="500px"
-    :title="optType === 'add' ? '创建文章专栏' : '修改文章专栏'"
-    @close="closeHandler"
-    @confirm="confirmHandler"
-  >
-    <el-form
-      ref="formRef"
-      :model="form"
-      :rules="formRules"
-      label-width="110px"
-      :style="{ width: '100%' }"
-    >
+  <AppDialog :visible="visible" width="500px" :title="optType === 'add' ? '创建文章专栏' : '修改文章专栏'" @close="closeHandler"
+    @confirm="confirmHandler">
+    <el-form ref="formRef" :model="form" :rules="formRules" label-width="110px" :style="{ width: '100%' }">
       <el-form-item prop="name" label="文章专栏名">
         <el-input v-model="form.name" placeholder="请输入文章专栏名" />
       </el-form-item>
@@ -20,26 +9,16 @@
         <el-input-number v-model="form.sort" :min="0" class="!w-full" />
       </el-form-item>
       <el-form-item prop="description" label="描述">
-        <el-input
-          v-model="form.description"
-          type="textarea"
-          rows="3"
-          placeholder="请输入文章专栏描述"
-        />
+        <el-input v-model="form.description" type="textarea" rows="3" placeholder="请输入文章专栏描述" />
       </el-form-item>
       <el-form-item prop="cover" label="文章专栏封面">
         <div class="w-full h-48">
-          <MyImageAutoUpload
-            type="article-column-cover"
-            desc="上传文章专栏封面"
-            editable
-            :default-url="form.cover"
-            @upload-success="uploadSuccessHandler"
-          ></MyImageAutoUpload>
+          <AppImageAutoUpload type="article-column-cover" desc="上传文章专栏封面" editable :default-url="form.cover"
+            @upload-success="uploadSuccessHandler"></AppImageAutoUpload>
         </div>
       </el-form-item>
     </el-form>
-  </MyDialog>
+  </AppDialog>
 </template>
 <script setup lang="ts">
 import {
@@ -75,9 +54,9 @@ const confirmHandler = () => {
           props.optType === 'add'
             ? await addArticleColumnApi(form.value)
             : await editArticleColumnApi({
-                ...(props.row as ArticleColumnItemType),
-                ...form.value,
-              });
+              ...(props.row as ArticleColumnItemType),
+              ...form.value,
+            });
         if (data) {
           ElMessage.success(msg);
           emits('changeSuccess');

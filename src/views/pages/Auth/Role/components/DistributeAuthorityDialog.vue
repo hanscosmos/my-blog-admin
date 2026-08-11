@@ -1,38 +1,20 @@
 <template>
   <div>
-    <MyDialog
-      :visible="dialogVisible"
-      :title="`权限分配-${currentRow.name}`"
-      width="650px"
-      @confirm="confirmHandle"
-      @close="closeHandle"
-    >
+    <AppDialog :visible="dialogVisible" :title="`权限分配-${currentRow.name}`" width="650px" @confirm="confirmHandle"
+      @close="closeHandle">
       <el-tabs v-model="activeTab">
         <el-tab-pane label="分配菜单权限" name="menu">
           <div class="h-64 overflow-auto">
-            <el-tree
-              ref="menuTreeRef"
-              check-strictly
-              node-key="id"
-              :data="menuTreeList"
-              :props="treeProps"
-              show-checkbox
-            />
+            <el-tree ref="menuTreeRef" check-strictly node-key="id" :data="menuTreeList" :props="treeProps"
+              show-checkbox />
           </div>
         </el-tab-pane>
         <el-tab-pane label="分配接口权限" name="api">
-          <el-transfer
-            v-model="selectedApiList"
-            :props="transferProps"
-            filterable
-            :titles="['所有接口', '已选中接口']"
-            filter-placeholder="输入关键词搜索"
-            :left-default-checked="defaultSelectedApiList"
-            :data="allApiList"
-          />
+          <el-transfer v-model="selectedApiList" :props="transferProps" filterable :titles="['所有接口', '已选中接口']"
+            filter-placeholder="输入关键词搜索" :left-default-checked="defaultSelectedApiList" :data="allApiList" />
         </el-tab-pane>
       </el-tabs>
-    </MyDialog>
+    </AppDialog>
   </div>
 </template>
 

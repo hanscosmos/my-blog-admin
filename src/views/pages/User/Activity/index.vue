@@ -1,28 +1,19 @@
 <template>
   <div class="user-task flex flex-col wh-full">
-    <div
-      class="header-wrapper flex items-center justify-between px-4 pb-4 border-bottom"
-    >
+    <div class="header-wrapper flex items-center justify-between px-4 pb-4 border-bottom">
       <span class="font-bold">个人动态</span>
     </div>
     <div class="content-wrapper flex-1 h-0 overflow-auto">
-      <MyInfiniteList
-        :loading="loading"
-        :items="dataList"
-        :finished="dataList.length === total"
-        @load-more="loadMoreHandler"
-      >
+      <AppInfiniteList :loading="loading" :items="dataList" :finished="dataList.length === total"
+        @load-more="loadMoreHandler">
         <template #item="{ item }">
-          <div
-            class="activity-item flex items-center justify-between p-4 text-gray-500"
-          >
-            <span
-              >于{{ dateDiff(item.createTime) }}前
+          <div class="activity-item flex items-center justify-between p-4 text-gray-500">
+            <span>于{{ dateDiff(item.createTime) }}前
               <span class="active-text">{{ item.action }}</span>
             </span>
           </div>
         </template>
-      </MyInfiniteList>
+      </AppInfiniteList>
     </div>
   </div>
 </template>

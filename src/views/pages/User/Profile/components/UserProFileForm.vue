@@ -1,27 +1,11 @@
 <template>
   <div class="">
-    <el-drawer
-      :model-value="visible"
-      :size="500"
-      :lock-scroll="false"
-      :before-close="closeDrawer"
-      title="个人信息设置"
-    >
-      <el-form
-        ref="formRef"
-        :model="formData"
-        :rules="formRules"
-        label-width="80px"
-      >
+    <el-drawer :model-value="visible" :size="500" :lock-scroll="false" :before-close="closeDrawer" title="个人信息设置">
+      <el-form ref="formRef" :model="formData" :rules="formRules" label-width="80px">
         <el-form-item label="头像">
           <div class="w-24 h-24 rounded-full">
-            <MyImageAutoUpload
-              type="avatar"
-              desc="上传头像"
-              editable
-              :default-url="formData.avatar"
-              @upload-success="uploadAvatarHandler"
-            ></MyImageAutoUpload>
+            <AppImageAutoUpload type="avatar" desc="上传头像" editable :default-url="formData.avatar"
+              @upload-success="uploadAvatarHandler"></AppImageAutoUpload>
           </div>
         </el-form-item>
         <el-form-item label="昵称" prop="nickName">
@@ -38,30 +22,18 @@
           <el-input v-model="formData.email" clearable></el-input>
         </el-form-item>
         <el-form-item label="个性签名" prop="talks">
-          <el-input
-            v-model="formData.talks"
-            type="textarea"
-            :rows="4"
-            clearable
-          ></el-input>
+          <el-input v-model="formData.talks" type="textarea" :rows="4" clearable></el-input>
         </el-form-item>
         <el-form-item label="背景封面">
           <div class="w-full h-48">
-            <MyImageAutoUpload
-              type="avatar"
-              desc="上传背景封面"
-              editable
-              :default-url="formData.bgCover"
-              @upload-success="uploadCoverHandler"
-            ></MyImageAutoUpload>
+            <AppImageAutoUpload type="avatar" desc="上传背景封面" editable :default-url="formData.bgCover"
+              @upload-success="uploadCoverHandler"></AppImageAutoUpload>
           </div>
         </el-form-item>
       </el-form>
       <div class="flex justify-end mt-4">
-        <my-button type="plain" @click="closeDrawer" class="mr-4"
-          >取消</my-button
-        >
-        <my-button type="default" @click="editUserInfoHandler">保存</my-button>
+        <app-button type="plain" @click="closeDrawer" class="mr-4">取消</app-button>
+        <app-button type="default" @click="editUserInfoHandler">保存</app-button>
       </div>
     </el-drawer>
   </div>

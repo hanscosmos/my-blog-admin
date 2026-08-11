@@ -95,7 +95,7 @@ src/
 │   ├── image/               #   图片资源
 │   └── svg/                 #   SVG 资源（波浪背景等）
 ├── components/              # 通用组件
-│   ├── common/              #   公共组件（MyTable, MyIcon, MyDialog 等）
+│   ├── common/              #   公共组件（MyTable, AppIcon, AppDialog 等）
 │   └── SelectImage/         #   图片选择器
 ├── config/                  # 配置文件（常量、Mock 数据、模块配置）
 ├── hooks/                   # 自定义 Composition API
@@ -143,7 +143,7 @@ src/
 
 #### 代码质量
 - **TypeScript 严格模式完善**：项目中存在 `any` 类型（如 `profile: any`），建议逐步替换为精确类型，启用 `strict: true` 全量检查
-- **组件命名规范化**：部分组件使用了 `My` 前缀（MyTable, MyIcon, MyDialog），建议统一为更具语义的名称（如 `AppTable`、`AppIcon`）
+- **组件命名规范化**：部分组件使用了 `My` 前缀（MyTable, AppIcon, AppDialog），建议统一为更具语义的名称（如 `AppTable`、`AppIcon`）
 - **路由守卫增强**：当前仅基于 `isLogin` 做简单登录校验，建议增加基于角色/权限的路由级控制（结合已实现的权限模块）
 
 #### 用户体验

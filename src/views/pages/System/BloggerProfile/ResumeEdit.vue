@@ -2,25 +2,18 @@
   <div class="resume-edit p-4">
     <div class="resume-upload-area">
       <div class="w-full h-48">
-        <MyImageAutoUpload
-          type="resume"
-          :desc="resumeFileName || '上传简历'"
-          editable
-          accept=".pdf"
-          :default-url="resumeFileUrl"
-          :before-upload="beforeUpload"
-          @upload-success="uploadSuccessHandler"
-        />
+        <AppImageAutoUpload type="resume" :desc="resumeFileName || '上传简历'" editable accept=".pdf"
+          :default-url="resumeFileUrl" :before-upload="beforeUpload" @upload-success="uploadSuccessHandler" />
       </div>
     </div>
 
     <div v-if="resumeFileUrl" class="flex gap-2 mt-3">
       <el-button type="primary" @click="previewResume">
-        <my-icon name="eyes" size="14" class="mr-1" />
+        <AppIcon name="eyes" size="14" class="mr-1" />
         预览
       </el-button>
       <el-button type="danger" @click="deleteResume">
-        <my-icon name="delete" size="14" class="mr-1" />
+        <AppIcon name="delete" size="14" class="mr-1" />
         删除
       </el-button>
     </div>
@@ -32,7 +25,7 @@
 </template>
 
 <script lang="ts" setup>
-import MyImageAutoUpload from '@/components/common/Upload/MyImageAutoUpload/index.vue';
+import AppImageAutoUpload from '@/components/common/Upload/AppImageAutoUpload/index.vue';
 
 const props = defineProps<{
   resumeFileUrl: string;

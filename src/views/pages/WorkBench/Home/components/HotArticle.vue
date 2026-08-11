@@ -2,24 +2,16 @@
   <div class="wh-full flex flex-col">
     <div class="font-title text-xl p-4 flex items-center justify-between">
       <span class="flex items-center text-lg">
-        <my-icon name="fire" class="mr-2" size="16"></my-icon>
+        <AppIcon name="fire" class="mr-2" size="16"></AppIcon>
         热门文章
       </span>
     </div>
     <el-scrollbar class="flex-1 h-0 overflow-auto">
       <ul>
-        <li
-          v-for="(item, index) in articleList"
-          :key="index"
-          class="px-5 py-4 flex items-center justify-between"
-        >
+        <li v-for="(item, index) in articleList" :key="index" class="px-5 py-4 flex items-center justify-between">
           <div class="flex items-center w-full">
             <div class="xy-center">
-              <img
-                v-if="item.authorAvatar"
-                :src="item.authorAvatar"
-                class="w-10 h-10 rounded-full mr-4"
-              />
+              <img v-if="item.authorAvatar" :src="item.authorAvatar" class="w-10 h-10 rounded-full mr-4" />
             </div>
 
             <div class="flex flex-col flex-1 w-0 h-10 justify-between">
@@ -31,11 +23,8 @@
               </span>
             </div>
             <div class="font-bold text-sm">
-              <div
-                class="wrapper-solid-item p-6px hover-wrapper"
-                @click="gotoArticleDetail(item.id)"
-              >
-                <my-icon name="right"></my-icon>
+              <div class="wrapper-solid-item p-6px hover-wrapper" @click="gotoArticleDetail(item.id)">
+                <AppIcon name="right"></AppIcon>
               </div>
             </div>
           </div>

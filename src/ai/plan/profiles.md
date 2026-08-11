@@ -13,9 +13,9 @@
 
 - **前端框架**: Vue 3 + TypeScript + Element Plus + UnoCSS
 - **路由**: Vue Router（基于 `src/router/modules/` 模块化路由）
-- **Markdown 编辑器**: `@kangc/v-md-editor`（项目已封装 `src/components/common/MyMdEditor`）
+- **Markdown 编辑器**: `@kangc/v-md-editor`（项目已封装 `src/components/common/AppMdEditor`）
 - **API 层**: axios 封装在 `src/utils/request`，API 按模块组织在 `src/api/` 下
-- **图片上传**: 已有 `MyImageAutoUpload` 组件
+- **图片上传**: 已有 `AppImageAutoUpload` 组件
 - **数据库**: 后端独立项目（本仓库为纯前端 admin），数据库由后端管理
 - **权限**: 基于角色的权限控制，超级管理员角色可访问管理入口
 
@@ -131,7 +131,7 @@ export type BloggerProfileType = BloggerProfileFormType & {
 │                                                 │
 │  Tab1 - 基本介绍:                                │
 │    ┌───────────────────────────────────────┐    │
-│    │  [Markdown 编辑器 (MyMdEditor)]        │    │
+│    │  [Markdown 编辑器 (AppMdEditor)]        │    │
 │    │  支持实时预览，图片上传                  │    │
 │    └───────────────────────────────────────┘    │
 │    [保存]                                        │
@@ -176,7 +176,7 @@ src/views/pages/User/Profile/pages/BloggerProfile/
 
 #### IntroductionEdit.vue
 
-- 使用项目已有的 `MyMdEditor` 组件
+- 使用项目已有的 `AppMdEditor` 组件
 - 支持 markdown 编辑 + 预览
 - 图片上传复用已有的 `uploadFile` 逻辑
 - 底部放「保存」按钮，调用 `updateBloggerProfileApi`
@@ -184,7 +184,7 @@ src/views/pages/User/Profile/pages/BloggerProfile/
 #### ContactEdit.vue
 
 - 使用 `el-form` + `el-input`
-- 每个社交账号输入框前加 icon 前缀（使用 `@icon-park/vue-next` 或 `MyIcon`）
+- 每个社交账号输入框前加 icon 前缀（使用 `@icon-park/vue-next` 或 `AppIcon`）
 - URL 类型字段加格式校验
 
 #### AssetsEdit.vue
@@ -229,7 +229,7 @@ src/views/pages/User/Profile/pages/BloggerProfile/
 
 1. **定义类型和 API** — `src/api/blogger/type.ts` + `src/api/blogger/index.ts`
 2. **创建主页面框架** — `BloggerProfile/index.vue`，使用 `el-tabs` 分四个 tab
-3. **实现基本介绍编辑** — `IntroductionEdit.vue`，嵌入 `MyMdEditor`
+3. **实现基本介绍编辑** — `IntroductionEdit.vue`，嵌入 `AppMdEditor`
 4. **实现联系方式编辑** — `ContactEdit.vue`，表单输入 + 校验
 5. **实现资产信息编辑** — `AssetsEdit.vue`，动态列表
 6. **实现简历上传** — `ResumeEdit.vue`，文件上传 + 预览

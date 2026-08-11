@@ -1,18 +1,7 @@
 <template>
-  <MyDialog
-    :visible="visible"
-    width="500px"
-    :title="optType === 'add' ? '创建文章分类' : '修改文章分类'"
-    @close="closeHandler"
-    @confirm="confirmHandler"
-  >
-    <el-form
-      ref="formRef"
-      :model="form"
-      :rules="formRules"
-      label-width="110px"
-      :style="{ width: '100%' }"
-    >
+  <AppDialog :visible="visible" width="500px" :title="optType === 'add' ? '创建文章分类' : '修改文章分类'" @close="closeHandler"
+    @confirm="confirmHandler">
+    <el-form ref="formRef" :model="form" :rules="formRules" label-width="110px" :style="{ width: '100%' }">
       <el-form-item prop="name" label="文章分类名">
         <el-input v-model="form.name" placeholder="请输入文章分类名" />
       </el-form-item>
@@ -26,15 +15,10 @@
         <el-input-number v-model="form.sort" :min="0" class="!w-full" />
       </el-form-item>
       <el-form-item prop="description" label="描述">
-        <el-input
-          v-model="form.description"
-          type="textarea"
-          :rows="3"
-          placeholder="请输入文章分类描述"
-        />
+        <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入文章分类描述" />
       </el-form-item>
     </el-form>
-  </MyDialog>
+  </AppDialog>
 </template>
 <script setup lang="ts">
 import {
@@ -73,8 +57,8 @@ const confirmHandler = () => {
           props.optType === 'add'
             ? await addArticleCategoryApi(form.value)
             : await editArticleCategoryApi({
-                ...rest,
-              });
+              ...rest,
+            });
         if (data) {
           ElMessage.success(msg);
           emits('changeSuccess');

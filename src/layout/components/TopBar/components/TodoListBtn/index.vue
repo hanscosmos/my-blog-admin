@@ -1,7 +1,7 @@
 <template>
   <div class="shortcut-icon flex items-center gap-4">
     <div title="待办事项" class="hover-text">
-      <MyIcon name="list" :size="14"></MyIcon>
+      <AppIcon name="list" :size="14"></AppIcon>
     </div>
   </div>
 </template>

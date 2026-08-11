@@ -1,11 +1,8 @@
 <template>
   <div class="shortcut-icon flex items-center gap-4">
-    <div
-      title="发表文章"
-      class="flex items-center wrapper-solid-item trigger-btn p-2 rounded-lg cursor-pointer"
-      @click="gotoReleaseArticle"
-    >
-      <MyIcon name="pencil" color="#fff" :size="14"></MyIcon>
+    <div title="发表文章" class="flex items-center wrapper-solid-item trigger-btn p-2 rounded-lg cursor-pointer"
+      @click="gotoReleaseArticle">
+      <AppIcon name="pencil" color="#fff" :size="14"></AppIcon>
     </div>
   </div>
 </template>

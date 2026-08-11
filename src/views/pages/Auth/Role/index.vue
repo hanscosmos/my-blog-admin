@@ -1,32 +1,18 @@
 <template>
   <div class="role-manage wh-full">
-    <MySearchPanel
-      :data-exist="roleList.length > 0"
-      :loading="loading"
-      hide-bottom
-    >
+    <AppSearchPanel :data-exist="roleList.length > 0" :loading="loading" hide-bottom>
       <template #header>
         <div class="flex">
-          <my-button @click="openDialog('add')">
-            <my-icon name="add" class="mr-2"></my-icon> 创建角色</my-button
-          >
+          <app-button @click="openDialog('add')">
+            <AppIcon name="add" class="mr-2"></AppIcon> 创建角色
+          </app-button>
         </div>
       </template>
       <div class="p-4">
         <el-table :data="roleList" size="large" stripe border>
-          <el-table-column
-            v-for="item in columnList"
-            :key="item.prop"
-            :prop="item.prop"
-            :label="item.title"
-            align="center"
-          ></el-table-column>
-          <el-table-column
-            label="操作"
-            fixed="right"
-            width="200"
-            align="center"
-          >
+          <el-table-column v-for="item in columnList" :key="item.prop" :prop="item.prop" :label="item.title"
+            align="center"></el-table-column>
+          <el-table-column label="操作" fixed="right" width="200" align="center">
             <template #default="{ row }">
               <div flex w-full class="justify-center">
                 <el-button link type="primary" @click="openDialog('edit', row)">
@@ -35,12 +21,7 @@
                 <el-button link type="danger" @click="deleteRoleHandler(row)">
                   删除
                 </el-button>
-                <el-button
-                  link
-                  type="info"
-                  plain
-                  @click="deleteRoleHandler(row)"
-                >
+                <el-button link type="info" plain @click="deleteRoleHandler(row)">
                   权限分配
                 </el-button>
               </div>
@@ -48,16 +29,11 @@
           </el-table-column>
         </el-table>
       </div>
-    </MySearchPanel>
+    </AppSearchPanel>
 
     <div v-if="formDialogProps.visible">
-      <RoleDialog
-        :visible="formDialogProps.visible"
-        :opt-type="formDialogProps.optType"
-        :row="formDialogProps.row"
-        @close="closeDialog"
-        @change-success="getRoleList"
-      ></RoleDialog>
+      <RoleDialog :visible="formDialogProps.visible" :opt-type="formDialogProps.optType" :row="formDialogProps.row"
+        @close="closeDialog" @change-success="getRoleList"></RoleDialog>
     </div>
   </div>
 </template>

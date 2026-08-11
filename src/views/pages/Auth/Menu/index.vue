@@ -1,24 +1,17 @@
 <template>
   <div class="menu-manage wh-full">
-    <MySearchPanel :data-exist="menuTreeList.length > 0" :loading="loading">
+    <AppSearchPanel :data-exist="menuTreeList.length > 0" :loading="loading">
       <template #header>
         <div class="flex">
-          <my-button @click="addDrawerHandler()">
-            <my-icon name="add" class="mr-2"></my-icon>
+          <app-button @click="addDrawerHandler()">
+            <AppIcon name="add" class="mr-2"></AppIcon>
             新增菜单
-          </my-button>
+          </app-button>
         </div>
       </template>
       <div class="p-4">
-        <el-table
-          :data="menuTreeList"
-          style="width: 100%; margin-bottom: 20px"
-          row-key="id"
-          size="large"
-          stripe
-          border
-          default-expand-all
-        >
+        <el-table :data="menuTreeList" style="width: 100%; margin-bottom: 20px" row-key="id" size="large" stripe border
+          default-expand-all>
           <el-table-column prop="name" label="名称" align="center" />
           <el-table-column prop="route" label="路由名称" align="center" />
           <el-table-column prop="code" label="菜单码" align="center" />
@@ -30,12 +23,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column
-            label="操作"
-            fixed="right"
-            width="250"
-            align="center"
-          >
+          <el-table-column label="操作" fixed="right" width="250" align="center">
             <template #default="{ row }">
               <div flex w-full class="justify-center">
                 <el-button link type="primary" @click="addDrawerHandler(row)">
@@ -50,16 +38,11 @@
           </el-table-column>
         </el-table>
       </div>
-    </MySearchPanel>
+    </AppSearchPanel>
 
-    <MenuFormDrawer
-      ref="drawerRef"
-      :current-menu-item="drawerProps.currentMenuItem"
-      :opt-type="drawerProps.optType"
-      :father-menu-item="drawerProps.fatherMenuItem"
-      @add-success="addSuccessHandler"
-      @close="closeHandler"
-    ></MenuFormDrawer>
+    <MenuFormDrawer ref="drawerRef" :current-menu-item="drawerProps.currentMenuItem" :opt-type="drawerProps.optType"
+      :father-menu-item="drawerProps.fatherMenuItem" @add-success="addSuccessHandler" @close="closeHandler">
+    </MenuFormDrawer>
   </div>
 </template>
 <script lang="ts" setup>

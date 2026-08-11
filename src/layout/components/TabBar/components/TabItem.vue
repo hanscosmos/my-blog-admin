@@ -3,10 +3,10 @@
     <el-dropdown trigger="contextmenu" placement="bottom-start" :hide-on-click="true">
       <span ref="tabItemRef" class="tag-item" :class="{ 'strong-active-item': currentTab.id === item.id }"
         @click="selectTabItem(item)">
-        <MyIcon :name="item.icon" class="mr-2"></MyIcon>
+        <AppIcon :name="item.icon" class="mr-2"></AppIcon>
         <span class="flex-1">{{ item.name }}</span>
-        <MyIcon v-if="item.id !== 'Home'" name="close" size="10" class="close-icon hover-weak-wrapper p-2px rounded-sm"
-          @click.stop="closeTag(item)"></MyIcon>
+        <AppIcon v-if="item.id !== 'Home'" name="close" size="10" class="close-icon hover-weak-wrapper p-2px rounded-sm"
+          @click.stop="closeTag(item)"></AppIcon>
       </span>
       <template #dropdown>
         <el-dropdown-menu>
@@ -244,23 +244,23 @@ onMounted(() => {
 
   // ── Close icon ──
   .close-icon,
-  .hover-weak-wrapper>.my-icon {
+  .hover-weak-wrapper>.AppIcon {
     opacity: 0.4;
     transition: opacity 0.15s ease, background-color 0.15s ease;
   }
 
   &:hover .close-icon,
-  &:hover>.my-icon {
+  &:hover>.AppIcon {
     opacity: 0.75;
   }
 
   &.strong-active-item .close-icon,
-  &.strong-active-item>.my-icon {
+  &.strong-active-item>.AppIcon {
     opacity: 0.55;
   }
 
   &.strong-active-item:hover .close-icon,
-  &.strong-active-item:hover>.my-icon {
+  &.strong-active-item:hover>.AppIcon {
     opacity: 0.85;
   }
 

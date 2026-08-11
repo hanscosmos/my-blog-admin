@@ -1,15 +1,10 @@
 <template>
   <div class="contact-edit p-4">
-    <el-form
-      :model="form"
-      label-width="80px"
-      label-position="left"
-      class="max-w-500px"
-    >
+    <el-form :model="form" label-width="80px" label-position="left" class="max-w-500px">
       <el-form-item label="联系电话">
         <el-input v-model="form.phone" placeholder="请输入联系电话" clearable>
           <template #prefix>
-            <my-icon name="phone-telephone" size="16" />
+            <AppIcon name="phone-telephone" size="16" />
           </template>
         </el-input>
       </el-form-item>
@@ -17,7 +12,7 @@
       <el-form-item label="微信号">
         <el-input v-model="form.wechat" placeholder="请输入微信号" clearable>
           <template #prefix>
-            <my-icon name="chat" size="16" />
+            <AppIcon name="chat" size="16" />
           </template>
         </el-input>
       </el-form-item>
@@ -25,31 +20,23 @@
       <el-form-item label="QQ号">
         <el-input v-model="form.qq" placeholder="请输入QQ号" clearable>
           <template #prefix>
-            <my-icon name="qq" size="16" />
+            <AppIcon name="qq" size="16" />
           </template>
         </el-input>
       </el-form-item>
 
       <el-form-item label="GitHub">
-        <el-input
-          v-model="form.github"
-          placeholder="请输入GitHub主页URL"
-          clearable
-        >
+        <el-input v-model="form.github" placeholder="请输入GitHub主页URL" clearable>
           <template #prefix>
-            <my-icon name="github-one" size="16" />
+            <AppIcon name="github-one" size="16" />
           </template>
         </el-input>
       </el-form-item>
 
       <el-form-item label="微博">
-        <el-input
-          v-model="form.weibo"
-          placeholder="请输入微博主页URL"
-          clearable
-        >
+        <el-input v-model="form.weibo" placeholder="请输入微博主页URL" clearable>
           <template #prefix>
-            <my-icon name="weibo" size="16" />
+            <AppIcon name="weibo" size="16" />
           </template>
         </el-input>
       </el-form-item>
@@ -57,7 +44,7 @@
       <el-form-item label="个人网站">
         <el-input v-model="form.site" placeholder="请输入个人网站URL" clearable>
           <template #prefix>
-            <my-icon name="homepage" size="16" />
+            <AppIcon name="homepage" size="16" />
           </template>
         </el-input>
       </el-form-item>

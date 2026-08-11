@@ -1,8 +1,6 @@
 <template>
   <div class="user-task wh-full flex flex-col">
-    <div
-      class="header-wrapper px-4 pb-4 border-bottom flex items-center justify-between"
-    >
+    <div class="header-wrapper px-4 pb-4 border-bottom flex items-center justify-between">
       <el-segmented v-model="pageStatus" :options="tabList" size="default">
         <template #default="{ item }">
           <span>{{ (item as any).label }}</span>
@@ -11,25 +9,19 @@
       <el-text v-if="pageStatus === 'dashboard'">
         面板默认展示最近三天的已完成任务事项以及所有的待办和进行中的事项。
       </el-text>
-      <my-button @click="openDialog('add')">
-        <my-icon name="add" class="mr-1"></my-icon>
-        新增事项</my-button
-      >
+      <app-button @click="openDialog('add')">
+        <AppIcon name="add" class="mr-1"></AppIcon>
+        新增事项
+      </app-button>
     </div>
     <div class="content-wrapper flex-1 h-0 overflow-auto">
       <component :is="currentComponent"></component>
     </div>
   </div>
   <div v-if="formDialogProps.visible">
-    <UserTaskFormDialog
-      :visible="formDialogProps.visible"
-      :opt-type="formDialogProps.optType"
-      :row="formDialogProps.row"
-      :status-list="statusList"
-      :priority-list="priorityList"
-      @close="closeDialog"
-      @change-success="changeSuccessHandler"
-    >
+    <UserTaskFormDialog :visible="formDialogProps.visible" :opt-type="formDialogProps.optType"
+      :row="formDialogProps.row" :status-list="statusList" :priority-list="priorityList" @close="closeDialog"
+      @change-success="changeSuccessHandler">
     </UserTaskFormDialog>
   </div>
 </template>

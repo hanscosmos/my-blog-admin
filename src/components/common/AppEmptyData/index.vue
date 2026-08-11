@@ -1,5 +1,5 @@
 <template>
-  <div class="my-empty-data wh-full xy-center">
+  <div class="app-empty-data wh-full xy-center">
     <el-empty :description="desc" :size="size"></el-empty>
   </div>
 </template>

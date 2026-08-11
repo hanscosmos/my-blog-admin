@@ -1,54 +1,33 @@
 <template>
   <div class="my-article flex flex-col wh-full">
-    <div
-      class="header-wrapper flex items-center justify-between px-4 pb-4 border-bottom"
-    >
+    <div class="header-wrapper flex items-center justify-between px-4 pb-4 border-bottom">
       <span class="font-bold">我的创作（{{ total }}）</span>
       <el-segmented v-model="currentLayout" :options="options">
         <template #default="{ item }">
           <div class="xy-center">
-            <my-icon :name="(item as any).icon" size="16"> </my-icon>
+            <AppIcon :name="(item as any).icon" size="16"> </AppIcon>
           </div>
         </template>
       </el-segmented>
     </div>
     <div v-loading="loading" class="flex-1 h-0 p-4 overflow-auto">
       <div v-if="currentLayout === 'list'" class="flex flex-col">
-        <div
-          class="article-item-wrapper border-bottom"
-          v-for="item in articleList"
-          :key="item.id"
-        >
-          <ArticleListItem
-            :article="item"
-            @delete="deleteArticleHandler"
-            @edit="gotoUpdateArticle"
-            @view="gotoArticleDetail"
-          ></ArticleListItem>
+        <div class="article-item-wrapper border-bottom" v-for="item in articleList" :key="item.id">
+          <ArticleListItem :article="item" @delete="deleteArticleHandler" @edit="gotoUpdateArticle"
+            @view="gotoArticleDetail"></ArticleListItem>
         </div>
       </div>
       <ul v-else class="article-list-wrapper">
-        <li
-          class="article-item-wrapper"
-          v-for="item in articleList"
-          :key="item.id"
-        >
-          <ArticleCard
-            :article="item"
-            @delete="deleteArticleHandler"
-            @edit="gotoUpdateArticle"
-            @view="gotoArticleDetail"
-          ></ArticleCard>
+        <li class="article-item-wrapper" v-for="item in articleList" :key="item.id">
+          <ArticleCard :article="item" @delete="deleteArticleHandler" @edit="gotoUpdateArticle"
+            @view="gotoArticleDetail">
+          </ArticleCard>
         </li>
       </ul>
     </div>
     <div class="footer-wrapper flex-center p-4">
-      <MyPagination
-        :total="total"
-        :page-number="pageConfig.pageNumber"
-        :page-size="pageConfig.pageSize"
-        @page-change="pageChangeHandler"
-      ></MyPagination>
+      <AppPagination :total="total" :page-number="pageConfig.pageNumber" :page-size="pageConfig.pageSize"
+        @page-change="pageChangeHandler"></AppPagination>
     </div>
   </div>
 </template>

@@ -1,28 +1,16 @@
 <template>
   <div class="article-item overflow-hidden relative flex p-4 h-36">
-    <img
-      :src="article.cover || ArticleCover"
-      :alt="article.title"
-      class="h-full w-40 object-cover"
-    />
+    <img :src="article.cover || ArticleCover" :alt="article.title" class="h-full w-40 object-cover" />
     <div class="px-4 relative">
-      <h2
-        class="text-xl font-bold text-gray-800 dark:text-white mb-3 flex items-center hover-text"
-        @click="emits('view', article.id)"
-      >
-        <MyTag
-          :name="article.status === 'draft' ? '草稿' : '正文'"
-          :color="article.status === 'draft' ? 'gray' : ''"
-        >
-        </MyTag>
+      <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-3 flex items-center hover-text"
+        @click="emits('view', article.id)">
+        <AppTag :name="article.status === 'draft' ? '草稿' : '正文'" :color="article.status === 'draft' ? 'gray' : ''">
+        </AppTag>
         <span class="ml-2 truncate" :title="article.title">{{
           article.title
         }}</span>
       </h2>
-      <p
-        v-if="article.abstract"
-        class="mb-2 text-sm leading-5 line-clamp-2 h-10 text-gray-500"
-      >
+      <p v-if="article.abstract" class="mb-2 text-sm leading-5 line-clamp-2 h-10 text-gray-500">
         {{ article.abstract }}
       </p>
       <p v-else class="mb-2 h-10 text-sm text-gray-500">暂无摘要</p>
@@ -34,22 +22,12 @@
     </div>
 
     <div class="option-btn flex items-center absolute top-4 right-4">
-      <el-button
-        v-if="isAuthor"
-        link
-        type="primary"
-        @click="emits('edit', article.id)"
-      >
+      <el-button v-if="isAuthor" link type="primary" @click="emits('edit', article.id)">
         编辑
       </el-button>
 
       <el-divider v-if="isAuthor" direction="vertical"></el-divider>
-      <el-button
-        v-if="isAuthor"
-        link
-        type="danger"
-        @click="emits('delete', article.id)"
-      >
+      <el-button v-if="isAuthor" link type="danger" @click="emits('delete', article.id)">
         删除
       </el-button>
     </div>
@@ -85,6 +63,7 @@ const isAuthor = computed(() => {
 .option-btn {
   display: none;
 }
+
 .article-item {
   &:hover {
     .option-btn {

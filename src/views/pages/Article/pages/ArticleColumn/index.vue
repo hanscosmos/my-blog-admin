@@ -1,49 +1,26 @@
 <template>
   <div class="article-column wh-full">
-    <MySearchPanel :data-exist="dataList.length > 0" :loading="loading">
+    <AppSearchPanel :data-exist="dataList.length > 0" :loading="loading">
       <template #header>
         <div class="flex items-center">
-          <el-input
-            v-model="searchParams.name"
-            class="!w-280px mr-4"
-            placeholder="请输入关键词搜索"
-            clearable
-            @change="filterDataListHandler"
-          ></el-input>
-          <my-button @click="openDialog('add')"
-            ><MyIcon name="add" class="mr-2"></MyIcon>新增专栏</my-button
-          >
+          <el-input v-model="searchParams.name" class="!w-280px mr-4" placeholder="请输入关键词搜索" clearable
+            @change="filterDataListHandler"></el-input>
+          <app-button @click="openDialog('add')">
+            <AppIcon name="add" class="mr-2"></AppIcon>新增专栏
+          </app-button>
         </div>
       </template>
       <div class="p-4">
-        <el-table
-          :data="dataList"
-          style="width: 100%"
-          row-key="id"
-          size="large"
-          border
-          stripe
-          default-expand-all
-        >
+        <el-table :data="dataList" style="width: 100%" row-key="id" size="large" border stripe default-expand-all>
           <el-table-column label="专栏封面" align="center">
             <template #default="{ row }">
               <img v-if="row.cover" :src="row.cover" class="w-50px h-40px" />
             </template>
           </el-table-column>
-          <el-table-column
-            v-for="item in columnList"
-            :key="item.prop"
-            :prop="item.prop"
-            :label="item.title"
-            align="center"
-          ></el-table-column>
+          <el-table-column v-for="item in columnList" :key="item.prop" :prop="item.prop" :label="item.title"
+            align="center"></el-table-column>
 
-          <el-table-column
-            label="操作"
-            fixed="right"
-            width="250"
-            align="center"
-          >
+          <el-table-column label="操作" fixed="right" width="250" align="center">
             <template #default="{ row }">
               <div flex w-full class="justify-center">
                 <el-button link type="primary" @click="openDialog('edit', row)">
@@ -56,23 +33,14 @@
         </el-table>
       </div>
       <template #footer>
-        <MyPagination
-          :total="total"
-          :page-number="pageConfig.pageNumber"
-          :page-size="pageConfig.pageSize"
-          @page-change="pageChangeHandler"
-        ></MyPagination>
+        <AppPagination :total="total" :page-number="pageConfig.pageNumber" :page-size="pageConfig.pageSize"
+          @page-change="pageChangeHandler"></AppPagination>
       </template>
-    </MySearchPanel>
+    </AppSearchPanel>
   </div>
   <div v-if="formDialogProps.visible">
-    <ColumnDialog
-      :visible="formDialogProps.visible"
-      :opt-type="formDialogProps.optType"
-      :row="formDialogProps.row"
-      @change-success="filterDataListHandler"
-      @close="closeDialog"
-    ></ColumnDialog>
+    <ColumnDialog :visible="formDialogProps.visible" :opt-type="formDialogProps.optType" :row="formDialogProps.row"
+      @change-success="filterDataListHandler" @close="closeDialog"></ColumnDialog>
   </div>
 </template>
 <script lang="ts" setup>

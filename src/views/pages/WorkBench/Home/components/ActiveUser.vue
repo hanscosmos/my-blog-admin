@@ -2,7 +2,7 @@
   <div class="wh-full flex flex-col">
     <div class="font-title text-xl p-4 flex items-center justify-between">
       <span class="flex items-center text-lg">
-        <my-icon name="ranking" class="mr-2" size="16"></my-icon>
+        <AppIcon name="ranking" class="mr-2" size="16"></AppIcon>
         活跃用户
       </span>
     </div>

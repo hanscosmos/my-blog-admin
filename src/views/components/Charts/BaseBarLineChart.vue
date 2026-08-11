@@ -3,7 +3,7 @@
     <!-- 顶部选择 -->
     <div class="flex items-center justify-between mb-4 gap-4">
       <span class="font-title text-lg flex items-center">
-        <my-icon name="trend" :size="16" class="mr-2"></my-icon>
+        <AppIcon name="trend" :size="16" class="mr-2"></AppIcon>
         {{ title }}
       </span>
       <div class="flex items-center">
@@ -11,11 +11,11 @@
         <el-radio-group v-if="showToggle" v-model="currentChartType"
           @change="$emit('update:chartType', currentChartType)" size="default">
           <el-radio-button label="bar">
-            <my-icon name="chart-histogram" :size="14" class="xy-center"></my-icon>
+            <AppIcon name="chart-histogram" :size="14" class="xy-center"></AppIcon>
 
           </el-radio-button>
           <el-radio-button label="line">
-            <my-icon name="chart-line" :size="14" class="xy-center"></my-icon>
+            <AppIcon name="chart-line" :size="14" class="xy-center"></AppIcon>
           </el-radio-button>
         </el-radio-group>
 
@@ -35,7 +35,7 @@
     </div>
 
     <!-- 图表 -->
-    <MyEcharts :option="option as EChartsOption" class="flex-1 h-0 w-full" />
+    <AppEcharts :option="option as EChartsOption" class="flex-1 h-0 w-full" />
   </div>
 </template>
 

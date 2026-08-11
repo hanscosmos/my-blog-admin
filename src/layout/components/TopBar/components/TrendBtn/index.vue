@@ -1,7 +1,7 @@
 <template>
   <div class="shortcut-icon flex items-center gap-4">
     <div title="动态" class="hover-text">
-      <MyIcon name="time" :size="14"></MyIcon>
+      <AppIcon name="time" :size="14"></AppIcon>
     </div>
   </div>
 </template>

@@ -1,22 +1,13 @@
 <template>
   <div class="p-4 h-full">
     <el-table :data="categoryList" height="100%" size="large" border stripe>
-      <el-table-column
-        v-for="item in categoryColumnList"
-        :key="item.prop"
-        :prop="item.prop"
-        :label="item.title"
-        align="center"
-      ></el-table-column>
+      <el-table-column v-for="item in categoryColumnList" :key="item.prop" :prop="item.prop" :label="item.title"
+        align="center"></el-table-column>
       <el-table-column fixed="right" width="200" align="center">
         <template #header>
           <div class="xy-center">
             <span>操作</span>
-            <MyIcon
-              name="plus"
-              class="hover-text ml-2"
-              @click="openDialog('add')"
-            ></MyIcon>
+            <AppIcon name="plus" class="hover-text ml-2" @click="openDialog('add')"></AppIcon>
           </div>
         </template>
         <template #default="{ row }">
@@ -29,13 +20,8 @@
         </template>
       </el-table-column>
     </el-table>
-    <IconCategoryDialog
-      :visible="formDialogProps.visible"
-      :row="formDialogProps.row"
-      :opt-type="formDialogProps.optType"
-      @close="closeDialog"
-      @change-success="getCategoryList"
-    ></IconCategoryDialog>
+    <IconCategoryDialog :visible="formDialogProps.visible" :row="formDialogProps.row"
+      :opt-type="formDialogProps.optType" @close="closeDialog" @change-success="getCategoryList"></IconCategoryDialog>
   </div>
 </template>
 <script lang="ts" setup>
