@@ -1,10 +1,10 @@
 <template>
-  <div v-if="visible" ref="parentRef" class="h-12 tab-bar flex flex-nowrap items-center relative border-bottom py-2">
+  <div v-show="visible" ref="parentRef" class="h-12 tab-bar flex flex-nowrap items-center relative border-bottom py-2">
     <div v-if="isShowBtn" class="scroll-left hover-text border-right" title="向左滑动" @click="clickLeftHandle">
       <icon-left theme="outline" size="16" class="flex items-center" />
     </div>
     <div ref="scrollRef" class="tab-bar-wrapper overflow-hidden relative">
-      <TransitionGroup name="list" tag="ul" class="flex flex-no-wrap items-end">
+      <TransitionGroup ref="scrollRef" name="list" tag="ul" class="flex flex-no-wrap items-end">
         <TabItem v-for="(item, ind) in tabList" :key="item.id" :item="item" :ind="ind"></TabItem>
       </TransitionGroup>
     </div>
@@ -59,12 +59,11 @@ const { scrollRef, parentRef, isShowBtn, clickLeftHandle, clickRightHandle } =
 
   &-wrapper {
     scroll-behavior: smooth;
-    overflow-x: auto;
     overflow-y: hidden;
-    flex: 1;
     min-height: 100%;
     display: flex;
     align-items: flex-end;
+    padding: 0 8px;
 
     // Hide the scrollbar for a cleaner Chrome look
     &::-webkit-scrollbar {
