@@ -1,5 +1,5 @@
 {
-  "name": "my-vue-template",
+  "name": "my-blog-admin",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -16,6 +16,7 @@
     "@vueuse/core": "^10.10.0",
     "axios": "^1.6.8",
     "chroma-js": "^3.1.2",
+    "cropperjs": "^1.6.2",
     "crypto-js": "^4.2.0",
     "dayjs": "^1.11.10",
     "echarts": "^6.0.0",

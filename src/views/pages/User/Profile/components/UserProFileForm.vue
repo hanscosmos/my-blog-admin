@@ -4,8 +4,8 @@
       <el-form ref="formRef" :model="formData" :rules="formRules" label-width="80px">
         <el-form-item label="头像">
           <div class="w-24 h-24 rounded-full">
-            <AppImageAutoUpload type="avatar" desc="上传头像" editable :default-url="formData.avatar"
-              @upload-success="uploadAvatarHandler"></AppImageAutoUpload>
+            <AppAvatarUpload desc="上传头像" :default-url="formData.avatar"
+              @upload-success="uploadAvatarHandler"></AppAvatarUpload>
           </div>
         </el-form-item>
         <el-form-item label="昵称" prop="nickName">
@@ -40,6 +40,7 @@
 </template>
 <script lang="ts" setup>
 import { UserFormType, UserInfoType } from '@/api/user/type';
+import AppAvatarUpload from '@/components/common/Upload/AppAvatarUpload.vue';
 
 const props = defineProps<{
   defaultData: UserInfoType | null;

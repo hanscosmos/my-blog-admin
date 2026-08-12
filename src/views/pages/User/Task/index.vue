@@ -1,14 +1,16 @@
 <template>
   <div class="user-task wh-full flex flex-col">
-    <div class="header-wrapper px-4 pb-4 border-bottom flex items-center justify-between">
-      <el-segmented v-model="pageStatus" :options="tabList" size="default">
-        <template #default="{ item }">
-          <span>{{ (item as any).label }}</span>
-        </template>
-      </el-segmented>
-      <el-text v-if="pageStatus === 'dashboard'">
-        面板默认展示最近三天的已完成任务事项以及所有的待办和进行中的事项。
-      </el-text>
+    <div class="px-4 pt-2 pb-2 border-bottom flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <el-segmented v-model="pageStatus" :options="tabList" size="small">
+          <template #default="{ item }">
+            <span>{{ (item as any).label }}</span>
+          </template>
+        </el-segmented>
+        <el-tooltip v-if="pageStatus === 'dashboard'" content="面板默认展示最近三天的已完成任务事项以及所有的待办和进行中的事项。" placement="bottom">
+          <span class="text-gray-400 cursor-pointer text-xs ml-1">?</span>
+        </el-tooltip>
+      </div>
       <app-button @click="openDialog('add')">
         <AppIcon name="add" class="mr-1"></AppIcon>
         新增事项

@@ -1,8 +1,5 @@
 <template>
   <div class="user-task flex flex-col wh-full">
-    <div class="header-wrapper flex items-center justify-between px-4 pb-4 border-bottom">
-      <span class="font-bold">个人动态</span>
-    </div>
     <div class="content-wrapper flex-1 h-0 overflow-auto">
       <AppInfiniteList :loading="loading" :items="dataList" :finished="dataList.length === total"
         @load-more="loadMoreHandler">
@@ -38,6 +35,12 @@ const loadMoreHandler = () => {
 
 onMounted(() => {
   initDataListHandler();
+});
+
+// 向个人中心上报动态总数
+const updateTabCount = inject<(key: string, count: number) => void>('updateTabCount', () => {});
+watch(total, (val) => {
+  updateTabCount('dynamic', val);
 });
 </script>
 <style lang="scss" scoped></style>

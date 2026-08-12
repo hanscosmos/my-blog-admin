@@ -19,6 +19,11 @@
     </el-row>
     <el-row :gutter="24" class="!w-full mt-6">
       <el-col :span="24">
+        <StatKPIBar></StatKPIBar>
+      </el-col>
+    </el-row>
+    <el-row :gutter="24" class="!w-full mt-6">
+      <el-col :span="24">
         <div class="h-424px section-wrapper">
           <ArticlePublishStat></ArticlePublishStat>
         </div>
@@ -55,6 +60,7 @@
 import RecentUserTask from './components/RecentUserTask.vue';
 import HomeOverview from './components/HomeOverview.vue';
 import StatCard from './components/StatCard.vue';
+import StatKPIBar from './components/StatKPIBar.vue';
 import UserTaskScoreStat from './components/UserTaskScoreStat.vue';
 import ArticlePublishStat from './components/ArticlePublishStat.vue';
 import HotArticle from './components/HotArticle.vue';

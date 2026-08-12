@@ -1,8 +1,7 @@
 <template>
   <div class="my-article flex flex-col wh-full">
-    <div class="header-wrapper flex items-center justify-between px-4 pb-4 border-bottom">
-      <span class="font-bold">我的创作（{{ total }}）</span>
-      <el-segmented v-model="currentLayout" :options="options">
+    <div class="flex items-center justify-end px-4 pt-2 pb-2">
+      <el-segmented v-model="currentLayout" :options="options" size="small">
         <template #default="{ item }">
           <div class="xy-center">
             <AppIcon :name="(item as any).icon" size="16"> </AppIcon>
@@ -10,7 +9,7 @@
         </template>
       </el-segmented>
     </div>
-    <div v-loading="loading" class="flex-1 h-0 p-4 overflow-auto">
+    <div v-loading="loading" class="flex-1 h-0 px-4 overflow-auto">
       <div v-if="currentLayout === 'list'" class="flex flex-col">
         <div class="article-item-wrapper border-bottom" v-for="item in articleList" :key="item.id">
           <ArticleListItem :article="item" @delete="deleteArticleHandler" @edit="gotoUpdateArticle"
@@ -115,6 +114,12 @@ const gotoUpdateArticle = (id: string) => {
 
 onMounted(() => {
   initDataListHandler();
+});
+
+// 向个人中心上报文章总数
+const updateTabCount = inject<(key: string, count: number) => void>('updateTabCount', () => {});
+watch(total, (val) => {
+  updateTabCount('article', val);
 });
 </script>
 <style lang="scss" scoped>

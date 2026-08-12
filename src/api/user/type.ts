@@ -9,6 +9,7 @@ export type UserFormType = {
 };
 
 export type UserInfoType = {
+  id?: string;
   nickName: string;
   avatar: string | null;
   email: string;
@@ -18,4 +19,10 @@ export type UserInfoType = {
   createTime: string;
   level: number;
   birthday?: string;
+};
+
+export type UserStatsType = {
+  articleCount: number;
+  activityCount: number;
+  taskCount: number;
 };

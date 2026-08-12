@@ -2,22 +2,22 @@
   <div class="wh-full">
     <AppSearchPanel :data-exist="taskList.length > 0" :loading="loading">
       <template #header>
-        <div class="w-full flex items-center gap-6">
-          <span class="flex items-center gap-3 flex-shrink-0">
+        <div class="w-full flex items-center gap-4">
+          <span class="flex items-center gap-2 flex-shrink-0">
             <app-tag size="large">任务状态</app-tag>
             <el-select v-model="searchParams.status" placeholder="请选择" class="!w-150px" clearable
               @change="filterUserTaskList">
               <el-option v-for="item in statusList" :key="item.key" :value="item.key" :label="item.value"></el-option>
             </el-select>
           </span>
-          <span class="flex items-center gap-3">
-            <app-tag size="large">任务优先级</app-tag>
+          <span class="flex items-center gap-2">
+            <app-tag size="large">优先级</app-tag>
             <el-select v-model="searchParams.priority" placeholder="请选择" class="!w-150px" clearable
               @change="filterUserTaskList">
               <el-option v-for="item in priorityList" :key="item.key" :value="item.key" :label="item.value"></el-option>
             </el-select>
           </span>
-          <span class="flex items-center gap-3">
+          <span class="flex items-center gap-2">
             <app-tag size="large">截止日期</app-tag>
             <el-date-picker v-model="deadlineDateRange" type="daterange" class="!w-320px"
               value-format="YYYY-MM-DD HH:mm:ss" range-separator="至" clearable
