@@ -1,5 +1,6 @@
+import request from '@/utils/request'
 import { useUserInfoStore } from '@/store/user'
-import type { AiStreamCallbacks } from '@/ai/types/ai'
+import type { AiStreamCallbacks, AiConversation, AiMessage } from '@/ai/types/ai'
 
 /**
  * 发送聊天消息（SSE 流式）
@@ -11,7 +12,8 @@ import type { AiStreamCallbacks } from '@/ai/types/ai'
  */
 export function sendChatMessage(
   messages: { role: string; content: string }[],
-  callbacks: AiStreamCallbacks
+  callbacks: AiStreamCallbacks,
+  conversationId?: string,
 ): AbortController {
   const abortController = new AbortController()
   const userStore = useUserInfoStore()
@@ -25,6 +27,7 @@ export function sendChatMessage(
     body: JSON.stringify({
       messages,
       stream: true,
+      ...(conversationId ? { conversationId } : {}),
     }),
     signal: abortController.signal,
   })
@@ -125,4 +128,39 @@ export async function pingAiService(): Promise<boolean> {
   } catch {
     return false
   }
+}
+
+// ==================== 对话 CRUD（基于 request 工具，非流式） ====================
+
+/** 获取当前用户的对话列表 */
+export function fetchConversationsApi(): Promise<{ code: number; msg: string; data: AiConversation[] }> {
+  return request.get('/ai/conversations')
+}
+
+/** 获取单个对话的详情（含消息列表） */
+export function fetchConversationApi(conversationId: string): Promise<{
+  code: number
+  msg: string
+  data: { conversation: AiConversation; messages: AiMessage[] }
+}> {
+  return request.get(`/ai/conversations/${conversationId}`)
+}
+
+/** 新建对话 */
+export function createConversationApi(data: { title?: string; model?: string }): Promise<{
+  code: number
+  msg: string
+  data: { id: string }
+}> {
+  return request.post('/ai/conversations/create', data)
+}
+
+/** 删除对话 */
+export function deleteConversationApi(conversationId: string): Promise<{ code: number; msg: string }> {
+  return request.post(`/ai/conversations/${conversationId}/delete`)
+}
+
+/** 更新对话标题 */
+export function updateConversationApi(conversationId: string, title: string): Promise<{ code: number; msg: string }> {
+  return request.post(`/ai/conversations/${conversationId}/update`, { title })
 }

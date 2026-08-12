@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import { nanoid } from 'nanoid'
 import type { AiConversation, AiMessage, AiProviderConfig } from '@/ai/types/ai'
 import { DEFAULT_MODEL, DEFAULT_SYSTEM_PROMPT, MAX_CONVERSATION_TITLE_LENGTH } from '@/ai/constants'
 
@@ -26,6 +25,9 @@ export const useAiChatStore = defineStore(
     /** 是否正在发送消息 */
     const isSending = ref(false)
 
+    /** 是否已从后端加载过对话列表 */
+    const hasLoadedFromServer = ref(false)
+
     // ==================== 计算属性 ====================
 
     /** 当前活跃对话 */
@@ -36,21 +38,33 @@ export const useAiChatStore = defineStore(
     /** 当前对话的消息列表 */
     const messages = computed<AiMessage[]>(() => activeConversation.value?.messages ?? [])
 
-    // ==================== 方法 ====================
+    // ==================== 纯前端方法 ====================
 
-    /** 创建新对话，返回对话 ID */
-    function newConversation(): string {
-      const id = nanoid()
+    /** 创建新对话（纯前端，返回 ID），后端会在首次发消息时自动创建 */
+    function newConversation(id?: string): string {
+      const convId = id ?? crypto.randomUUID()
       const conv: AiConversation = {
-        id,
+        id: convId,
         title: '新对话',
+        model: config.value.model,
         messages: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
       }
       conversations.value.unshift(conv)
-      activeConversationId.value = id
-      return id
+      activeConversationId.value = convId
+      return convId
+    }
+
+    /** 设置对话列表（从后端加载时替换整个列表） */
+    function setConversations(list: AiConversation[]) {
+      conversations.value = list
+      hasLoadedFromServer.value = true
+    }
+
+    /** 追加一个对话到列表（后端创建后同步回来） */
+    function addConversation(conv: AiConversation) {
+      conversations.value.unshift(conv)
     }
 
     /** 切换到指定对话 */
@@ -60,10 +74,25 @@ export const useAiChatStore = defineStore(
       }
     }
 
+    /** 设置对话的消息列表（从后端加载） */
+    function setConversationMessages(conversationId: string, msgs: AiMessage[]) {
+      const conv = conversations.value.find((c) => c.id === conversationId)
+      if (conv) {
+        conv.messages = msgs
+      }
+    }
+
+    /** 更新对话标题 */
+    function updateConversationTitle(id: string, title: string) {
+      const conv = conversations.value.find((c) => c.id === id)
+      if (conv) {
+        conv.title = title
+      }
+    }
+
     /** 删除对话 */
-    function deleteConversation(id: string) {
+    function removeConversation(id: string) {
       conversations.value = conversations.value.filter((c) => c.id !== id)
-      // 如果删除的是活跃对话，自动切换到第一个
       if (activeConversationId.value === id) {
         activeConversationId.value = conversations.value[0]?.id ?? ''
       }
@@ -71,7 +100,6 @@ export const useAiChatStore = defineStore(
 
     /** 添加消息到当前活跃对话 */
     function addMessage(msg: Omit<AiMessage, 'id' | 'timestamp'>) {
-      // 确保有活跃对话
       if (!activeConversationId.value) {
         newConversation()
       }
@@ -81,7 +109,7 @@ export const useAiChatStore = defineStore(
 
       const newMsg: AiMessage = {
         ...msg,
-        id: nanoid(),
+        id: crypto.randomUUID(),
         timestamp: Date.now(),
       }
 
@@ -131,6 +159,7 @@ export const useAiChatStore = defineStore(
     function clearAllHistory() {
       conversations.value = []
       activeConversationId.value = ''
+      hasLoadedFromServer.value = false
     }
 
     return {
@@ -139,11 +168,16 @@ export const useAiChatStore = defineStore(
       config,
       isOpen,
       isSending,
+      hasLoadedFromServer,
       activeConversation,
       messages,
       newConversation,
+      setConversations,
+      addConversation,
       switchConversation,
-      deleteConversation,
+      setConversationMessages,
+      removeConversation,
+      updateConversationTitle,
       addMessage,
       appendToLastAssistantMessage,
       finishLastAssistantMessage,

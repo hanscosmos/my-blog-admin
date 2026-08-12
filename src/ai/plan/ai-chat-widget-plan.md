@@ -80,7 +80,7 @@ export const useAiChatStore = defineStore('aiChat', () => {
   // 状态
   const conversations = ref<AiConversation[]>([])
   const activeConversationId = ref<string>('')
-  const config = ref<AiProviderConfig>({ model: 'gpt-4o', systemPrompt: '' })
+  const config = ref<AiProviderConfig>({ model: 'deepseek-v4-pro', systemPrompt: '' })
   const isOpen = ref(false)         // 面板展开/收起
   const isSending = ref(false)      // 是否正在发送消息
 
@@ -316,7 +316,7 @@ export function useAiChat() {
 
 ```typescript
 export const DEFAULT_SYSTEM_PROMPT = `...`   // 基础系统提示词
-export const DEFAULT_MODEL = 'gpt-4o'
+export const DEFAULT_MODEL = 'deepseek-v4-pro'
 export const AI_CHAT_STORAGE_KEY = 'aiChat'
 export const MAX_MESSAGES_PER_CONVERSATION = 100
 ```
@@ -355,7 +355,7 @@ Request:
     {"role": "system", "content": "..."},
     {"role": "user", "content": "..."}
   ],
-  "model": "gpt-4o",    // 可选
+  "model": "deepseek-v4-pro",    // 可选
   "stream": true
 }
 

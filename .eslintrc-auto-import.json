@@ -80,6 +80,7 @@
     "getDictLabelByKey": true,
     "randomColor": true,
     "getAlertColor": true,
-    "getColorPair": true
+    "getColorPair": true,
+    "ElMessageBox": true
   }
 }

@@ -1,6 +1,7 @@
 import { useAiChatStore } from '@/ai/store/aiChat'
-import { sendChatMessage } from '@/ai/services/aiApi'
+import { sendChatMessage, fetchConversationsApi, fetchConversationApi, deleteConversationApi, updateConversationApi } from '@/ai/services/aiApi'
 import { useUserInfoStore } from '@/store/user'
+import type { AiConversation, AiMessage } from '@/ai/types/ai'
 
 /**
  * AI 聊天核心逻辑
@@ -28,6 +29,9 @@ export function useAiChat() {
 
   /** 消息列表容器引用 */
   const messageListRef = ref<HTMLElement | null>(null)
+
+  /** 是否正在加载历史数据 */
+  const isLoadingHistory = ref(false)
 
   // ==================== 上下文构建 ====================
 
@@ -58,6 +62,74 @@ export function useAiChat() {
     }
 
     return contextParts.join('\n')
+  }
+
+  // ==================== 后端同步 ====================
+
+  /**
+   * 从后端加载所有对话列表
+   * 若后端无数据，则使用本地 localStorage 中的对话
+   */
+  async function loadConversations(): Promise<void> {
+    if (store.hasLoadedFromServer) return
+
+    try {
+      const res = await fetchConversationsApi()
+      if (res.code === 0 && res.data) {
+        // 将后端数据转为前端格式
+        const convs: AiConversation[] = res.data.map((c: any) => ({
+          id: c.id,
+          title: c.title,
+          model: c.model,
+          messages: [],
+          createdAt: c.createTime ? new Date(c.createTime).getTime() : Date.now(),
+          updatedAt: c.updateTime ? new Date(c.updateTime).getTime() : Date.now(),
+        }))
+        store.setConversations(convs)
+
+        // 有历史对话则自动打开第一个，无则新建
+        if (convs.length > 0) {
+          store.switchConversation(convs[0].id)
+        } else {
+          store.newConversation()
+        }
+      }
+    } catch {
+      // 后端不可用时，使用本地数据
+      if (store.conversations.length === 0) {
+        store.newConversation()
+      }
+      store.hasLoadedFromServer = true
+    }
+  }
+
+  /**
+   * 从后端加载某个对话的完整消息列表
+   */
+  async function loadConversationMessages(conversationId: string): Promise<void> {
+    // 本地已有消息则跳过
+    const conv = store.conversations.find((c) => c.id === conversationId)
+    if (conv && conv.messages.length > 0) return
+
+    try {
+      isLoadingHistory.value = true
+      const res = await fetchConversationApi(conversationId)
+      if (res.code === 0 && res.data) {
+        const msgs: AiMessage[] = (res.data.messages || []).map((m: any) => ({
+          id: m.id,
+          role: m.role,
+          content: m.content,
+          timestamp: m.createTime ? new Date(m.createTime).getTime() : Date.now(),
+          promptTokens: m.promptTokens,
+          completionTokens: m.completionTokens,
+        }))
+        store.setConversationMessages(conversationId, msgs)
+      }
+    } catch {
+      // 加载失败，继续使用本地数据
+    } finally {
+      isLoadingHistory.value = false
+    }
   }
 
   // ==================== 核心方法 ====================
@@ -98,24 +170,28 @@ export function useAiChat() {
         }
       }
 
-      // 发送请求
-      currentController = sendChatMessage(apiMessages, {
-        onChunk: (text: string) => {
-          store.appendToLastAssistantMessage(text)
+      // 发送请求，携带 conversationId 让后端存储消息
+      currentController = sendChatMessage(
+        apiMessages,
+        {
+          onChunk: (text: string) => {
+            store.appendToLastAssistantMessage(text)
+          },
+          onDone: () => {
+            store.finishLastAssistantMessage()
+            store.isSending = false
+            currentController = null
+          },
+          onError: (err: Error) => {
+            store.appendToLastAssistantMessage(`\n\n> ⚠️ 发送失败：${err.message}`)
+            store.finishLastAssistantMessage()
+            error.value = err.message
+            store.isSending = false
+            currentController = null
+          },
         },
-        onDone: () => {
-          store.finishLastAssistantMessage()
-          store.isSending = false
-          currentController = null
-        },
-        onError: (err: Error) => {
-          store.appendToLastAssistantMessage(`\n\n> ⚠️ 发送失败：${err.message}`)
-          store.finishLastAssistantMessage()
-          error.value = err.message
-          store.isSending = false
-          currentController = null
-        },
-      })
+        store.activeConversationId || undefined,
+      )
     } catch (err: any) {
       error.value = err.message || '发送失败'
       store.isSending = false
@@ -174,6 +250,43 @@ export function useAiChat() {
     }
   }
 
+  // ==================== 对话操作 ====================
+
+  /** 新建对话 */
+  function newConversation() {
+    store.newConversation()
+    error.value = null
+  }
+
+  /** 删除对话（同步删除后端） */
+  async function deleteConversation(id: string): Promise<void> {
+    store.removeConversation(id)
+    try {
+      await deleteConversationApi(id)
+    } catch {
+      // 后端删除失败时静默处理
+    }
+  }
+
+  /** 重命名对话 */
+  async function renameConversation(id: string, title: string): Promise<void> {
+    const trimmed = title.trim()
+    if (!trimmed) return
+
+    store.updateConversationTitle(id, trimmed)
+    try {
+      await updateConversationApi(id, trimmed)
+    } catch {
+      // 后端更新失败时静默处理，前端已经更新
+    }
+  }
+
+  /** 切换对话，自动加载消息历史 */
+  async function switchConversation(id: string): Promise<void> {
+    store.switchConversation(id)
+    await loadConversationMessages(id)
+  }
+
   /** 滚动消息列表到底部 */
   function scrollToBottom() {
     nextTick(() => {
@@ -195,6 +308,7 @@ export function useAiChat() {
     // 来自 store
     conversations: computed(() => store.conversations),
     activeConversation: computed(() => store.activeConversation),
+    activeConversationId: computed(() => store.activeConversationId),
     messages: computed(() => store.messages),
     config: computed(() => store.config),
     isSending: computed(() => store.isSending),
@@ -204,6 +318,7 @@ export function useAiChat() {
     inputText,
     error,
     messageListRef,
+    isLoadingHistory,
 
     // 方法
     send,
@@ -212,9 +327,12 @@ export function useAiChat() {
     retry,
     scrollToBottom,
     cleanup,
-    newConversation: store.newConversation,
-    deleteConversation: store.deleteConversation,
-    switchConversation: store.switchConversation,
+    loadConversations,
+    loadConversationMessages,
+    newConversation,
+    deleteConversation,
+    renameConversation,
+    switchConversation,
     togglePanel: store.togglePanel,
   }
 }

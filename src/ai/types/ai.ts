@@ -18,6 +18,8 @@ export interface AiConversation {
   id: string
   /** 自动截取首条用户消息作为标题 */
   title: string
+  /** 使用的模型 */
+  model?: string
   messages: AiMessage[]
   createdAt: number
   updatedAt: number

@@ -68,3 +68,4 @@
 - 使用 TypeScript，确保类型安全
 - 使用 `<script setup lang="ts">` 语法
 - 使用 Composition API
+- 代码编写完之后不需要执行命令运行项目，因为项目一般来说都在运行着
