@@ -9,6 +9,7 @@
       <MessageBtn class="mr-6"></MessageBtn>
       <UserInfo></UserInfo>
       <ArticleBtn class="ml-6"></ArticleBtn>
+      <AiChatWidget />
     </div>
   </div>
 </template>
@@ -19,6 +20,7 @@ import TodoListBtn from './components/TodoListBtn/index.vue';
 import TrendBtn from './components/TrendBtn/index.vue';
 import MessageBtn from './components/MessageBtn/index.vue';
 
+import AiChatWidget from '@/ai/components/AiChatWidget.vue';
 
 </script>
 <style lang="scss" scoped>
