@@ -1,8 +1,8 @@
 <template>
   <div>
-    <el-popover trigger="hover" :width="120" :show-arrow="false" placement="bottom">
+    <el-popover trigger="hover" :width="110" :show-arrow="false" placement="bottom">
       <template #reference>
-        <el-avatar>
+        <el-avatar class="!w-9 !h-9">
           <img v-if="userInfo.avatar" alt="avatar" :src="userInfo.avatar" />
           <span v-else>{{ userInfo.nickName.substring(0, 1) }}</span>
         </el-avatar>
@@ -10,15 +10,14 @@
 
       <div class="w-full h-full">
         <div class="entrance-wrapper">
-          <div class="entrance-item hover-weak-wrapper justify-between" @click="gotoRelatedPage('UserCenter')">
+          <div class="entrance-item xy-center hover-weak-wrapper mb-2 " @click="gotoRelatedPage('UserCenter')">
             <div class="flex items-center">
-              <AppIcon name="user" :size="18"></AppIcon>
+              <AppIcon name="people" :size="16" theme="filled"></AppIcon>
               <span class="ml-4">个人中心</span>
             </div>
           </div>
-          <el-divider class="!my-2"></el-divider>
-          <div class="entrance-item hover-weak-wrapper" @click="logoutHandler">
-            <AppIcon name="logout" :size="18"></AppIcon>
+          <div class="entrance-item xy-center hover-weak-wrapper" @click="logoutHandler">
+            <AppIcon name="logout" theme="filled" :size="16"></AppIcon>
             <span class="ml-4">退出登录</span>
           </div>
         </div>
@@ -53,6 +52,6 @@ const gotoRelatedPage = (name: string) => {
 </script>
 <style lang="scss" scoped>
 .entrance-item {
-  @apply flex items-center px-4 py-3 rounded-lg;
+  @apply flex items-center p-2 rounded-lg;
 }
 </style>

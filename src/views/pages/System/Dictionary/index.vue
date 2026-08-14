@@ -1,6 +1,6 @@
 <template>
   <div class="wh-full p-4 flex">
-    <section class="dict-category-wrapper wrapper-item w-96 h-full flex flex-col">
+    <section class="dict-category-wrapper wrapper-item w-64 h-full flex flex-col">
       <h3 class="py-2 px-4 flex items-center justify-between">
         <span class="font-title text-lg">系统模块</span>
         <el-button link type="primary" @click="openDialog('add')">

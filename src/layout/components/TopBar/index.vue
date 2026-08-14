@@ -7,8 +7,8 @@
       <TodoListBtn class="mr-6"></TodoListBtn>
       <MessageBtn class="mr-6"></MessageBtn>
       <ArticleBtn class="mr-6"></ArticleBtn>
-      <AiChatWidget class="mr-6" />
       <UserInfo></UserInfo>
+      <AiChatWidget class="ml-6" />
 
     </div>
   </div>

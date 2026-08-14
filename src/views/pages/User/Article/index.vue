@@ -90,7 +90,7 @@
           <el-table-column label="操作" fixed="right" width="200" align="center">
             <template #default="{ row }">
               <div class="flex justify-center">
-                <el-button v-if="row.status === 'publish'" link type="primary" @click="gotoArticleDetail(row.id)">
+                <el-button link type="primary" @click="gotoArticleDetail(row.id)">
                   查看详情
                 </el-button>
                 <el-button link type="primary" @click="gotoUpdateArticle(row.id)">编辑</el-button>

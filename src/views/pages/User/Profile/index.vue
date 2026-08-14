@@ -1,8 +1,7 @@
 <template>
   <div class="wh-full flex max-w-1200px mx-auto py-4">
     <!-- Left: User Info Card -->
-    <div v-if="baseUserInfo"
-      class="user-card w-64 flex-shrink-0 mr-4 p-6 wrapper-item flex flex-col items-center">
+    <div v-if="baseUserInfo" class="user-card w-64 flex-shrink-0 mr-4 p-6 wrapper-item flex flex-col items-center">
       <div class="image-wrapper w-20 h-20 rounded-full mb-4 flex-shrink-0">
         <img v-if="baseUserInfo.avatar" class="w-full h-full object-cover rounded-full" :src="baseUserInfo.avatar"
           alt="" />
@@ -44,9 +43,10 @@
     <!-- Right: Tab + Content -->
     <div class="flex-1 w-0 flex flex-col wrapper-item">
       <div class="tab-wrapper w-full flex flex-shrink-0 h-12 px-4 border-bottom">
-        <span v-for="item in tabList" :key="item.key" class="tag-item transition-all xy-center hover-text px-2 mr-4"
+        <span v-for="item in tabList" :key="item.key" class="tag-item transition-all xy-center hover-text mr-6 "
           :class="{ 'line-active-item': activeItem?.key === item.key }" @click="setActiveTabItem(item)">
-          {{ item.name }}<span v-if="tabCounts[item.key] > 0">（{{ tabCounts[item.key] }}）</span>
+          {{ item.name }}<span v-if="tabCounts[item.key] > 0" class="text-gray-500 ml-2 text-sm">{{ tabCounts[item.key]
+            }}</span>
         </span>
       </div>
       <div v-if="activeItem" class="flex-1 h-0 overflow-auto">
@@ -105,12 +105,12 @@ const tabList: TabItem[] = [
     component: shallowRef(UserActivity),
   },
   {
-    name: '我的创作',
+    name: '创作',
     key: 'article',
     component: shallowRef(UserArticle),
   },
   {
-    name: '个人事项',
+    name: '事项',
     key: 'task',
     component: shallowRef(UserTask),
   },
