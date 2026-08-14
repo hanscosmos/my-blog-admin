@@ -2,27 +2,37 @@
   <div class="wh-full">
     <AppSearchPanel :data-exist="taskList.length > 0" :loading="loading">
       <template #header>
-        <div class="w-full flex items-center gap-4 ">
-          <span class="flex items-center gap-2 flex-shrink-0">
-            <app-tag size="large">任务状态</app-tag>
-            <el-select v-model="searchParams.status" placeholder="请选择" class="!w-150px" clearable
-              @change="filterUserTaskList">
-              <el-option v-for="item in statusList" :key="item.key" :value="item.key" :label="item.value"></el-option>
-            </el-select>
-          </span>
-          <span class="flex items-center gap-2">
-            <app-tag size="large">优先级</app-tag>
-            <el-select v-model="searchParams.priority" placeholder="请选择" class="!w-150px" clearable
-              @change="filterUserTaskList">
-              <el-option v-for="item in priorityList" :key="item.key" :value="item.key" :label="item.value"></el-option>
-            </el-select>
-          </span>
-          <span class="flex items-center gap-2">
-            <app-tag size="large">截止日期</app-tag>
-            <el-date-picker v-model="deadlineDateRange" type="daterange" class="!w-320px"
-              value-format="YYYY-MM-DD HH:mm:ss" range-separator="至" clearable
-              @change="filterUserTaskList"></el-date-picker>
-          </span>
+        <div class="w-full">
+          <div class="flex items-center gap-4 ">
+            <span class="flex items-center gap-2 flex-shrink-0">
+              <app-tag size="large">任务状态</app-tag>
+              <el-select v-model="searchParams.status" placeholder="请选择" class="!w-150px" clearable
+                @change="filterUserTaskList">
+                <el-option v-for="item in statusList" :key="item.key" :value="item.key" :label="item.value"></el-option>
+              </el-select>
+            </span>
+            <span class="flex items-center gap-2">
+              <app-tag size="large">优先级</app-tag>
+              <el-select v-model="searchParams.priority" placeholder="请选择" class="!w-150px" clearable
+                @change="filterUserTaskList">
+                <el-option v-for="item in priorityList" :key="item.key" :value="item.key" :label="item.value"></el-option>
+              </el-select>
+            </span>
+            <span class="flex items-center gap-2">
+              <app-tag size="large">截止日期</app-tag>
+              <el-date-picker v-model="deadlineDateRange" type="daterange" class="!w-320px"
+                value-format="YYYY-MM-DD HH:mm:ss" range-separator="至" clearable
+                @change="filterUserTaskList"></el-date-picker>
+            </span>
+          </div>
+          <div class="flex items-center gap-3 mt-3">
+            <el-checkbox :model-value="isAllSelected" :indeterminate="selectedIds.size > 0 && !isAllSelected"
+              @change="toggleSelectAllHandler">全选本页</el-checkbox>
+            <el-button type="danger" plain :disabled="!selectedIds.size" @click="batchDelete">
+              批量删除{{ selectedIds.size ? `（${selectedIds.size}）` : '' }}
+            </el-button>
+            <span v-if="selectedIds.size" class="text-sm text-gray-400">已选 {{ selectedIds.size }} 项</span>
+          </div>
         </div>
       </template>
       <template #footer>
@@ -31,7 +41,8 @@
       </template>
       <ul class="list-content-wrapper p-4">
         <li v-for="item in taskList" :key="item.id">
-          <UserTaskCard :task="item" @edit="emits('edit', item)" @delete="filterUserTaskList" />
+          <UserTaskCard :task="item" selectable :selected="isSelected(item.id)" @select="toggleSelect(item.id)"
+            @edit="emits('edit', item)" @delete="filterUserTaskList" />
         </li>
       </ul>
     </AppSearchPanel>
@@ -44,6 +55,7 @@ import { useSearch } from '@/hooks/useSearch';
 import UserTaskCard from '../components/UserTaskCard.vue';
 import { DictSimpleItemType } from '@/api/system/dict/type';
 import emitter from '@/utils/eventBus';
+import { useTaskBatchSelect } from '../hooks/useTaskBatchSelect';
 
 const emits = defineEmits<{
   (e: 'edit', task: UserTaskItemType): void;
@@ -94,6 +106,25 @@ const filterUserTaskList = async () => {
   }
   pageConfig.pageNumber = 1;
   await getDataListHandler();
+};
+
+const {
+  selectedIds,
+  isSelected,
+  toggleSelect,
+  toggleSelectAll,
+  batchDelete,
+} = useTaskBatchSelect(filterUserTaskList);
+
+const isAllSelected = computed(() => {
+  return (
+    taskList.value.length > 0 &&
+    taskList.value.every((item) => selectedIds.value.has(item.id))
+  );
+});
+
+const toggleSelectAllHandler = () => {
+  toggleSelectAll(taskList.value);
 };
 
 defineExpose({

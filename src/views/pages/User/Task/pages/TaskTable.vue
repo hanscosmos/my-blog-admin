@@ -2,27 +2,35 @@
   <div class="wh-full">
     <AppSearchPanel :data-exist="taskList.length > 0" :loading="loading">
       <template #header>
-        <div class="w-full flex items-center gap-4">
-          <span class="flex items-center gap-2 flex-shrink-0">
-            <app-tag size="large">任务状态</app-tag>
-            <el-select v-model="searchParams.status" placeholder="请选择" class="!w-150px" clearable
-              @change="filterUserTaskList">
-              <el-option v-for="item in statusList" :key="item.key" :value="item.key" :label="item.value"></el-option>
-            </el-select>
-          </span>
-          <span class="flex items-center gap-2">
-            <app-tag size="large">优先级</app-tag>
-            <el-select v-model="searchParams.priority" placeholder="请选择" class="!w-150px" clearable
-              @change="filterUserTaskList">
-              <el-option v-for="item in priorityList" :key="item.key" :value="item.key" :label="item.value"></el-option>
-            </el-select>
-          </span>
-          <span class="flex items-center gap-2">
-            <app-tag size="large">截止日期</app-tag>
-            <el-date-picker v-model="deadlineDateRange" type="daterange" class="!w-320px"
-              value-format="YYYY-MM-DD HH:mm:ss" range-separator="至" clearable
-              @change="filterUserTaskList"></el-date-picker>
-          </span>
+        <div class="w-full">
+          <div class="flex items-center gap-4">
+            <span class="flex items-center gap-2 flex-shrink-0">
+              <app-tag size="large">任务状态</app-tag>
+              <el-select v-model="searchParams.status" placeholder="请选择" class="!w-150px" clearable
+                @change="filterUserTaskList">
+                <el-option v-for="item in statusList" :key="item.key" :value="item.key" :label="item.value"></el-option>
+              </el-select>
+            </span>
+            <span class="flex items-center gap-2">
+              <app-tag size="large">优先级</app-tag>
+              <el-select v-model="searchParams.priority" placeholder="请选择" class="!w-150px" clearable
+                @change="filterUserTaskList">
+                <el-option v-for="item in priorityList" :key="item.key" :value="item.key" :label="item.value"></el-option>
+              </el-select>
+            </span>
+            <span class="flex items-center gap-2">
+              <app-tag size="large">截止日期</app-tag>
+              <el-date-picker v-model="deadlineDateRange" type="daterange" class="!w-320px"
+                value-format="YYYY-MM-DD HH:mm:ss" range-separator="至" clearable
+                @change="filterUserTaskList"></el-date-picker>
+            </span>
+          </div>
+          <div class="flex items-center gap-3 mt-3">
+            <el-button type="danger" plain :disabled="!selectedIds.size" @click="batchDelete">
+              批量删除{{ selectedIds.size ? `（${selectedIds.size}）` : '' }}
+            </el-button>
+            <span v-if="selectedIds.size" class="text-sm text-gray-400">已选 {{ selectedIds.size }} 项</span>
+          </div>
         </div>
       </template>
       <template #footer>
@@ -30,8 +38,10 @@
           @page-change="pageChangeHandler"></AppPagination>
       </template>
       <div class="p-4">
-        <el-table :data="taskList" size="large" stripe border :default-sort="{ prop: 'endTime', order: 'descending' }"
-          @sort-change="sortChangeHandler">
+        <el-table ref="tableRef" :data="taskList" size="large" stripe border row-key="id"
+          :default-sort="{ prop: 'endTime', order: 'descending' }" @sort-change="sortChangeHandler"
+          @selection-change="handleSelectionChange">
+          <el-table-column type="selection" width="50" fixed reserve-selection></el-table-column>
           <el-table-column prop="title" label="名称" fixed min-width="200" show-overflow-tooltip></el-table-column>
           <el-table-column prop="description" label="描述" min-width="240" show-overflow-tooltip></el-table-column>
           <el-table-column label="状态" width="100" align="center">
@@ -79,6 +89,8 @@ import { UserTaskItemType, UserTaskSearchType } from '@/api/user/task/type';
 import { DictSimpleItemType } from '@/api/system/dict/type';
 import { useSearch } from '@/hooks/useSearch';
 import emitter from '@/utils/eventBus';
+import { useTaskBatchSelect } from '../hooks/useTaskBatchSelect';
+import type { TableInstance } from 'element-plus';
 
 const statusList = inject<Ref<DictSimpleItemType[]>>('statusList');
 const priorityList = inject<Ref<DictSimpleItemType[]>>('priorityList');
@@ -139,6 +151,17 @@ const filterUserTaskList = async () => {
   }
   pageConfig.pageNumber = 1;
   await getDataListHandler();
+};
+
+const tableRef = ref<TableInstance>();
+
+const { selectedIds, setSelectedIds, batchDelete } = useTaskBatchSelect(() => {
+  tableRef.value?.clearSelection();
+  filterUserTaskList();
+});
+
+const handleSelectionChange = (rows: UserTaskItemType[]) => {
+  setSelectedIds(rows.map((row) => row.id));
 };
 
 const sortChangeHandler = ({ order }: { order: 'ascending' | 'descending' | null }) => {

@@ -1,8 +1,12 @@
 <template>
-  <el-card class="task-card p-4" shadow="hover">
+  <el-card class="task-card p-4 relative" :class="{ 'is-selected': selected }" shadow="hover">
+
     <div class="task-header">
-      <div class="task-title truncate mr-4" :title="task.title">
-        {{ task.title }}
+      <div class="task-header-left">
+        <el-checkbox v-if="selectable" :model-value="selected" class="!mr-2" @change="emits('select')" />
+        <div class="task-title truncate" :title="task.title">
+          {{ task.title }}
+        </div>
       </div>
 
       <!-- 更多操作按钮（悬浮显示下拉菜单） -->
@@ -56,10 +60,21 @@ import { UserTaskItemType } from '@/api/user/task/type';
 import { More } from '@element-plus/icons-vue';
 import emitter from '@/utils/eventBus';
 
-const props = defineProps<{ task: UserTaskItemType }>();
+const props = withDefaults(
+  defineProps<{
+    task: UserTaskItemType;
+    selectable?: boolean;
+    selected?: boolean;
+  }>(),
+  {
+    selectable: false,
+    selected: false,
+  }
+);
 
 const emits = defineEmits<{
   (e: 'delete'): void;
+  (e: 'select'): void;
 }>();
 
 const statusList = inject<Ref<DictSimpleItemType[]>>('statusList');
@@ -104,17 +119,31 @@ const deleteUserTaskHandler = async () => {
 .task-card {
   position: relative;
   transition: all 0.3s;
+
+  &.is-selected {
+    outline: 2px solid var(--theme-color);
+  }
 }
 
 .task-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
+}
+
+.task-header-left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
 }
 
 .task-title {
   font-weight: 600;
   font-size: 16px;
+  min-width: 0;
+  flex: 1;
 }
 
 .task-more {
