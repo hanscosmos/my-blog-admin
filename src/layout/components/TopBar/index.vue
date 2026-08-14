@@ -5,7 +5,6 @@
     </div>
     <div class="flex items-center">
       <TodoListBtn class="mr-6"></TodoListBtn>
-      <TrendBtn class="mr-6"></TrendBtn>
       <MessageBtn class="mr-6"></MessageBtn>
       <ArticleBtn class="mr-6"></ArticleBtn>
       <AiChatWidget class="mr-6" />
@@ -18,7 +17,6 @@
 import ArticleBtn from './components/ArticleBtn/index.vue';
 import UserInfo from './components/UserInfo/index.vue';
 import TodoListBtn from './components/TodoListBtn/index.vue';
-import TrendBtn from './components/TrendBtn/index.vue';
 import MessageBtn from './components/MessageBtn/index.vue';
 import AiChatWidget from '@/ai/components/AiChatWidget.vue';
 </script>

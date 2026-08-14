@@ -19,6 +19,7 @@ export type UserTaskSearchType = {
   priority: string;
   startTime: string;
   endTime: string;
+  sortOrder?: string;
 };
 
 export type UserTaskItemType = UserTaskFormType &

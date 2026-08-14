@@ -2,7 +2,7 @@
   <div class="user-task wh-full flex flex-col">
     <div class="px-4 pt-2 pb-2 border-bottom flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <el-segmented v-model="pageStatus" :options="tabList" size="small">
+        <el-segmented v-model="pageStatus" :options="tabList">
           <template #default="{ item }">
             <span>{{ (item as any).label }}</span>
           </template>
@@ -34,6 +34,7 @@ import { UserTaskItemType } from '@/api/user/task/type';
 import { useDialog } from '@/hooks/useDialog';
 import TaskList from './pages/TaskList.vue';
 import TaskDashboard from './pages/TaskDashboard.vue';
+import TaskTable from './pages/TaskTable.vue';
 import emitter from '@/utils/eventBus';
 
 const { formDialogProps, openDialog, closeDialog } =
@@ -51,10 +52,11 @@ const changeSuccessHandler = () => {
   closeDialog();
 };
 
-const pageStatus = ref<'dashboard' | 'list'>('dashboard');
+const pageStatus = ref<'dashboard' | 'list' | 'table'>('dashboard');
 const tabList = [
   { value: 'dashboard', label: '面板', component: shallowRef(TaskDashboard) },
   { value: 'list', label: '列表', component: shallowRef(TaskList) },
+  { value: 'table', label: '表格', component: shallowRef(TaskTable) },
 ];
 
 const currentComponent = computed(() => {

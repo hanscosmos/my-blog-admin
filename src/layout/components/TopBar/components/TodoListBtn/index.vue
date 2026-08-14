@@ -1,8 +1,7 @@
 <template>
-  <div class="shortcut-icon flex items-center gap-4">
-    <div title="待办事项" class="hover-text">
-      <AppIcon name="list" :size="14"></AppIcon>
-    </div>
+  <div class="hover-text flex flex-col items-center">
+    <AppIcon name="list" :size="16"></AppIcon>
+    <span class="text-xs mt-1">待办事项</span>
   </div>
 </template>
 <script lang="ts" setup></script>

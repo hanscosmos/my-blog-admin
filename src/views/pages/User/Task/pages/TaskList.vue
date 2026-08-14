@@ -2,7 +2,7 @@
   <div class="wh-full">
     <AppSearchPanel :data-exist="taskList.length > 0" :loading="loading">
       <template #header>
-        <div class="w-full flex items-center gap-4">
+        <div class="w-full flex items-center gap-4 ">
           <span class="flex items-center gap-2 flex-shrink-0">
             <app-tag size="large">任务状态</app-tag>
             <el-select v-model="searchParams.status" placeholder="请选择" class="!w-150px" clearable

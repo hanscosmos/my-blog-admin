@@ -1,8 +1,7 @@
 <template>
-  <div class="shortcut-icon flex items-center gap-4">
-    <div title="消息" class="hover-text">
-      <AppIcon name="message" :size="14"></AppIcon>
-    </div>
+  <div class="hover-text flex flex-col items-center">
+    <AppIcon name="message-one" :size="16"></AppIcon>
+    <span class="text-xs mt-1">消息</span>
   </div>
 </template>
 <script lang="ts" setup></script>

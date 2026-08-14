@@ -3,10 +3,9 @@
     <!-- 顶部标题栏 -->
     <div class="panel-header">
       <div class="header-left">
-        <div class="flex items-center wrapper-solid-item trigger-btn p-6px rounded-lg cursor-pointer"
-          @click="showSidebar = !showSidebar">
-          <AppIcon name="hamburger-button" :size="16" color="#fff" />
-        </div>
+        <button class="action-btn" @click="showSidebar = !showSidebar">
+          <AppIcon name="hamburger-button" :size="16" />
+        </button>
         <AppIcon name="robot" :size="18" color="var(--theme-color)" />
         <span class="header-title">{{ activeConversation?.title || 'AI 助手' }}</span>
       </div>
@@ -29,12 +28,7 @@
       <!-- 对话列表侧边栏 -->
       <Transition name="sidebar-slide">
         <div v-if="showSidebar" class="conversation-sidebar">
-          <div class="sidebar-header">
-            <span class="sidebar-title">历史对话</span>
-            <button class="action-btn" @click="handleNewConversation">
-              <AppIcon name="add" :size="14" />
-            </button>
-          </div>
+
           <div class="conversation-list">
             <div v-for="conv in conversations" :key="conv.id" class="conversation-item"
               :class="{ active: conv.id === activeConversationId }" @click="handleSwitchConversation(conv.id)">

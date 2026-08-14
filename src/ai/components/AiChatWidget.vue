@@ -10,10 +10,9 @@
       <AiChatPanel />
     </el-drawer>
 
-    <!-- 浮动触发按钮 -->
-    <div class="trigger-btn wrapper-solid-item rounded-lg p-2" :class="{ 'is-open': isOpen }" @click="togglePanel">
-      <AppIcon v-if="!isOpen" name="robot" :size="14" color="#fff" />
-      <AppIcon v-else name="close" :size="14" color="#fff" />
+    <div class="flex items-center flex-col hover-text" @click="togglePanel">
+      <AppIcon name="robot" :size="16"></AppIcon>
+      <span class="text-xs mt-1">AI助手</span>
     </div>
   </div>
 </template>
@@ -44,28 +43,4 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style lang="scss" scoped>
-.trigger-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
-  position: relative;
-
-  &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-
-  &.is-open {
-    background: var(--sys-text-secondary-color);
-    transform: rotate(90deg);
-  }
-}
-</style>
+<style lang="scss" scoped></style>

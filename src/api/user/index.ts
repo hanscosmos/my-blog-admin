@@ -13,5 +13,13 @@ export const getUserStatsApi = (data = {}) =>
 export const getUserActivityApi = (data: PageType) =>
   request.post('/user/activity/list', data);
 
-export const getUserArticleListApi = (data: { title: string } & PageType) =>
-  request.post<ResPageType<ArticleListItemType>>('/user/article/list', data);
+export const getUserArticleListApi = (
+  data: {
+    title: string;
+    category?: string;
+    status?: string;
+    startTime?: string;
+    endTime?: string;
+    sortOrder?: string;
+  } & PageType
+) => request.post<ResPageType<ArticleListItemType>>('/user/article/list', data);

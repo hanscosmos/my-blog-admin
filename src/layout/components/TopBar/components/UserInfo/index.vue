@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-popover trigger="hover" :width="200" :show-arrow="false" placement="bottom">
+    <el-popover trigger="hover" :width="120" :show-arrow="false" placement="bottom">
       <template #reference>
         <el-avatar>
           <img v-if="userInfo.avatar" alt="avatar" :src="userInfo.avatar" />
@@ -15,7 +15,6 @@
               <AppIcon name="user" :size="18"></AppIcon>
               <span class="ml-4">个人中心</span>
             </div>
-            <AppIcon name="right" :size="18"></AppIcon>
           </div>
           <el-divider class="!my-2"></el-divider>
           <div class="entrance-item hover-weak-wrapper" @click="logoutHandler">
