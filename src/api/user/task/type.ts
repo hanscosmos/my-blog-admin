@@ -12,6 +12,7 @@ export type UserTaskFormType = {
   growth: number;
   happiness: number;
   negative: number;
+  remindBeforeMinutes: number;
 };
 
 export type UserTaskSearchType = {

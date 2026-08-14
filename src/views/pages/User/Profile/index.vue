@@ -146,7 +146,10 @@ const setActiveTabItem = (item: TabItem) => {
 onMounted(() => {
   getUserInfoHandler();
   getUserStatsHandler();
-  setActiveTabItem(tabList[0]);
+  const route = useRoute();
+  const tabKey = route.query.tab as string;
+  const target = tabList.find((item) => item.key === tabKey);
+  setActiveTabItem(target || tabList[0]);
 });
 </script>
 <style lang="scss" scoped></style>

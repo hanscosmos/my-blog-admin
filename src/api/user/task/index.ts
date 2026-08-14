@@ -20,6 +20,9 @@ export const getUserTaskPanelListApi = (data: {
 export const getUserRecentTaskListApi = () =>
   request.post<UserTaskItemType[]>('/user/task/recent/list');
 
+export const getUserTaskRemindListApi = () =>
+  request.post<UserTaskItemType[]>('/user/task/remind/list');
+
 export const getUserTaskScoreStatApi = (data: {
   rangeType: string;
   startDate?: string;

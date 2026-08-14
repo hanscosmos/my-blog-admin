@@ -6,17 +6,28 @@ export const originalForm: UserTaskFormType = {
   title: '',
   tags: [],
   description: '',
-  priority: '',
-  status: '',
+  priority: 'medium',
+  status: 'todo',
   deadline: '',
   startTime: '',
   endTime: '',
-  importance: 0,
-  urgency: 0,
-  growth: 0,
-  happiness: 0,
+  importance: 3,
+  urgency: 3,
+  growth: 3,
+  happiness: 3,
   negative: 0,
+  remindBeforeMinutes: -1,
 };
+
+export const remindOptions = [
+  { key: -1, value: '不提醒' },
+  { key: 0, value: '准时提醒' },
+  { key: 5, value: '提前 5 分钟' },
+  { key: 15, value: '提前 15 分钟' },
+  { key: 30, value: '提前 30 分钟' },
+  { key: 60, value: '提前 1 小时' },
+  { key: 1440, value: '提前 1 天' },
+];
 
 export const columnList = [
   { title: '名称', prop: 'title' },
