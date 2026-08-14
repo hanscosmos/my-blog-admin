@@ -9,7 +9,7 @@
         <el-input-number v-model="form.sort" :min="0" class="!w-full" />
       </el-form-item>
       <el-form-item prop="description" label="描述">
-        <el-input v-model="form.description" type="textarea" rows="3" placeholder="请输入文章专栏描述" />
+        <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入文章专栏描述" />
       </el-form-item>
       <el-form-item prop="cover" label="文章专栏封面">
         <div class="w-full h-48">

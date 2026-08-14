@@ -26,3 +26,11 @@ export type UserStatsType = {
   activityCount: number;
   taskCount: number;
 };
+
+export type UserMoodType = {
+  id: string;
+  content: string;
+  mood: string | null;
+  images: string[];
+  createTime: string;
+};

@@ -43,7 +43,12 @@
 
             <!-- 事项类：单行文本 -->
             <div v-else class="text-sm text-gray-500">
-              {{ item.action }}《{{ item.extraData?.title || '' }}》
+              <template v-if="item.targetType === 'create_mood'">
+                <span v-if="item.extraData?.mood" class="mr-1">{{ item.extraData.mood }}</span>{{ item.extraData?.content || '' }}
+              </template>
+              <template v-else>
+                {{ item.action }}《{{ item.extraData?.title || '' }}》
+              </template>
             </div>
           </div>
         </template>
@@ -69,6 +74,7 @@ const activityMetaMap: Record<string, { label: string; icon: string; color: stri
   delete_article: { label: '删除了文章', icon: 'delete', color: '#e5484d' },
   create_task: { label: '创建了事项', icon: 'add', color: '#1e9e6a' },
   complete_task: { label: '完成了事项', icon: 'check', color: '#136ddc' },
+  create_mood: { label: '发布了心情', icon: 'emotion-happy', color: '#f7a35c' },
 };
 
 const activityMeta = (type: string) =>

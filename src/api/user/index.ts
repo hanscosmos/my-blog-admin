@@ -1,5 +1,5 @@
 import type { ArticleListItemType } from '../article/type';
-import { UserFormType, type UserInfoType, type UserStatsType } from './type';
+import { UserFormType, type UserInfoType, type UserStatsType, type UserMoodType } from './type';
 import request from '@/utils/request';
 export const getUserProfileApi = (data = {}) =>
   request.post<UserInfoType>('/user/get/self', data);
@@ -23,3 +23,15 @@ export const getUserArticleListApi = (
     sortOrder?: string;
   } & PageType
 ) => request.post<ResPageType<ArticleListItemType>>('/user/article/list', data);
+
+export const getUserMoodListApi = (data: PageType) =>
+  request.post<ResPageType<UserMoodType>>('/user/mood/list', data);
+
+export const addUserMoodApi = (data: {
+  content: string;
+  mood: string | null;
+  images: string[];
+}) => request.post<boolean>('/user/mood/add', data);
+
+export const deleteUserMoodApi = (data: IdsType) =>
+  request.post<boolean>('/user/mood/delete', data);

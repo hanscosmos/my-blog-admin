@@ -1,7 +1,8 @@
 <template>
-  <div class="wh-full flex max-w-1200px mx-auto py-4">
+  <div class="wh-full flex max-w-1200px mx-auto py-4 ">
     <!-- Left: User Info Card -->
-    <div v-if="baseUserInfo" class="user-card w-64 flex-shrink-0 mr-4 p-6 wrapper-item flex flex-col items-center">
+    <div v-if="baseUserInfo"
+      class="user-card w-64 flex-shrink-0 relative mr-4 p-6 wrapper-item flex flex-col items-center">
       <div class="image-wrapper w-20 h-20 rounded-full mb-4 flex-shrink-0">
         <img v-if="baseUserInfo.avatar" class="w-full h-full object-cover rounded-full" :src="baseUserInfo.avatar"
           alt="" />
@@ -18,8 +19,7 @@
       </div>
 
       <!-- Stats -->
-      <div class="w-full flex justify-around mb-4 py-3"
-        style="border-top: 1px solid var(--sys-border-color); border-bottom: 1px solid var(--sys-border-color);">
+      <div class="w-full flex justify-around mb-4 py-3 border-top border-bottom">
         <div class="flex flex-col items-center cursor-pointer" @click="setActiveTabItem(tabList[1])">
           <span class="text-lg font-bold">{{ tabCounts.article }}</span>
           <span class="text-xs text-gray-500">文章</span>
@@ -34,10 +34,13 @@
         </div>
       </div>
 
-      <app-button class="w-full" type="text" @click="openDrawerHandler">
-        <AppIcon name="edit" class="mr-1" size="14"></AppIcon>
-        编辑个人资料
+      <app-button title="编辑个人资料" class="absolute top-4 right-4" type="text" @click="openDrawerHandler">
+        <AppIcon name="edit" class="mr-1" size="18"></AppIcon>
+
       </app-button>
+
+      <!-- 心情 -->
+      <UserMoodPanel />
     </div>
 
     <!-- Right: Tab + Content -->
@@ -61,6 +64,7 @@ import { getUserProfileApi, updateUserProfileApi, getUserStatsApi } from '@/api/
 import { UserInfoType, UserFormType } from '@/api/user/type';
 import { useUserInfoStore } from '@/store/user';
 import UserProfileForm from './components/UserProFileForm.vue';
+import UserMoodPanel from './components/UserMoodPanel.vue';
 import UserActivity from '../Activity/index.vue';
 import UserArticle from '../Article/index.vue';
 import UserTask from '../Task/index.vue';

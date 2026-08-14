@@ -15,6 +15,6 @@ export interface IActivityItem {
   targetType: string;
   action: string;
   createTime: string;
-  extraData: { title?: string };
+  extraData: { title?: string; content?: string; mood?: string };
   article: IActivityArticle | null;
 }

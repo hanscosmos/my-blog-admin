@@ -26,7 +26,9 @@
                 <el-button link type="primary" @click="openDialog('edit', row)">
                   编辑
                 </el-button>
-                <el-button link type="danger" plain> 删除 </el-button>
+                <el-button link type="danger" plain @click="deleteColumnHandler(row)">
+                  删除
+                </el-button>
               </div>
             </template>
           </el-table-column>
@@ -44,11 +46,15 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { getArticleColumnListApi } from '@/api/article/column';
+import {
+  deleteArticleColumnApi,
+  getArticleColumnListApi,
+} from '@/api/article/column';
 import {
   ArticleColumnItemType,
   SearchArticleColumnType,
 } from '@/api/article/column/type';
+import { ElMessage } from 'element-plus';
 import ColumnDialog from './components/ColumnDialog.vue';
 import { columnList } from './service';
 import { useDialog } from '@/hooks/useDialog';
@@ -71,6 +77,16 @@ const {
   originalParams,
   getArticleColumnListApi
 );
+
+const deleteColumnHandler = (row: ArticleColumnItemType) => {
+  confirmHandler('您将删除这个专栏', async () => {
+    const { code, msg } = await deleteArticleColumnApi({ ids: [row.id] });
+    if (code === 0) {
+      ElMessage.success(msg);
+      filterDataListHandler();
+    }
+  });
+};
 
 onMounted(() => {
   initDataListHandler();
