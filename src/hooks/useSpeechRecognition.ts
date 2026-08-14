@@ -31,10 +31,12 @@ export interface SpeechOptions {
   maxAlternatives?: number;
 }
 
-/**
+/*
  * 中文标点恢复 —— 基于规则的标点符号插入
- * Web Speech API 返回的原始文本不含标点，此函数对原始文本进行后处理
- */
+ * 已停用：中文断句需要语义理解，纯规则法误插标点频繁，有它不如没有。
+ * 如需更好的断句效果，可换用自带标点的云端 ASR（讯飞/阿里/腾讯等），或在后端
+ * 接入标点恢复模型（如 PaddleNLP 标点模型 / ct-punctuation）或 LLM 加标点。
+ *
 function restoreChinesePunctuation(text: string): string {
   if (!text) return '';
 
@@ -149,6 +151,7 @@ function restoreChinesePunctuation(text: string): string {
 
   return result.trim();
 }
+ */
 
 export function useSpeechRecognition(options: SpeechOptions = {}) {
   const {
@@ -167,7 +170,8 @@ export function useSpeechRecognition(options: SpeechOptions = {}) {
   const isPaused = ref(false);
   const interimText = ref('');
   const rawFinalText = ref('');
-  const finalText = computed(() => restoreChinesePunctuation(rawFinalText.value));
+  // 中文标点恢复（规则法）效果不佳，暂不启用，直接返回原始识别文本
+  const finalText = computed(() => rawFinalText.value);
   const error = ref<string | null>(null);
 
   let recognition: SpeechRecognitionInstance | null = null;
@@ -299,12 +303,8 @@ export function useSpeechRecognition(options: SpeechOptions = {}) {
     isListening.value = false;
     isPaused.value = false;
 
-    // 如果有临时结果，合并到最终结果
-    if (interimText.value) {
-      rawFinalText.value += interimText.value;
-      interimText.value = '';
-    }
-
+    // 注意：recognition.stop() 会触发一次 onresult 事件，把临时识别内容作为最终结果追加到
+    // rawFinalText，因此这里不能再手动合并 interimText，否则会重复生成
     return finalText.value;
   };
 
@@ -320,12 +320,8 @@ export function useSpeechRecognition(options: SpeechOptions = {}) {
       }
     }
 
-    // 临时结果合并到最终结果
-    if (interimText.value) {
-      rawFinalText.value += interimText.value;
-      interimText.value = '';
-    }
-
+    // 注意：recognition.stop() 会触发一次 onresult 事件，把临时识别内容作为最终结果追加到
+    // rawFinalText，因此这里不能再手动合并 interimText，否则会重复生成
     isListening.value = false;
     isPaused.value = true;
   };
