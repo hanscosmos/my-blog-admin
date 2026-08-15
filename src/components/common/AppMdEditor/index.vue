@@ -8,7 +8,7 @@
 defineProps<{
   toolbar?: string;
 }>();
-const emit = defineEmits(['save']);
+const emit = defineEmits(['save', 'update:modelValue']);
 const text = ref('');
 const defaultToolBar =
   'undo redo clear | h bold italic strikethrough quote | ul ol table hr  | link image code | emoji tip todo-list  | save ';
@@ -16,6 +16,9 @@ const defaultToolBar =
 const saveHandler = () => {
   emit('save');
 };
+
+// 内容变化时对外通知，供父组件（如发布/编辑文章页）同步当前正文
+watch(text, (v) => emit('update:modelValue', v));
 
 const getText = () => {
   return text.value;

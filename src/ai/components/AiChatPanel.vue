@@ -66,7 +66,7 @@
               <AppIcon name="robot" :size="48" color="var(--sys-text-secondary-color)" />
             </div>
             <p class="empty-title">你好，我是 AI 助手</p>
-            <p class="empty-desc">我可以帮助你管理博客、回答问题、提供写作建议。请输入你的问题开始对话吧。</p>
+            <p class="empty-desc">我可以帮助你管理博客、回答问题、分析你的文章、提供写作建议。请输入你的问题开始对话吧。</p>
           </div>
 
           <div v-for="msg in messages" :key="msg.id" class="message-item" :class="`msg-${msg.role}`">

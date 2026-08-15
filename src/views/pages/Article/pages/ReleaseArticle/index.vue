@@ -8,7 +8,8 @@
       </app-button>
     </div>
     <div class="edit-wrapper flex-1 h-0 relative">
-      <app-md-editor ref="mdEditorRef" @save="releaseArticleHandler"></app-md-editor>
+      <app-md-editor ref="mdEditorRef" @save="releaseArticleHandler"
+        @update:model-value="handleEditorChange"></app-md-editor>
       <VoiceInputBar @insert="handleVoiceInsert" />
     </div>
   </div>
@@ -24,6 +25,7 @@ import {
   editArticleApi,
   getArticleDetailApi,
 } from '@/api/article';
+import { useArticleEditorStore } from '@/ai/store/articleEditor';
 import { OriginArticleFormTpe } from '../../types';
 
 const route = useRoute();
@@ -34,6 +36,23 @@ const drawerRef = ref();
 const title = ref('');
 
 const originForm = ref<OriginArticleFormTpe | null>(null);
+
+const articleEditorStore = useArticleEditorStore();
+
+/** 同步标题与文章 id 到 AI 上下文 */
+function syncMeta() {
+  articleEditorStore.setContext({
+    id: route.name === 'UpdateArticle' ? (route.query.id as string) : '',
+    title: title.value,
+  });
+}
+
+/** 编辑器内容变化时同步正文到 AI 上下文 */
+function handleEditorChange(content: string) {
+  articleEditorStore.setContext({ content });
+}
+
+watch(title, syncMeta);
 
 const baseValidDate = () => {
   let flag = true;
@@ -112,7 +131,12 @@ const initArticleDetailHandler = async () => {
 };
 
 onMounted(() => {
+  syncMeta();
   initArticleDetailHandler();
+});
+
+onBeforeUnmount(() => {
+  articleEditorStore.reset();
 });
 </script>
 <style lang="scss" scoped></style>

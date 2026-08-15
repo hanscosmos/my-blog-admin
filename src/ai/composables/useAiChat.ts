@@ -1,4 +1,5 @@
 import { useAiChatStore } from '@/ai/store/aiChat'
+import { useArticleEditorStore } from '@/ai/store/articleEditor'
 import { sendChatMessage, fetchConversationsApi, fetchConversationApi, deleteConversationApi, updateConversationApi } from '@/ai/services/aiApi'
 import { useUserInfoStore } from '@/store/user'
 import type { AiConversation, AiMessage } from '@/ai/types/ai'
@@ -15,6 +16,8 @@ export function useAiChat() {
   // ==================== Store ====================
   const store = useAiChatStore()
   const userStore = useUserInfoStore()
+  const articleEditorStore = useArticleEditorStore()
+  const route = useRoute()
 
   // ==================== 状态 ====================
 
@@ -40,7 +43,6 @@ export function useAiChat() {
    * 注入项目上下文、当前页面信息、用户信息
    */
   function buildSystemPrompt(): string {
-    const route = useRoute()
     const contextParts: string[] = []
 
     // 项目基础信息
@@ -53,6 +55,27 @@ export function useAiChat() {
       contextParts.push(`- 当前页面路由: ${route.fullPath}`)
       if (pageName) {
         contextParts.push(`- 当前页面名称: ${pageName}`)
+      }
+
+      // 当前正在浏览/编辑的文章
+      if (route.name === 'ArticleDetail') {
+        const articleId = typeof route.query?.id === 'string' ? route.query.id : ''
+        if (articleId) {
+          contextParts.push(`- 当前正在浏览的文章 id: ${articleId}`)
+          contextParts.push(`（用户说的「这篇文章」即指上面 id 对应的文章，请调用 get_article_content 工具读取其正文）`)
+        }
+      } else if (route.name === 'ReleaseArticle' || route.name === 'UpdateArticle') {
+        // 发布/编辑页：正文来自前端编辑器文本框，可能尚未保存，直接读编辑器内容而非查库
+        const editorContent = articleEditorStore.content
+        if (editorContent.trim()) {
+          contextParts.push(`\n## 当前正在编辑的文章（来自编辑器文本框，可能尚未保存）`)
+          if (articleEditorStore.title) {
+            contextParts.push(`- 标题: ${articleEditorStore.title}`)
+          }
+          const truncated = editorContent.length > 8000
+          contextParts.push(`- 正文:\n${editorContent.slice(0, 8000)}${truncated ? '\n…(内容过长已截断)' : ''}`)
+          contextParts.push(`（直接基于上面的正文分析，无需再读取数据库）`)
+        }
       }
     }
 
