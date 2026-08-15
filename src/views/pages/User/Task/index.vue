@@ -48,7 +48,9 @@ provide('statusList', statusList);
 provide('priorityList', priorityList);
 
 const changeSuccessHandler = () => {
-  emitter.emit('task:refresh', true);
+  // 编辑时保持当前页，新增/复制时回到第一页以便查看新条目
+  emitter.emit('task:refresh', formDialogProps.optType !== 'edit');
+  emitter.emit('user:stats-refresh');
   closeDialog();
 };
 
@@ -70,10 +72,14 @@ onMounted(() => {
   emitter.on('task:update', (task: UserTaskItemType) => {
     openDialog('edit', task);
   });
+  emitter.on('task:copy', (task: UserTaskItemType) => {
+    openDialog('copy', task);
+  });
 });
 
 onUnmounted(() => {
   emitter.off('task:update');
+  emitter.off('task:copy');
 });
 </script>
 <style lang="scss" scoped></style>

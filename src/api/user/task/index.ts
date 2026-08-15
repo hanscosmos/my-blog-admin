@@ -1,4 +1,4 @@
-import { UserTaskFormType, UserTaskItemType, UserTaskSearchType } from './type';
+import { UserTaskFormType, UserTaskItemType, UserTaskSearchType, UserTaskTagItemType } from './type';
 import request from '@/utils/request';
 export const addUserTaskApi = (data: UserTaskFormType) =>
   request.post<boolean>('/user/task/add', data);
@@ -16,6 +16,9 @@ export const getUserTaskPanelListApi = (data: {
   startTime: string;
   endTime: string;
 }) => request.post<UserTaskItemType[]>('/user/task/panel/list', data);
+
+export const getUserTaskTagListApi = () =>
+  request.post<UserTaskTagItemType[]>('/user/task/tag/list');
 
 export const getUserRecentTaskListApi = () =>
   request.post<UserTaskItemType[]>('/user/task/recent/list');

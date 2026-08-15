@@ -1,5 +1,5 @@
 <template>
-  <AppDialog :visible="visible" width="800px" :title="optType === 'add' ? '创建个人事项' : '修改个人事项'" @close="closeHandler"
+  <AppDialog :visible="visible" width="800px" :title="dialogTitle" @close="closeHandler"
     @confirm="confirmHandler">
     <el-form ref="formRef" :model="form" :rules="formRules" label-width="96px" :style="{ width: '100%' }">
       <div class="font-title text-base pl-2 mb-4">基础信息</div>
@@ -24,7 +24,8 @@
         <el-col :span="12">
           <el-form-item prop="tags" label="事项标签">
             <el-select v-model="form.tags" multiple filterable allow-create default-first-option
-              :reserve-keyword="false" placeholder="请输入事项标签">
+              :reserve-keyword="false" placeholder="请选择或输入事项标签">
+              <el-option v-for="item in tagList" :key="item.name" :label="item.name" :value="item.name"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
@@ -40,7 +41,8 @@
         </el-col>
         <el-col :span="12">
           <el-form-item prop="remindBeforeMinutes" label="事项提醒">
-            <el-select v-model="form.remindBeforeMinutes" placeholder="请选择提醒方式" class="!w-full">
+            <el-select v-model="form.remindBeforeMinutes" placeholder="请选择提醒方式" class="!w-full"
+              :disabled="isDone">
               <el-option v-for="item in remindOptions" :key="item.key" :label="item.value"
                 :value="item.key"></el-option>
             </el-select>
@@ -106,8 +108,8 @@
 import { ElMessage } from 'element-plus';
 import dayjs from 'dayjs';
 import { FormDialogPropsType, formRules, originalForm, remindOptions } from '../service';
-import { addUserTaskApi, editUserTaskApi } from '@/api/user/task';
-import { UserTaskItemType } from '@/api/user/task/type';
+import { addUserTaskApi, editUserTaskApi, getUserTaskTagListApi } from '@/api/user/task';
+import { UserTaskItemType, UserTaskTagItemType } from '@/api/user/task/type';
 import { DictSimpleItemType } from '@/api/system/dict/type';
 
 const props = defineProps<
@@ -123,6 +125,28 @@ const form = ref({
   ...originalForm,
 });
 
+const tagList = ref<UserTaskTagItemType[]>([]);
+
+const getTagList = async () => {
+  const { data } = await getUserTaskTagListApi();
+  tagList.value = data;
+};
+
+const isDone = computed(() => form.value.status === 'done');
+
+const dialogTitle = computed(() => {
+  if (props.optType === 'copy') return '复制个人事项';
+  return props.optType === 'add' ? '创建个人事项' : '修改个人事项';
+});
+
+watch(
+  () => form.value.status,
+  (status) => {
+    if (status === 'done') {
+      form.value.remindBeforeMinutes = -1;
+    }
+  }
+);
 
 const closeHandler = () => {
   form.value = { ...originalForm };
@@ -154,7 +178,7 @@ const confirmHandler = () => {
       }
       try {
         const { data, msg } =
-          props.optType === 'add'
+          props.optType === 'add' || props.optType === 'copy'
             ? await addUserTaskApi({
               ...form.value,
               startTime: form.value.startTime || null,
@@ -177,8 +201,9 @@ const confirmHandler = () => {
 };
 
 onMounted(() => {
-  if (props.optType === 'edit' && props.row) {
-    const { score, createTime, updateTime, ...rest } = props.row;
+  getTagList();
+  if (props.row) {
+    const { id, score, createTime, updateTime, ...rest } = props.row;
     form.value = { ...rest };
   }
 });

@@ -2,6 +2,7 @@ import { deleteUserTaskApi } from '@/api/user/task';
 import { UserTaskItemType } from '@/api/user/task/type';
 import { ElMessage } from 'element-plus';
 import { confirmHandler } from '@/utils/tool';
+import emitter from '@/utils/eventBus';
 
 /**
  * 事项批量选择与批量删除逻辑。
@@ -53,6 +54,7 @@ export const useTaskBatchSelect = (refresh: () => void) => {
         ElMessage.success('删除成功');
         clearSelection();
         refresh();
+        emitter.emit('user:stats-refresh');
       }
     });
   };

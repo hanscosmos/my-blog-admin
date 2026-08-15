@@ -40,6 +40,9 @@ export const formRules = {
     { required: true, trigger: 'change', message: '请选择事项优先级' },
   ],
   status: [{ required: true, trigger: 'change', message: '请选择事项状态' }],
+  tags: [
+    { required: true, type: 'array' as const, trigger: 'change', message: '请选择事项标签' },
+  ],
   deadline: [{ required: true, trigger: 'change', message: '请选择截止时间' }],
 };
 

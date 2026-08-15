@@ -4,6 +4,8 @@ import mitt from 'mitt';
 type Events = {
   'task:refresh': boolean;
   'task:update': UserTaskItemType;
+  'task:copy': UserTaskItemType;
+  'user:stats-refresh': void;
 };
 
 const emitter = mitt<Events>();

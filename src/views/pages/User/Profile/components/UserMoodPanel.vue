@@ -71,6 +71,7 @@ import { addUserMoodApi, deleteUserMoodApi, getUserMoodListApi } from '@/api/use
 import type { UserMoodType } from '@/api/user/type';
 import { useSearch } from '@/hooks/useSearch';
 import { MAX_IMAGE_SIZE } from '@/config';
+import emitter from '@/utils/eventBus';
 
 const EMOJI_LIST = ['😄', '😌', '😢', '😠', '🤩', '😰', '🥱', '🤔'];
 
@@ -134,6 +135,7 @@ const publishHandler = async () => {
       selectedMood.value = null;
       pickedImages.value = [];
       initDataListHandler();
+      emitter.emit('user:stats-refresh');
     }
   } finally {
     publishing.value = false;

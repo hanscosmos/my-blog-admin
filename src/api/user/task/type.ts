@@ -16,11 +16,18 @@ export type UserTaskFormType = {
 };
 
 export type UserTaskSearchType = {
+  keyword: string;
   status: string;
   priority: string;
+  tag: string;
   startTime: string;
   endTime: string;
   sortOrder?: string;
+};
+
+export type UserTaskTagItemType = {
+  name: string;
+  count: number;
 };
 
 export type UserTaskItemType = UserTaskFormType &

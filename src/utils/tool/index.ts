@@ -54,6 +54,28 @@ export const dateDiff = (
   return result;
 };
 
+const TAG_COLOR_PALETTE = [
+  '#165dff',
+  '#00b42a',
+  '#ff7d00',
+  '#f53f3f',
+  '#722ed1',
+  '#0fc6c2',
+  '#f5319d',
+  '#faad14',
+  '#86909c',
+  '#2b52c9',
+];
+
+// 根据标签名生成确定性颜色，保证同一标签始终同一颜色
+export const getTagColor = (tag: string) => {
+  let hash = 0;
+  for (let i = 0; i < tag.length; i++) {
+    hash = (hash * 31 + tag.charCodeAt(i)) >>> 0;
+  }
+  return TAG_COLOR_PALETTE[hash % TAG_COLOR_PALETTE.length];
+};
+
 export function randomColor() {
   // hue 色相 0-360 随机，保证多彩
   const h = Math.floor(Math.random() * 360);

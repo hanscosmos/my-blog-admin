@@ -69,6 +69,7 @@ import UserActivity from '../Activity/index.vue';
 import UserArticle from '../Article/index.vue';
 import UserTask from '../Task/index.vue';
 import type { Component } from 'vue';
+import emitter from '@/utils/eventBus';
 
 interface TabItem {
   name: string;
@@ -150,10 +151,15 @@ const setActiveTabItem = (item: TabItem) => {
 onMounted(() => {
   getUserInfoHandler();
   getUserStatsHandler();
+  emitter.on('user:stats-refresh', getUserStatsHandler);
   const route = useRoute();
   const tabKey = route.query.tab as string;
   const target = tabList.find((item) => item.key === tabKey);
   setActiveTabItem(target || tabList[0]);
+});
+
+onUnmounted(() => {
+  emitter.off('user:stats-refresh', getUserStatsHandler);
 });
 </script>
 <style lang="scss" scoped></style>

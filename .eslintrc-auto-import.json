@@ -81,6 +81,7 @@
     "randomColor": true,
     "getAlertColor": true,
     "getColorPair": true,
-    "ElMessageBox": true
+    "ElMessageBox": true,
+    "getTagColor": true
   }
 }

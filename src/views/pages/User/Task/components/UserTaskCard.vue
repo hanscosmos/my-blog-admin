@@ -19,6 +19,7 @@
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item command="edit">编辑</el-dropdown-item>
+            <el-dropdown-item command="copy">复制</el-dropdown-item>
             <el-dropdown-item command="delete">删除</el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -42,6 +43,12 @@
         </span>
       </div>
       <p class="line-clamp-2 text-sm h-40px mb-4">{{ task.description }}</p>
+      <div v-if="task.tags && task.tags.length" class="task-tags flex items-center gap-2 flex-wrap mb-2">
+        <span v-for="tag in task.tags" :key="tag" :class="{ 'cursor-pointer': tagClickable }"
+          @click="handleTagClick(tag)">
+          <app-tag :name="tag" :color="getTagColor(tag)" round size="small"></app-tag>
+        </span>
+      </div>
       <div class="task-meta text-xs flex items-center justify-between">
         <span v-if="statusList"><app-tag :color="statusColorMap[task.status]"
             :name="getDictLabelByKey(statusList, task.status)" round></app-tag></span>
@@ -65,16 +72,19 @@ const props = withDefaults(
     task: UserTaskItemType;
     selectable?: boolean;
     selected?: boolean;
+    tagClickable?: boolean;
   }>(),
   {
     selectable: false,
     selected: false,
+    tagClickable: false,
   }
 );
 
 const emits = defineEmits<{
   (e: 'delete'): void;
   (e: 'select'): void;
+  (e: 'filterTag', tag: string): void;
 }>();
 
 const statusList = inject<Ref<DictSimpleItemType[]>>('statusList');
@@ -94,9 +104,17 @@ const priorityColorMap: Record<UserTaskItemType['priority'], string> = {
   urgency: '#fb5050',
 };
 
+const handleTagClick = (tag: string) => {
+  if (props.tagClickable) {
+    emits('filterTag', tag);
+  }
+};
+
 const handleCommand = (command: string) => {
   if (command === 'edit') {
     emitter.emit('task:update', props.task);
+  } else if (command === 'copy') {
+    emitter.emit('task:copy', props.task);
   } else if (command === 'delete') {
     deleteUserTaskHandler();
   }
@@ -110,6 +128,7 @@ const deleteUserTaskHandler = async () => {
     if (data) {
       ElMessage.success('删除成功');
       emits('delete');
+      emitter.emit('user:stats-refresh');
     }
   });
 };
