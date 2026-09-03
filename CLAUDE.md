@@ -12,41 +12,24 @@
 
 # 技术细节
 
-## 自动导入（无需手动 import）
-
-以下内容已配置自动导入，**在 `.vue` 文件和 `.ts` 文件中直接使用，无需 import**：
-
-| 类别 | 自动导入内容 |
-|------|-------------|
-| Vue API | `ref`, `reactive`, `computed`, `watch`, `onMounted` 等所有 Vue 组合式 API |
-| Vue Router | `useRoute`, `useRouter`（来自 `vue-router/auto`） |
-| Element Plus | 所有 Element Plus 组件 |
-| 自定义组件 | `src/components/` 下的组件可自动导入 |
-| 工具方法 | `src/utils/tool/` 下的方法无需导入 |
-
-## 样式
-
-- 使用 **UnoCSS**（原子化 CSS），配置了 `@unocss/preset-uno`、`@unocss/preset-attributify`、`@unocss/preset-icons`
-- 支持 **Less** 和 **Sass**
-
 ## 路径别名
 
 - `@` → `src/` 目录
 
 ## 主要依赖
 
-| 用途 | 库 |
-|------|---|
-| UI 组件库 | Element Plus |
-| 状态管理 | Pinia + pinia-plugin-persistedstate |
-| HTTP 请求 | Axios |
-| 图表 | ECharts 6 |
-| 日期处理 | dayjs |
-| Markdown 编辑器 | @kangc/v-md-editor |
-| 图标 | @icon-park/vue-next |
-| 拖拽 | @atlaskit/pragmatic-drag-and-drop |
-| 工具函数 | es-toolkit, @vueuse/core |
-| 代码高亮 | Prism.js |
+| 用途            | 库                                  |
+| --------------- | ----------------------------------- |
+| UI 组件库       | Element Plus                        |
+| 状态管理        | Pinia + pinia-plugin-persistedstate |
+| HTTP 请求       | Axios                               |
+| 图表            | ECharts 6                           |
+| 日期处理        | dayjs                               |
+| Markdown 编辑器 | @kangc/v-md-editor                  |
+| 图标            | @icon-park/vue-next                 |
+| 拖拽            | @atlaskit/pragmatic-drag-and-drop   |
+| 工具函数        | es-toolkit, @vueuse/core            |
+| 代码高亮        | Prism.js                            |
 
 ## 开发命令
 
@@ -59,6 +42,38 @@
 开发环境下 `/backapi` 路径代理到 `http://127.0.0.1:8000/`
 
 ---
+
+# 项目参考文档
+
+**开发大型需求、进入不熟悉的功能模块、或改动前想了解页面/接口/坑点时，先阅读 `docs/PROJECT_GUIDE.md`**（项目目录结构、各模块功能与字段、接口约定、通用组件、样式主题、已知占位与坑点清单）。它由一次通读整理而成，若代码演进与它不符，请同步更新该文档。
+
+关键速查：
+
+- 页面在 `src/views/pages/{Article,Auth,Resource,System,User,WorkBench}`，接口层在 `src/api/{article,authority,resource,system,user}`，一一对应
+- 侧边栏菜单由**后端**返回（登录时拉取存 `store/menu`），菜单 `route` 字段 = 前端路由的 `name`
+- 响应约定 `ResType{code,msg,data}`，成功 `code === 0`；分页返回 `{total, result}`；列表页统一 `useSearch`+`AppSearchPanel`，表单弹窗统一 `useDialog`
+- 通用组件 `src/components/common/App*`、`src/utils/tool` 方法、Vue API、Element Plus 全部**自动导入免 import**
+- AI 助手子系统在 `src/ai/`；个人事项/动态等重功能在 `User` 模块下
+
+# Skills
+
+根据用户请求的主要意图，自动选择对应 Skill：
+
+- **Plan**：需求分析、技术方案、影响范围、实现思路 → `.claude/skills/plan/SKILL.md`
+- **Code**：编写、修改、增加、删除代码 → `.claude/skills/code/SKILL.md`
+- **Log**：生成变更日志、记录重大需求或技术改动 → `.claude/skills/log/SKILL.md`
+
+使用 Skill 前读取对应的 `SKILL.md`，并遵循其中的规则。
+
+## Routing Rules
+
+- “先分析一下 / 怎么做 / 制定方案” → Plan
+- “按照方案实现 / 帮我写 / 修改代码” → Code
+- “记录一下 / 生成日志 / 更新变更记录” → Log
+- 如果用户明确指定 Skill，优先按用户指定执行。
+- 一个任务可以连续使用多个 Skill，例如：`Plan → Code → Log`。
+- 如果已有明确且确认过的方案，可以跳过 Plan 直接使用 Code。
+- 仅进行技术知识问答时，不需要调用这些 Skill。
 
 # 要求
 
