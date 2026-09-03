@@ -681,12 +681,23 @@ onBeforeUnmount(() => {
     padding: 0;
     background: transparent;
     font-size: 14px;
-    line-height: 1.6;
+    line-height: 1.8;
+    color: var(--sys-text-color);
+
+    // 首尾元素贴合气泡内边距，避免出现多余的上下空白
+    > :first-child {
+      margin-top: 0;
+    }
+
+    > :last-child {
+      margin-bottom: 0;
+    }
 
     pre {
       font-size: 12px;
-      padding: 0.5rem 0.75rem;
-      margin: 0.5rem 0;
+      line-height: 1.6;
+      padding: 0.75rem 0.9rem;
+      margin: 0.75rem 0;
     }
 
     code {
@@ -699,27 +710,34 @@ onBeforeUnmount(() => {
     h4,
     h5,
     h6 {
-      margin: 0.5rem 0 0.25rem;
+      margin: 1.1rem 0 0.5rem;
+      line-height: 1.4;
+      font-weight: 600;
     }
 
     p {
-      margin: 0.25rem 0;
+      margin: 0.5rem 0;
     }
 
     ul,
     ol {
-      padding-left: 1.25rem;
+      padding-left: 1.5rem;
+      margin: 0.5rem 0;
+    }
+
+    li {
       margin: 0.25rem 0;
+      line-height: 1.8;
     }
 
     table {
       font-size: 12px;
-      margin: 0.5rem 0;
+      margin: 0.75rem 0;
     }
 
     blockquote {
-      margin: 0.5rem 0;
-      padding: 0.25rem 0.75rem;
+      margin: 0.75rem 0;
+      padding: 0.5rem 0.9rem;
     }
   }
 }

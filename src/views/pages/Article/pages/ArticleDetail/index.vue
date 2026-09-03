@@ -31,11 +31,14 @@
         </div>
       </div>
 
-      <div class="content-wrapper flex-1 h-0 overflow-auto">
-        <div v-if="articleDetail?.baseInfo?.cover" class="image-wrapper w-full pt-2 px-8">
-          <img :src="articleDetail?.baseInfo?.cover" class="w-full h-full object-cover" />
+      <div class="body-wrapper flex flex-1 h-0 min-h-0">
+        <div ref="contentRef" class="content-wrapper flex-1 h-full min-w-0 overflow-auto">
+          <div v-if="articleDetail?.baseInfo?.cover" class="image-wrapper w-full pt-2 px-8">
+            <img :src="articleDetail?.baseInfo?.cover" class="w-full h-full object-cover" />
+          </div>
+          <v-md-preview :text="articleDetail?.detailInfo?.content" class="!h-full"></v-md-preview>
         </div>
-        <v-md-preview :text="articleDetail?.detailInfo?.content" class="!h-full"></v-md-preview>
+        <app-article-toc :container="contentRef" :content="articleDetail?.detailInfo?.content"></app-article-toc>
       </div>
     </div>
   </div>
@@ -46,6 +49,7 @@ import dayjs from 'dayjs';
 
 const route = useRoute();
 const articleDetail = ref<any>({});
+const contentRef = ref<HTMLElement>();
 const initDataHandler = async () => {
   const res = await getArticleDetailApi({ id: route.query.id });
   articleDetail.value = res.data;

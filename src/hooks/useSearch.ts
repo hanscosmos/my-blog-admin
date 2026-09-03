@@ -28,7 +28,10 @@ export const useSearch = <T, K>(
     });
     total.value = totalCount;
     if (isScroll) {
-      dataList.value = [...dataList.value, ...(result as any[])];
+      dataList.value =
+        pageConfig.pageNumber === 1
+          ? (result as any[])
+          : [...dataList.value, ...(result as any[])];
     } else {
       dataList.value = result as any[];
     }
