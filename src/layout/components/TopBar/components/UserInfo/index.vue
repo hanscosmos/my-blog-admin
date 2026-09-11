@@ -29,6 +29,7 @@
 import { useMenuStore } from '@/store/menu';
 import { useTabListStore } from '@/store/tab/tabList';
 import { useUserInfoStore } from '@/store/user';
+import { usePermissionStore } from '@/store/permission';
 import { storeToRefs } from 'pinia';
 
 const router = useRouter();
@@ -42,6 +43,7 @@ const logoutHandler = () => {
     clearUserData();
     clearTagList();
     menuTreeList.value = [];
+    usePermissionStore().clearPermission();
     router.push({ name: 'Login' });
   });
 };

@@ -25,7 +25,7 @@
         <AppIcon name="plus" size="14" class="mr-1" />
         新增资产项
       </el-button>
-      <el-button type="primary" @click="saveHandler"> 保存 </el-button>
+      <el-button v-perm="'system:blogger:update'" type="primary" @click="saveHandler"> 保存 </el-button>
     </div>
   </div>
 </template>

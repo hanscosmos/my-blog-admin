@@ -12,7 +12,7 @@
         <AppIcon name="eyes" size="14" class="mr-1" />
         预览
       </el-button>
-      <el-button type="danger" @click="deleteResume">
+      <el-button v-perm="'system:blogger:update'" type="danger" @click="deleteResume">
         <AppIcon name="delete" size="14" class="mr-1" />
         删除
       </el-button>

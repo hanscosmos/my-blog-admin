@@ -51,7 +51,7 @@
     </el-form>
 
     <div class="mt-4">
-      <el-button type="primary" @click="saveHandler"> 保存 </el-button>
+      <el-button v-perm="'system:blogger:update'" type="primary" @click="saveHandler"> 保存 </el-button>
     </div>
   </div>
 </template>

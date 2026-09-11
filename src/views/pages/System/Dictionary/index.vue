@@ -3,7 +3,7 @@
     <section class="dict-category-wrapper wrapper-item w-64 h-full flex flex-col">
       <h3 class="py-2 px-4 flex items-center justify-between">
         <span class="font-title text-lg">系统模块</span>
-        <el-button link type="primary" @click="openDialog('add')">
+        <el-button v-perm="'system:dict:add'" link type="primary" @click="openDialog('add')">
           <AppIcon name="plus" class="mr-1"></AppIcon>新增字典
         </el-button>
       </h3>
@@ -38,16 +38,16 @@
           <el-table-column label="状态" align="center">
             <template #default="{ row }">
               <el-switch v-model="row.status" class="ml-2" inline-prompt active-text="启用" inactive-text="禁用"
-                @change="setDictItemStatus(row)" />
+                :disabled="!hasPerm('system:dict:status')" @change="setDictItemStatus(row)" />
             </template>
           </el-table-column>
           <el-table-column label="操作" fixed="right" width="200" align="center">
             <template #default="{ row }">
               <div flex w-full class="justify-center">
-                <el-button link type="primary" @click="openDialog('edit', row)">
+                <el-button v-perm="'system:dict:update'" link type="primary" @click="openDialog('edit', row)">
                   修改
                 </el-button>
-                <el-button link type="danger" @click="deleteDictHandler(row)">
+                <el-button v-perm="'system:dict:delete'" link type="danger" @click="deleteDictHandler(row)">
                   删除
                 </el-button>
               </div>
@@ -71,9 +71,11 @@ import {
 import { DictItemType } from '@/api/system/dict/type';
 import { DictCategoryItemType, dictCategoryList } from '@/config/dict';
 import { useDialog } from '@/hooks/useDialog';
+import { usePermission } from '@/hooks/usePermission';
 import { columnList } from './service';
 import DictDialog from './components/DictDialog.vue';
 
+const { hasPerm } = usePermission();
 const { formDialogProps, openDialog, closeDialog } = useDialog<DictItemType>();
 
 const dictList = ref<DictItemType[]>([]);

@@ -11,15 +11,6 @@ export const AuthRouteList: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/interface-manage',
-    name: 'InterfaceManage',
-    component: () => import('@/views/pages/Auth/Interface/index.vue'),
-    meta: {
-      name: '接口管理',
-      icon: 'api',
-    },
-  },
-  {
     path: '/role-manage',
     name: 'RoleManage',
     component: () => import('@/views/pages/Auth/Role/index.vue'),

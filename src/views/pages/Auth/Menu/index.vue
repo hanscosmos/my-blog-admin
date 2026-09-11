@@ -3,7 +3,7 @@
     <AppSearchPanel :data-exist="menuTreeList.length > 0" :loading="loading">
       <template #header>
         <div class="flex">
-          <app-button @click="addDrawerHandler()">
+          <app-button v-perm="'authority:menu:add'" @click="addDrawerHandler()">
             <AppIcon name="add" class="mr-2"></AppIcon>
             新增菜单
           </app-button>
@@ -14,7 +14,12 @@
           default-expand-all>
           <el-table-column prop="name" label="名称" align="center" />
           <el-table-column prop="route" label="路由名称" align="center" />
-          <el-table-column prop="code" label="菜单码" align="center" />
+          <el-table-column prop="code" label="菜单码 / 权限码" align="center" />
+          <el-table-column label="类型" align="center" width="100">
+            <template #default="{ row }">
+              {{ getMenuTypeLabel(row.type) }}
+            </template>
+          </el-table-column>
           <el-table-column prop="sort" label="排序" align="center" />
           <el-table-column label="图标" align="center">
             <template #default="{ row }">
@@ -26,13 +31,17 @@
           <el-table-column label="操作" fixed="right" width="250" align="center">
             <template #default="{ row }">
               <div flex w-full class="justify-center">
-                <el-button link type="primary" @click="addDrawerHandler(row)">
+                <el-button v-perm="'authority:menu:add'" link type="primary" :disabled="isButtonNode(row)"
+                  :title="isButtonNode(row) ? '操作权限节点下不能再添加子节点' : ''" @click="addDrawerHandler(row)">
                   新增子菜单
                 </el-button>
-                <el-button link type="primary" @click="editDrawerHandler(row)">
+                <el-button v-perm="'authority:menu:update'" link type="primary" @click="editDrawerHandler(row)">
                   编辑
                 </el-button>
-                <el-button link type="danger" plain> 删除 </el-button>
+                <el-button v-perm="'authority:menu:delete'" link type="danger" :disabled="hasChildren(row)"
+                  :title="hasChildren(row) ? '该菜单存在子菜单，请先删除子菜单' : ''" @click="deleteMenuHandler(row)">
+                  删除
+                </el-button>
               </div>
             </template>
           </el-table-column>
@@ -48,8 +57,8 @@
 <script lang="ts" setup>
 import { MenuItemType } from '@/api/authority/menu/type';
 import MenuFormDrawer from './components/MenuFormDrawer.vue';
-import { getAllMenuTreeApi } from '@/api/authority/menu';
-import { DrawerPropsType } from './service';
+import { deleteMenuApi, getAllMenuTreeApi } from '@/api/authority/menu';
+import { DrawerPropsType, getMenuTypeLabel } from './service';
 import { useMenu } from '@/hooks/useMenu';
 
 const { getNavMenuTreeList } = useMenu();
@@ -91,6 +100,30 @@ const closeHandler = () => {
 };
 
 const menuTreeList = ref<MenuItemType[]>([]);
+
+const hasChildren = (row: MenuItemType) => !!row.children?.length;
+
+/** 操作权限节点（type='3'）为叶子，不再允许添加子节点 */
+const isButtonNode = (row: MenuItemType) => row.type === '3';
+
+const deleteMenuHandler = (row: MenuItemType) => {
+  if (hasChildren(row)) {
+    ElMessage.warning('该菜单存在子菜单，请先删除子菜单');
+    return;
+  }
+  confirmHandler(`您将删除菜单「${row.name}」`, async () => {
+    try {
+      const { data, msg } = await deleteMenuApi({ ids: [row.id] });
+      if (data) {
+        ElMessage.success(msg);
+        await getMenuTreeListHandler();
+        await getNavMenuTreeList();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  });
+};
 
 const getMenuTreeListHandler = async () => {
   try {

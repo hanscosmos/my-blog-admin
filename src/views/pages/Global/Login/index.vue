@@ -43,12 +43,14 @@ import { storeToRefs } from 'pinia';
 import { setCookie } from '@/utils/tool';
 import { ElMessage } from 'element-plus';
 import { useMenu } from '@/hooks/useMenu';
+import { usePermission } from '@/hooks/usePermission';
 
 const router = useRouter();
 
 const { theme } = storeToRefs(useSystemStore());
 const { isLogin, userInfo, token, refreshToken, csrfToken } = storeToRefs(useUserInfoStore());
 const { getNavMenuTreeList } = useMenu();
+const { loadPermission } = usePermission();
 
 const loginBg = computed(() => {
   return getSvg('waves', theme.value + '.svg');
@@ -104,6 +106,7 @@ const loginHandler = () => {
         refreshToken.value = data.refreshToken;
         loading.value = false;
         await getNavMenuTreeList();
+        await loadPermission();
         router.push('/');
       } else {
         loading.value = false;

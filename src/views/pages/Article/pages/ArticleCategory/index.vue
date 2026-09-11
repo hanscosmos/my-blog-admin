@@ -3,7 +3,7 @@
     <AppSearchPanel :data-exist="categoryList.length > 0" :loading="loading" hide-bottom>
       <template #header>
         <div class="flex">
-          <app-button @click="openDialog('add')">
+          <app-button v-perm="'article:category:add'" @click="openDialog('add')">
             <AppIcon name="add" class="mr-2"></AppIcon>新增分类
           </app-button>
         </div>
@@ -16,13 +16,14 @@
           <el-table-column label="操作" fixed="right" width="250" align="center">
             <template #default="{ row }">
               <div flex w-full class="justify-center">
-                <el-button v-if="!row.father" link type="primary" @click="openDialog('add', row)">
+                <el-button v-if="!row.father" v-perm="'article:category:add'" link type="primary"
+                  @click="openDialog('add', row)">
                   新增子分类
                 </el-button>
-                <el-button link type="primary" @click="openDialog('edit', row)">
+                <el-button v-perm="'article:category:update'" link type="primary" @click="openDialog('edit', row)">
                   编辑
                 </el-button>
-                <el-button link type="danger" plain> 删除 </el-button>
+                <el-button v-perm="'article:category:delete'" link type="danger" plain> 删除 </el-button>
               </div>
             </template>
           </el-table-column>

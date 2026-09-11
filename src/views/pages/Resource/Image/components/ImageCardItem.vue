@@ -5,7 +5,7 @@
     </div>
     <div class="option-btn flex items-center py-3 w-full">
       <div class="flex-1 xy-center">
-        <el-button link type="primary" @click="emits('edit', item)">
+        <el-button v-perm="'resource:image:update'" link type="primary" @click="emits('edit', item)">
           <AppIcon name="edit" class="mr-2"></AppIcon>
           编 辑
         </el-button>
@@ -13,7 +13,7 @@
 
       <el-divider direction="vertical"></el-divider>
       <div class="flex-1 xy-center">
-        <el-button link type="danger" @click="emits('delete', item)">
+        <el-button v-perm="'resource:image:delete'" link type="danger" @click="emits('delete', item)">
           <AppIcon name="delete" class="mr-2"></AppIcon>
           删 除
         </el-button>

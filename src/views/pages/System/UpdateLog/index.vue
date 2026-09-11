@@ -8,7 +8,7 @@
             <el-input v-model="searchParams.keyword" class="!w-280px mr-4" placeholder="请输入关键词搜索" clearable
               @change="filterDataListHandler"></el-input>
 
-            <app-button class="ml-4" @click="openDialog('add')">
+            <app-button v-perm="'system:log:add'" class="ml-4" @click="openDialog('add')">
               <AppIcon name="add" class="mr-2"></AppIcon>
               新增日志
             </app-button>
@@ -40,7 +40,7 @@
           <el-table-column label="操作" fixed="right" width="250" align="center">
             <template #default="{ row }">
               <div flex w-full class="justify-center">
-                <el-button link type="primary" @click="openDialog('edit', row)">编辑
+                <el-button v-perm="'system:log:update'" link type="primary" @click="openDialog('edit', row)">编辑
                 </el-button>
                 <el-button link type="primary" @click="openDialog('view', row)">
                   查看

@@ -30,6 +30,7 @@
 - **多标签页 TabBar + keep-alive**：`layout/index.vue` 中 `keep-alive` 排除 `['ArticleDetail', 'UpdateArticle', 'Home']`（每次重进重挂载）。缓存开关由 `systemStore.isOpenStore` 控制。
 - **响应约定**：后端统一 `ResType<T> = { code, msg, data }`，**`code === 0` 为成功**；非 0/非 401/非 501 会被拦截器自动 `ElMessage.error(msg)`。分页接口返回 `ResPageType<T> = { total, result }`，请求参数 `pageNumber` 从 1 开始。
 - **鉴权**：请求头 `Authorization: {token}` + `X-CSRFToken`（cookie）。`code === 401` 时走单飞队列刷新（`POST /user/refresh`），失败/无 refreshToken 则清数据跳登录页。
+- **权限体系（RBAC，查看 + 操作）**：菜单树 `type==='2'` 页面节点 = **查看权限**（决定侧边栏与路由可见性），`type==='3'` 按钮节点 = **操作权限**，其 `code` 即权限码，命名 `模块:资源:动作`（如 `article:delete`、`resource:icon-category:add`）。角色通过 `Role ↔ Menu` 多对多授权；超管角色 `code='10000'` 且 `isSuper=true`，绕过一切校验、不可编辑/删除/授权。登录时**前端**调 `GET /authority/permission/self` 写入 `usePermissionStore`（持久化 key `permission`），路由守卫与 `v-perm` 指令据此判断；**后端**由 `middleware/auth.py` + `config/permission.py` 的 `PERMISSION_PATH_MAP` 强制校验写接口（未映射路径默认放行，读权限由菜单可见性控制）。权限变更需重新登录才生效。
 
 ---
 
@@ -56,7 +57,8 @@ my-blog-admin/
     │   ├── SelectIcon/        #   图标选择器（菜单图标用，已实现）
     │   └── SelectImage/       #   图片选择器（空占位，未使用）
     ├── config/                # 全局配置：dict.ts(字典分类树，前端硬编码)、module.ts、mock.ts(菜单 mock)、index.ts(MAX_IMAGE_SIZE=10)
-    ├── hooks/                 # 组合式函数：useDialog/useSearch/useDict/useMenu/useScroll/useTaskReminder/useSpeechRecognition
+    ├── directives/            # 全局指令：permission.ts（v-perm，无权限时 display:none）
+    ├── hooks/                 # 组合式函数：useDialog/useSearch/useDict/useMenu/useScroll/useTaskReminder/useSpeechRecognition/usePermission
     ├── layout/                # 主框架布局
     │   ├── index.vue          #   侧栏 + 顶栏 + 标签页 + 内容(keep-alive)
     │   └── components/        #   SideBar(+FoldBtn)/TopBar(TodoListBtn·MessageBtn·ArticleBtn·UserInfo·AiChatWidget)/TabBar
@@ -64,7 +66,7 @@ my-blog-admin/
     ├── router/
     │   ├── index.ts           # 路由创建 + 登录守卫 + 自动加标签
     │   └── modules/           # 按业务拆：WorkBench/Auth/Resource/Article/System/User
-    ├── store/                 # Pinia：user(登录态)/system(明暗+主题+侧栏)/menu(后端菜单树)/tab(tabList 多标签)
+    ├── store/                 # Pinia：user(登录态)/system(明暗+主题+侧栏)/menu(后端菜单树)/tab(tabList 多标签)/permission(权限码)
     ├── style/                 # reset + common 工具类 + UIFramework + syscolors(mode/theme CSS 变量) + 字体注册
     ├── types/                 # global.d.ts(全局 ResType/PageType/ResPageType 等)、type.ts(FormDialogProps/TabItem)、sys/enum、user(动态类型)
     ├── utils/
@@ -88,6 +90,8 @@ my-blog-admin/
 | `store/system` | `mode('light'|'dark',默认 dark)/theme(5色,默认 green)/isSideExpand/isOpenStore`，persist key `system`；`changeTheme/changeMode` 通过给 `<html>` 增删 class 实现 |
 | `store/tab/tabList` | 多标签页列表，persist key `tabList`（sessionStorage） |
 | `store/menu` | 后端菜单树 `menuTreeList`，persist key `menu`（localStorage），登录/菜单增删改后刷新 |
+| `store/permission` | 权限码集合 `permCodes` + `isSuper/roles/menuRoutes`，persist key `permission`（localStorage）；`hasPerm(code\|code[])`、`clearPermission()`（退出登录时调） |
+| `hooks/usePermission` | `loadPermission()` 拉 `permission/self`、`ensurePermission()` 已有则跳过（路由守卫用）、`canAccessRoute(name)` 判断路由是否可访问 |
 | `utils/tool` | 被 `unplugin-auto-import` 扫描且 `vueTemplate:true` → **`.vue` 模板/脚本与 `.ts` 中直接可用免 import**：`fmtTime/dateDiff/getTagColor/toRgba/copyClick/confirmHandler/getCookie/setCookie/randomColor/getColorPair/getImg/getSvg/uploadFile/getDictLabelByKey` 等 |
 | `types/global.d.ts` | 无 export 的**全局类型**（免 import）：`PageType/ResType/ResPageType/ReqPageType/IdType/IdsType/DictType/TableColumnType` |
 | `views/components` | `TabPage`（页面内容容器）、`Charts/*`、`SysSettings` 均为**全局自动导入**组件（unplugin-vue-components 的 dirs 含此目录） |
@@ -189,11 +193,28 @@ my-blog-admin/
 
 | 页面 | 说明 |
 |---|---|
-| `Menu` 菜单管理 | 树形表格(后端 `GET /authority/menu/tree/all`)，可新增/新增子菜单/编辑；**删除按钮未接线**。`MenuFormDrawer` 抽屉维护字段：`name/route(路由 name)/icon(图片 URL，经 SelectIcon 选)/color(字典 MENU_COLOR)/code(权限码)/sort/father(父id)/type`。**`type` 自动生成不可手选**（顶级为 `'1'`，子级 = 父级+1）；`type==='1'` → 侧边栏目录。保存后需同时刷新菜单树 + `getNavMenuTreeList()` 双刷 |
-| `Interface` 接口管理 | **空占位页面**（模板仅文字）。但 `api/authority/interface` 已备全 CRUD + `batchAddInterfaceApi`，字段 `name/btnSign/path/sort/module`，供角色授权用。补页面可照 `useSearch`+表格模式 |
-| `Role` 角色管理 | 无分页列表，字段 `name/code/sort/limit(人数上限)`；编辑/删除(RoleDialog + confirm)已接。**「权限分配」按钮当前误绑到删除且 `DistributeAuthorityDialog` 未 import → 授权对话框是孤立组件，需接入才能用** |
+| `Menu` 菜单管理 | 树形表格(后端 `GET /authority/menu/tree/all`)，可新增/新增子菜单/编辑/删除（删除会级联清掉 `MenuAuthority`）。`MenuFormDrawer` 抽屉维护字段：`name/route(路由 name)/icon/color/code(权限码)/sort/father/type`。**`type` 可手选**：`'1'` 目录（侧边栏可折叠项）、`'2'` 页面（可点击跳转，必须有 `route`）、`'3'` 按钮（权限码载体，无 route/图标/颜色，必填 `code`）。抽屉里选「按钮」会自动隐藏并清空 route、颜色、图标。保存后需同时刷新菜单树 + `getNavMenuTreeList()` 双刷 |
+| `Role` 角色管理 | 无分页列表，字段 `name/code/sort/limit(人数上限)/isSuper`；编辑/删除/权限分配均已接线。`isSuper` 行（角色码 `10000`）三个操作按钮全部禁用并带 title 提示。 |
 
-角色授权对话框 `DistributeAuthorityDialog` 设计（未接入）：tab1 菜单 `el-tree` 勾选树（`check-strictly` 父子不联动，`getCheckedKeys` 只含显式勾选），回显 `getMenuListByRoleIdApi`（返回 `{menu:[]}`，取 `.menu`），提交 `setRoleMenuApi({roleId,menuIds})`；tab2 接口 `el-transfer` 穿梭框，全量 `getInterfaceListApi(pageSize:999)`，回显 `getInterfaceListByRoleIdApi`（返回 `{id}[]`，取 `.id`），提交 `setRoleInterfaceApi`。
+**角色授权 `DistributeAuthorityDialog`**：单棵 `el-tree` 勾选树，数据源 `GET /authority/menu/tree/all`。树上每个节点带类型标签，权限语义是：
+
+| 节点 `type` | 标签 | 含义 |
+|---|---|---|
+| `'1'` | 目录 | 仅容器，勾了才能让子页面挂上侧边栏 |
+| `'2'` | **查看** | **该角色能否看到并进入此页面**（= 读权限） |
+| `'3'` | 操作 | 页面内可执行的动作，`code` 即操作权限码 |
+
+- **必须用 `:check-strictly="true"`（关掉父子联动），否则「仅查看」根本配不出来。** 开启联动时 el-tree 会用子节点状态反推父节点——`node.mjs` 的 `reInitChecked()` 在「子节点全部未勾选」时会把父节点置为未勾选，于是取消最后一个操作必然连带取消「查看」。关掉联动后，「查看」只由页面/目录节点自身的勾选决定，与操作互不影响。
+- 联动没了要自己补两条规则（`onCheck`，`@check` 事件只在用户点击时触发，程序化 `setChecked*` 不触发，所以回显/全选不会误触发）：
+  - **勾选时补祖先**（`checkAncestors`）——侧边栏树需要父级才能挂载；
+  - **取消时清子孙**（`clearDescendants`）——页面不可见时其操作权限无意义。
+  - 两条规则都**不向上取消**：取消一个页面不会连带取消它的目录，这是刻意的（单页取消不该动到同目录下的其他页面）。
+- **回显**：`getMenuListByRoleIdApi` 返回 `{menuIds: string[]}`，`setCheckedKeys` 前先 `await nextTick()`（避免设在旧节点实例上），并用 `withAncestors` 补齐祖先（历史数据可能存在「只授权了按钮、没授权其页面」的记录）。严格模式下勾选集合就是最终集合，不会再被推导改写。
+- 提交 `setRoleMenuApi({roleId, menuIds})`，`menuIds = getCheckedKeys()`（严格模式没有半选状态）。后端 `set_role_menu` 是 `transaction.atomic()`，并拒绝向 `isSuper` 角色授权。
+- 对话框顶部有「全选 / 清空」，因为严格模式下勾全量需要逐个点。
+- 已知边界：「不允许查看」目前只由**前端**保证（侧边栏不下发 + 路由守卫拦截 + `v-perm` 隐藏）。读接口不在 `PERMISSION_PATH_MAP` 里，绕过前端直接调 `xxx/list` 仍能拿到数据；需要服务端也挡读时，在映射表里补 `xxx/list → 对应页面权限码` 即可。
+
+**权限码与按钮节点的关系**：一个页面的操作权限 = 该页面菜单（`type='2'`）下挂的 `type='3'` 子节点。新增后端写接口时必须同步在 `config/permission.py` 的 `PERMISSION_PATH_MAP` 里登记「路径 → 权限码」，否则该接口**默认放行**。种子权限用 `modules/authority/migrations/0007_seed_button_permissions.py` 维护（找不到父菜单 route 时会跳过并打印警告）。
 
 ### 3. 资源管理（`views/pages/Resource/`，api `api/resource/**`）
 
@@ -266,24 +287,26 @@ my-blog-admin/
 ## 九、跨模块开发约定（新增/修改功能前必读）
 
 1. **自动导入**：Vue API、`useRoute/useRouter`、Element Plus 组件、`src/components` 与 `src/views/components` 组件、`src/utils/tool` 方法全部免 import（模板内同样可用）。局部页面组件需显式 import。
-2. **新页面接入四步**：① `router/modules/{模块}/index.ts` 加路由（`meta:{name,icon}`，icon 用 icon-park 名字字符串）；② 页面组件放 `views/pages/模块/...`；③ 接口放 `api/模块/`（`index.ts` + `type.ts`）；④ 若需出现在侧边栏/权限，要在后端菜单里加（route=路由 name，type 由后端层级推导）。
-3. **列表页模板**：`AppSearchPanel` + `useSearch(originalParams, getDataFn, pageSize, isScroll)` + `AppPagination`；表单弹窗用 `useDialog<T>()`；字典用 `useDict(code)`。`useSearch` 翻页使用上次查询快照（`storageParams`），增删改后应 `initDataListHandler` 重置。搜索条件变更用 `filterDataListHandler`（回第 1 页）。
-4. **上传文件必须传对 `type`**（后端按它分目录）。通用场景参考：文章正文 `article`、文章封面 `article-cover`、专栏封面 `article-column-cover`、头像 `avatar`、图标 `icon`、图片 `image`、心情 `mood`、简历 `resume`。
-5. **事件总线**（mitt，类型强约束）：新增事件必须在 `src/utils/eventBus/index.ts` 的 `Events` 里补（历史坑：漏过 `task:copy`）。现有：`task:refresh(bool)/task:update/task:copy/user:stats-refresh`。
-6. **字典**：枚举展示一律转中文；需要新枚举项→在 `src/config/dict.ts` 分类树补 + 后端存字典项（字典分类树前端硬编码）。
-7. **类型**：接口类型放 `api/**/type.ts`，与 Form 类型 `+{id,createTime}` 交叉成 Item；全局类型在 `types/global.d.ts`；不要在多个地方重复定义（项目已有 `UserInfoType` 双处定义不一致、`email` 顶层/profile 混用的历史问题）。
-8. **样式**：用 `--sys-*`/`--theme-*` 变量与 `common/index.scss` 语义类；列表卡片容器类可参考既有页面（`wrapper-item` 等）。UnoCSS 属性化在模板常用。
-9. **颜色语义化函数**（utils/tool）：`getColorPair(±5 打分值)`、`getTagColor(标签名哈希)`、`toRgba(color,a)`、`randomColor()`。
-10. **日期**：统一 `dayjs`（`fmtTime`/`dateDiff`），日期选择器常配 `value-format="YYYY-MM-DD HH:mm:ss"`。
+2. **新页面接入四步**：① `router/modules/{模块}/index.ts` 加路由（`meta:{name,icon}`，icon 用 icon-park 名字字符串）；② 页面组件放 `views/pages/模块/...`；③ 接口放 `api/模块/`（`index.ts` + `type.ts`）；④ 后端菜单表加一条 `type='2'` 菜单（`route`=路由 name）。
+3. **新页面/新按钮的权限接入**：① 页面要在后端菜单里挂到某个 `type='2'` 节点下才能被导航；② 页面内的按钮加 `v-perm="'模块:资源:动作'"`（数组表示「满足其一即可」），并在后端菜单表加对应 `type='3'` 节点（`code` 必须与 `v-perm` 完全一致）；③ 后端写接口在 `config/permission.py` 的 `PERMISSION_PATH_MAP` 登记路径→权限码。
+   - `v-perm` 是**隐藏**（`display:none`）不是移除节点，因此只能防误操作，真正的拦截靠后端映射表。列表/表格里靠 `v-perm` 隐藏的按钮，仍需保证后端有对应权限校验。
+   - 不写 `v-perm` 的按钮视为「任何能看到该页面的角色都能点」，适用于不敏感的读操作。
+4. **列表页模板**：`AppSearchPanel` + `useSearch(originalParams, getDataFn, pageSize, isScroll)` + `AppPagination`；表单弹窗用 `useDialog<T>()`；字典用 `useDict(code)`。`useSearch` 翻页使用上次查询快照（`storageParams`），增删改后应 `initDataListHandler` 重置。搜索条件变更用 `filterDataListHandler`（回第 1 页）。
+5. **上传文件必须传对 `type`**（后端按它分目录）。通用场景参考：文章正文 `article`、文章封面 `article-cover`、专栏封面 `article-column-cover`、头像 `avatar`、图标 `icon`、图片 `image`、心情 `mood`、简历 `resume`。
+6. **事件总线**（mitt，类型强约束）：新增事件必须在 `src/utils/eventBus/index.ts` 的 `Events` 里补（历史坑：漏过 `task:copy`）。现有：`task:refresh(bool)/task:update/task:copy/user:stats-refresh`。
+7. **字典**：枚举展示一律转中文；需要新枚举项→在 `src/config/dict.ts` 分类树补 + 后端存字典项（字典分类树前端硬编码）。
+8. **类型**：接口类型放 `api/**/type.ts`，与 Form 类型 `+{id,createTime}` 交叉成 Item；全局类型在 `types/global.d.ts`；不要在多个地方重复定义（项目已有 `UserInfoType` 双处定义不一致、`email` 顶层/profile 混用的历史问题）。
+9. **样式**：用 `--sys-*`/`--theme-*` 变量与 `common/index.scss` 语义类；列表卡片容器类可参考既有页面（`wrapper-item` 等）。UnoCSS 属性化在模板常用。
+10. **颜色语义化函数**（utils/tool）：`getColorPair(±5 打分值)`、`getTagColor(标签名哈希)`、`toRgba(color,a)`、`randomColor()`。
+11. **日期**：统一 `dayjs`（`fmtTime`/`dateDiff`），日期选择器常配 `value-format="YYYY-MM-DD HH:mm:ss"`。
 
 ---
 
 ## 十、已知未完成 / 占位 / 易踩坑清单（改动前自查）
 
 **功能未完成（多数前端已留 UI / api 已备，但未接线）**
-- 菜单管理「删除」；文章分类「删除」；文章标签「删除」；图标/图片分类「删除」——按钮无 `@click`（相应 `deleteXxxApi` 多已定义）。
-- 角色「权限分配」入口接错 + `DistributeAuthorityDialog` 未 import。
-- `Auth/Interface` 接口管理页面为空壳（api 齐全）；`MessageBtn` 无逻辑；`ActiveUser`、`StatCard` 首页被注释/空实现。
+- 文章分类「删除」；文章标签「删除」；图标/图片分类「删除」——按钮无 `@click`（相应 `deleteXxxApi` 多已定义）。菜单管理「删除」已接线。
+- `MessageBtn` 无逻辑；`ActiveUser`、`StatCard` 首页被注释/空实现。
 - 用户管理：重置密码（无 API）、删除用户、头像上传 均缺。
 - 更新日志无删除按钮；字典页「新增」文案歧义（实为给当前字典码加 key/value）。
 - 个人资料 `birthday` 未实现编辑；`SelectImage`、`AppAutoUpload` 空壳。
@@ -294,7 +317,7 @@ my-blog-admin/
 - `UserInfoType` 在 `store/user/type.ts` 与 `api/user/type.ts` 两处定义、字段不一致。
 - 多处 `prop` 名与字段名不一致（`el-form-item prop="visible"` vs `isCurrentVersion` 等），多为无害遗留。
 - service.ts 中 `fmtResData/columnList` 部分冗余未用（ArticleCategory、User Task 等）。
-- `StatEnum.UserTask='column'` 命名误导；`getIconCategoryListApi`(GET) 与 `getImageCategoryListApi`(POST) 方法不一致；授权回显 `.menu` vs `.id` 字段不同。
+- `StatEnum.UserTask='column'` 命名误导；`getIconCategoryListApi`(GET) 与 `getImageCategoryListApi`(POST) 方法不一致。
 
 **行为 / 逻辑坑**
 - ReleaseArticle(新建) 被 keep-alive 缓存，切 tab 回来内容残留且 store reset 不触发。

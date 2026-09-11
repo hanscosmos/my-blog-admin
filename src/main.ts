@@ -15,6 +15,7 @@ import 'virtual:uno.css';
 import setupIconParkIcon from './plugins/iconpark';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import vMdEditorPlugin from './plugins/v-md-editor';
+import { setupPermissionDirective } from './directives/permission';
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
@@ -30,6 +31,7 @@ app
   .use(ElementPlus, { locale: zhCn })
   .use(setupIconParkIcon)
   .use(router)
-  .use(vMdEditorPlugin);
+  .use(vMdEditorPlugin)
+  .use(setupPermissionDirective);
 
 app.mount('#app');

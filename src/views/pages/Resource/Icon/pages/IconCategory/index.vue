@@ -7,15 +7,16 @@
         <template #header>
           <div class="xy-center">
             <span>操作</span>
-            <AppIcon name="plus" class="hover-text ml-2" @click="openDialog('add')"></AppIcon>
+            <AppIcon v-perm="'resource:icon-category:add'" name="plus" class="hover-text ml-2"
+              @click="openDialog('add')"></AppIcon>
           </div>
         </template>
         <template #default="{ row }">
           <div flex w-full class="justify-center">
-            <el-button link type="primary" @click="openDialog('edit', row)">
+            <el-button v-perm="'resource:icon-category:update'" link type="primary" @click="openDialog('edit', row)">
               修改
             </el-button>
-            <el-button link type="danger"> 删除 </el-button>
+            <el-button v-perm="'resource:icon-category:delete'" link type="danger"> 删除 </el-button>
           </div>
         </template>
       </el-table-column>

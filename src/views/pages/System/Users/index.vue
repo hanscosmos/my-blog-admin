@@ -12,7 +12,7 @@
               @change="filterDataListHandler">
               <el-option v-for="item in roleList" :key="item.id" :label="item.name" :value="item.id"></el-option>
             </el-select>
-            <app-button class="ml-4" @click="openDialog('add')">
+            <app-button v-perm="'system:user:add'" class="ml-4" @click="openDialog('add')">
               <AppIcon name="add" class="mr-2"></AppIcon>
               新增用户
             </app-button>
@@ -50,7 +50,7 @@
           <el-table-column label="操作" fixed="right" width="250" align="center">
             <template #default="{ row }">
               <div flex w-full class="justify-center">
-                <el-button link type="primary" @click="openDialog('edit', row)">分配角色
+                <el-button v-perm="'system:user:role'" link type="primary" @click="openDialog('edit', row)">分配角色
                 </el-button>
                 <el-button link type="primary"> 重置密码 </el-button>
               </div>

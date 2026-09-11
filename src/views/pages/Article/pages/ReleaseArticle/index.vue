@@ -3,7 +3,7 @@
     <div class="wrapper-color flex items-center h-16 px-4 border-bottom">
       <input v-model="title" class="flex-1 w-0 text-2xl bg-transparent" placeholder="请输入文章标题..." border="none"
         outline="none" />
-      <app-button @click="openDrawerHandler">
+      <app-button v-perm="['article:add', 'article:update']" @click="openDrawerHandler">
         <AppIcon name="add-four" class="mr-2"></AppIcon>发布
       </app-button>
     </div>

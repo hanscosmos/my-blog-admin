@@ -36,9 +36,11 @@ class Request {
     // 使用axios.create创建axios实例
     this.instance = axios.create(this.baseConfig);
 
-    const { token } = storeToRefs(useUserInfoStore());
     this.instance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
+        // store 必须在拦截器内部获取：本模块可能先于 app.use(pinia) 被求值，
+        // 在构造函数（模块加载期）调用 useUserInfoStore() 会抛 "no active Pinia"
+        const { token } = storeToRefs(useUserInfoStore());
         if (token.value) {
           if (config.headers) {
             config.headers.Authorization = `${token.value}`;

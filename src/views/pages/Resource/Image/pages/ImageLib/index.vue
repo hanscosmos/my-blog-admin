@@ -4,7 +4,7 @@
       <div class="flex items-center">
         <el-input v-model="searchParams.name" placeholder="输入名称搜索" class="mr-4 !w-280px" clearable
           @change="filterDataListHandler"></el-input>
-        <app-button @click="openDialog('add')">
+        <app-button v-perm="'resource:image:add'" @click="openDialog('add')">
           <AppIcon name="add" class="mr-2"></AppIcon>
           <span>新建图片</span>
         </app-button>

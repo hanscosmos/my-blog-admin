@@ -9,3 +9,13 @@ export type DrawerPropsType = {
   currentMenuItem: MenuItemType | null;
   optType: 'add' | 'edit';
 };
+
+/** 菜单层级固定为三级，由父节点推导，不依赖字典数据 */
+export const MENU_TYPE_OPTIONS = [
+  { key: '1', value: '目录' },
+  { key: '2', value: '页面' },
+  { key: '3', value: '操作权限' },
+];
+
+export const getMenuTypeLabel = (type: string) =>
+  MENU_TYPE_OPTIONS.find((item) => item.key === type)?.value || '—';

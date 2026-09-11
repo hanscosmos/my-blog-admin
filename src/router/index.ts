@@ -5,6 +5,7 @@ import { useUserInfoStore } from '@/store/user';
 import { storeToRefs } from 'pinia';
 import { ElMessage } from 'element-plus';
 import { useTabListStore } from '@/store/tab/tabList';
+import { usePermission } from '@/hooks/usePermission';
 import type { TabItem } from '@/types/type';
 
 const routes: RouteRecordRaw[] = [
@@ -26,37 +27,12 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   document.body.scrollTop = 0;
   document.documentElement.scrollTop = 0;
   const { isLogin } = storeToRefs(useUserInfoStore());
   const { addTabItem } = useTabListStore();
-  if (isLogin.value) {
-    if (to.name === 'Login') {
-      ElMessage.warning('您已经登录');
-      next(from.path);
-    } else {
-      if (!to.meta?.isHideTabBar) {
-        const baseItem = {
-          id: to.name as string,
-          routeName: to.name as string,
-          name: (to.meta.name as string) || '',
-          icon: to.meta.icon as string,
-        };
-        const menuItem = to.query
-          ? {
-              ...baseItem,
-              query: to.query,
-            }
-          : baseItem;
-        document.title = menuItem.name || '博客后台管理系统';
-        addTabItem(menuItem as TabItem);
-      } else {
-        document.title = (to.meta.name as string) || '博客后台管理系统';
-      }
-      next();
-    }
-  } else {
+  if (!isLogin.value) {
     if (to.name === 'Login') {
       next();
       if (getSessionStorage('tokenValid')) {
@@ -67,7 +43,51 @@ router.beforeEach((to, from, next) => {
       ElMessage.error('您尚未登录');
       next({ name: 'Login' });
     }
+    return;
   }
+  if (to.name === 'Login') {
+    ElMessage.warning('您已经登录');
+    next(from.path);
+    return;
+  }
+
+  // 菜单由后端按角色下发，进入页面前确保权限数据已就绪
+  const { ensurePermission, canAccessRoute } = usePermission();
+  try {
+    await ensurePermission();
+  } catch (error) {
+    console.log(error);
+  }
+  const routeName = to.name as string;
+  if (!canAccessRoute(routeName)) {
+    ElMessage.error('您的权限不足，无法访问该页面');
+    if (!from.name && routeName !== 'Home') {
+      next({ name: 'Home' });
+    } else {
+      next(false);
+    }
+    return;
+  }
+
+  if (!to.meta?.isHideTabBar) {
+    const baseItem = {
+      id: routeName,
+      routeName,
+      name: (to.meta.name as string) || '',
+      icon: to.meta.icon as string,
+    };
+    const menuItem = to.query
+      ? {
+          ...baseItem,
+          query: to.query,
+        }
+      : baseItem;
+    document.title = menuItem.name || '博客后台管理系统';
+    addTabItem(menuItem as TabItem);
+  } else {
+    document.title = (to.meta.name as string) || '博客后台管理系统';
+  }
+  next();
 });
 
 export default router;

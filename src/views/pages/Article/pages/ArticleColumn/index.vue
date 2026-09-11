@@ -5,7 +5,7 @@
         <div class="flex items-center">
           <el-input v-model="searchParams.name" class="!w-280px mr-4" placeholder="请输入关键词搜索" clearable
             @change="filterDataListHandler"></el-input>
-          <app-button @click="openDialog('add')">
+          <app-button v-perm="'article:column:add'" @click="openDialog('add')">
             <AppIcon name="add" class="mr-2"></AppIcon>新增专栏
           </app-button>
         </div>
@@ -23,10 +23,10 @@
           <el-table-column label="操作" fixed="right" width="250" align="center">
             <template #default="{ row }">
               <div flex w-full class="justify-center">
-                <el-button link type="primary" @click="openDialog('edit', row)">
+                <el-button v-perm="'article:column:update'" link type="primary" @click="openDialog('edit', row)">
                   编辑
                 </el-button>
-                <el-button link type="danger" plain @click="deleteColumnHandler(row)">
+                <el-button v-perm="'article:column:delete'" link type="danger" plain @click="deleteColumnHandler(row)">
                   删除
                 </el-button>
               </div>

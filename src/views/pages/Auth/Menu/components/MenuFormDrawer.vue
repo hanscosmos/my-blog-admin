@@ -13,14 +13,14 @@
         :rules="menuFormRules"
         :model="menuForm"
       >
-        <el-form-item prop="name" label="菜单名称">
+        <el-form-item prop="name" :label="isButton ? '权限名称' : '菜单名称'">
           <el-input v-model="menuForm.name"></el-input>
         </el-form-item>
-        <el-form-item prop="code" label="菜单码">
-          <el-input v-model="menuForm.code"></el-input>
+        <el-form-item prop="code" :label="isButton ? '权限码' : '菜单码'">
+          <el-input v-model="menuForm.code" :placeholder="isButton ? '如 article:delete' : ''"></el-input>
         </el-form-item>
-        <el-form-item prop="route" label="菜单路由">
-          <el-input v-model="menuForm.route"></el-input>
+        <el-form-item v-if="!isButton" prop="route" label="菜单路由">
+          <el-input v-model="menuForm.route" placeholder="前端路由的 name，如 ArticleList"></el-input>
         </el-form-item>
         <el-form-item prop="father" label="父菜单">
           <el-input v-model="fatherName" disabled></el-input>
@@ -28,7 +28,7 @@
         <el-form-item prop="type" label="菜单类型">
           <el-radio-group v-model="menuForm.type" disabled>
             <el-radio
-              v-for="item in menuTypeList"
+              v-for="item in MENU_TYPE_OPTIONS"
               :key="item.key"
               :value="item.key"
             >
@@ -36,7 +36,7 @@
             </el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item prop="color" label="菜单颜色">
+        <el-form-item v-if="!isButton" prop="color" label="菜单颜色">
           <el-select v-model="menuForm.color" clearable>
             <el-option
               v-for="item in menuColorList"
@@ -53,7 +53,7 @@
             :min="0"
           ></el-input-number>
         </el-form-item>
-        <el-form-item prop="color" label="菜单图标">
+        <el-form-item v-if="!isButton" prop="color" label="菜单图标">
           <SelectIcon @confirm="selectIconHandler"></SelectIcon>
         </el-form-item>
       </el-form>
@@ -68,15 +68,13 @@
 import { addMenuApi, editMenuApi } from '@/api/authority/menu';
 import { MenuFormType } from '@/api/authority/menu/type';
 import { ElMessage } from 'element-plus';
-import { DrawerPropsType } from '../service';
+import { DrawerPropsType, MENU_TYPE_OPTIONS } from '../service';
 import { IconItemType } from '@/api/resource/icon/type';
 import { useDict } from '@/hooks/useDict';
 
 const props = defineProps<DrawerPropsType>();
 const emits = defineEmits(['addSuccess', 'close']);
 
-const { dictDataList: menuTypeList, getDictDataList: getMenuTypeList } =
-  useDict('MENU_TYPE');
 const { dictDataList: menuColorList, getDictDataList: getMenuColorList } =
   useDict('MENU_COLOR');
 
@@ -98,12 +96,17 @@ const menuForm = ref<MenuFormType>({
 });
 const fatherName = ref('');
 
-const menuFormRules = {
+/** 操作权限节点不需要前端路由 */
+const isButton = computed(() => menuForm.value.type === '3');
+
+const menuFormRules = computed(() => ({
   name: [{ required: true, message: '菜单名称不能为空', trigger: 'blur' }],
   code: [{ required: true, message: '菜单码不能为空', trigger: 'blur' }],
-  route: [{ required: true, message: '菜单路由不能为空', trigger: 'blur' }],
+  route: isButton.value
+    ? []
+    : [{ required: true, message: '菜单路由不能为空', trigger: 'blur' }],
   type: [{ required: true, message: '菜单类型不能为空', trigger: 'change' }],
-};
+}));
 const openDrawerHandler = () => {
   visible.value = true;
 };
@@ -121,13 +124,18 @@ const selectIconHandler = (item: IconItemType | null) => {
 const submitFormHandler = async () => {
   formRef.value.validate(async (valid: boolean) => {
     if (!valid) return;
+    const formData: MenuFormType = {
+      ...menuForm.value,
+      // 操作权限节点不参与侧边栏渲染与路由跳转
+      route: isButton.value ? '' : menuForm.value.route,
+    };
     let res: ResType<any> | null;
     if (props.optType === 'add') {
-      res = await addMenuApi(menuForm.value);
+      res = await addMenuApi(formData);
     } else {
       res = await editMenuApi({
         id: props.currentMenuItem?.id as string,
-        ...menuForm.value,
+        ...formData,
       });
     }
 
@@ -156,7 +164,6 @@ watch([() => props.optType, () => visible.value], () => {
 });
 
 onMounted(async () => {
-  await getMenuTypeList();
   await getMenuColorList();
 });
 

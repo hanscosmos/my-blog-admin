@@ -1,6 +1,6 @@
 <template>
   <div class="shortcut-icon flex items-center gap-4">
-    <div class="flex items-center flex-col hover-text" @click="gotoReleaseArticle">
+    <div v-perm="'article:add'" class="flex items-center flex-col hover-text" @click="gotoReleaseArticle">
       <AppIcon name="pencil" :size="16"></AppIcon>
       <span class="text-xs mt-1">发表文章</span>
     </div>

@@ -68,10 +68,12 @@
                 <el-button v-if="row.status === 'publish'" link type="primary" @click="gotoArticleDetail(row.id)">
                   查看详情
                 </el-button>
-                <el-button v-if="isAuthor(row)" link type="primary" @click="gotoUpdateArticle(row.id)">
+                <el-button v-if="isAuthor(row)" v-perm="'article:update'" link type="primary"
+                  @click="gotoUpdateArticle(row.id)">
                   编辑
                 </el-button>
-                <el-button v-if="isAuthor(row)" link type="danger" @click="deleteArticleHandler(row.id)">
+                <el-button v-if="isAuthor(row)" v-perm="'article:delete'" link type="danger"
+                  @click="deleteArticleHandler(row.id)">
                   删除
                 </el-button>
               </div>

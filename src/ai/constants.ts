@@ -14,7 +14,7 @@ export const DEFAULT_SYSTEM_PROMPT = `你是一个博客后台管理系统的AI�
 请用中文回答。回答应简洁、实用，给出可操作的建议。如果需要代码示例，请使用 Markdown 格式。`
 
 /** 默认模型 */
-export const DEFAULT_MODEL = 'deepseek-v4-pro'
+export const DEFAULT_MODEL = 'deepseek-flash'
 
 /** 最大存储消息数 */
 export const MAX_MESSAGES_PER_CONVERSATION = 100
