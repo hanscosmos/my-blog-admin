@@ -9,7 +9,7 @@
           </div>
         </template>
       </el-segmented>
-      <app-button @click="gotoCreateArticle">
+      <app-button v-perm="'article:add'" @click="gotoCreateArticle">
         <AppIcon name="add" class="mr-1"></AppIcon>
         创建文章
       </app-button>
@@ -93,8 +93,8 @@
                 <el-button link type="primary" @click="gotoArticleDetail(row.id)">
                   查看详情
                 </el-button>
-                <el-button link type="primary" @click="gotoUpdateArticle(row.id)">编辑</el-button>
-                <el-button link type="danger" @click="deleteArticleHandler(row.id)">删除</el-button>
+                <el-button v-perm="'article:update'" link type="primary" @click="gotoUpdateArticle(row.id)">编辑</el-button>
+                <el-button v-perm="'article:delete'" link type="danger" @click="deleteArticleHandler(row.id)">删除</el-button>
               </div>
             </template>
           </el-table-column>

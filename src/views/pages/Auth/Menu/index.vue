@@ -20,6 +20,13 @@
               {{ getMenuTypeLabel(row.type) }}
             </template>
           </el-table-column>
+          <el-table-column label="侧边栏" align="center" width="90">
+            <template #default="{ row }">
+              <span v-if="isButtonNode(row)">—</span>
+              <AppTag v-else size="small" :name="row.isNav ? '显示' : '隐藏'"
+                :color="row.isNav ? '' : '#999'" />
+            </template>
+          </el-table-column>
           <el-table-column prop="sort" label="排序" align="center" />
           <el-table-column label="图标" align="center">
             <template #default="{ row }">
@@ -69,6 +76,7 @@ const drawerProps = reactive<DrawerPropsType>({
     name: '',
     id: null,
     type: '0',
+    isNav: true,
   },
   currentMenuItem: null,
   optType: 'add',
@@ -78,6 +86,7 @@ const addDrawerHandler = (row?: MenuItemType) => {
     drawerProps.fatherMenuItem.id = row.id;
     drawerProps.fatherMenuItem.name = row.name || '';
     drawerProps.fatherMenuItem.type = row.type || '0';
+    drawerProps.fatherMenuItem.isNav = row.isNav;
   }
   drawerProps.optType = 'add';
   drawerRef.value.openDrawerHandler();
@@ -97,6 +106,7 @@ const closeHandler = () => {
   drawerProps.fatherMenuItem.name = '';
   drawerProps.fatherMenuItem.id = null;
   drawerProps.fatherMenuItem.type = '0';
+  drawerProps.fatherMenuItem.isNav = true;
 };
 
 const menuTreeList = ref<MenuItemType[]>([]);

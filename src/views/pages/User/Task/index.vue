@@ -11,7 +11,7 @@
           <span class="text-gray-400 cursor-pointer text-xs ml-1">?</span>
         </el-tooltip>
       </div>
-      <app-button @click="openDialog('add')">
+      <app-button v-perm="'user:task:add'" @click="openDialog('add')">
         <AppIcon name="add" class="mr-1"></AppIcon>
         新增事项
       </app-button>

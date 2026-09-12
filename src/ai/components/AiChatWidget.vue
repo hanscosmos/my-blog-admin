@@ -10,8 +10,8 @@
       <AiChatPanel />
     </el-drawer>
 
-    <div title="ai助手" class="trigger-btn wrapper-solid-item rounded-lg p-2" :class="{ 'is-open': isOpen }"
-      @click="togglePanel">
+    <div v-perm="'global:topbar:ai'" title="ai助手" class="trigger-btn wrapper-solid-item rounded-lg p-2"
+      :class="{ 'is-open': isOpen }" @click="togglePanel">
       <AppIcon name="robot" :size="14" color="#fff" />
     </div>
   </div>
@@ -21,13 +21,16 @@
 import { useAiChatStore } from '@/ai/store/aiChat'
 import { storeToRefs } from 'pinia'
 import AiChatPanel from '@/ai/components/AiChatPanel.vue'
+import { usePermission } from '@/hooks/usePermission'
 
 const store = useAiChatStore()
 const { isOpen } = storeToRefs(store)
 const { togglePanel } = store
+const { hasPerm } = usePermission()
 
 // 全局键盘快捷键: Ctrl/Cmd + K 切换面板
 function handleKeydown(e: KeyboardEvent) {
+  if (!hasPerm('global:topbar:ai')) return
   if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
     e.preventDefault()
     togglePanel()

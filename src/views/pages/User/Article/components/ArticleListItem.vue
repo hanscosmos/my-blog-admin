@@ -22,12 +22,12 @@
     </div>
 
     <div class="option-btn flex items-center absolute top-4 right-4">
-      <el-button v-if="isAuthor" link type="primary" @click="emits('edit', article.id)">
+      <el-button v-if="isAuthor" v-perm="'article:update'" link type="primary" @click="emits('edit', article.id)">
         编辑
       </el-button>
 
       <el-divider v-if="isAuthor" direction="vertical"></el-divider>
-      <el-button v-if="isAuthor" link type="danger" @click="emits('delete', article.id)">
+      <el-button v-if="isAuthor" v-perm="'article:delete'" link type="danger" @click="emits('delete', article.id)">
         删除
       </el-button>
     </div>

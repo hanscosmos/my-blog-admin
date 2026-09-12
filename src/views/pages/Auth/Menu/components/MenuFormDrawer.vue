@@ -19,8 +19,14 @@
         <el-form-item prop="code" :label="isButton ? '权限码' : '菜单码'">
           <el-input v-model="menuForm.code" :placeholder="isButton ? '如 article:delete' : ''"></el-input>
         </el-form-item>
+        <el-form-item v-if="!isButton" prop="isNav" label="侧边栏">
+          <el-switch v-model="menuForm.isNav" inline-prompt active-text="显示" inactive-text="隐藏" />
+          <span class="ml-3 text-xs" style="color: var(--sys-text-secondary-color)">
+            关闭后不下发到左侧导航，用于顶部导航栏入口、系统设置、个人中心这类全局页面
+          </span>
+        </el-form-item>
         <el-form-item v-if="!isButton" prop="route" label="菜单路由">
-          <el-input v-model="menuForm.route" placeholder="前端路由的 name，如 ArticleList"></el-input>
+          <el-input v-model="menuForm.route" :placeholder="routePlaceholder"></el-input>
         </el-form-item>
         <el-form-item prop="father" label="父菜单">
           <el-input v-model="fatherName" disabled></el-input>
@@ -89,6 +95,7 @@ const originalForm: MenuFormType = {
   type: '1',
   sort: 0,
   father: null,
+  isNav: true,
 };
 
 const menuForm = ref<MenuFormType>({
@@ -99,12 +106,27 @@ const fatherName = ref('');
 /** 操作权限节点不需要前端路由 */
 const isButton = computed(() => menuForm.value.type === '3');
 
+/**
+ * 不上侧边栏的页面节点（顶部导航栏入口、系统设置、个人中心等）没有独立路由，
+ * 它们的可见性靠 code 表达，因此路由留空是合法的。
+ */
+const isGlobalPage = computed(
+  () => menuForm.value.type === '2' && !menuForm.value.isNav
+);
+
+const routePlaceholder = computed(() =>
+  isGlobalPage.value
+    ? '可留空：非路由页面用 code 做权限判断'
+    : '前端路由的 name，如 ArticleList'
+);
+
 const menuFormRules = computed(() => ({
   name: [{ required: true, message: '菜单名称不能为空', trigger: 'blur' }],
   code: [{ required: true, message: '菜单码不能为空', trigger: 'blur' }],
-  route: isButton.value
-    ? []
-    : [{ required: true, message: '菜单路由不能为空', trigger: 'blur' }],
+  route:
+    isButton.value || isGlobalPage.value
+      ? []
+      : [{ required: true, message: '菜单路由不能为空', trigger: 'blur' }],
   type: [{ required: true, message: '菜单类型不能为空', trigger: 'change' }],
 }));
 const openDrawerHandler = () => {
@@ -154,12 +176,14 @@ watch([() => props.optType, () => visible.value], () => {
     menuForm.value.type = (
       parseFloat(props.fatherMenuItem.type) + 1
     ).toString();
+    // 子节点默认跟随父节点的侧边栏可见性，避免在「全局」下新建页面时误挂到侧边栏
+    menuForm.value.isNav = props.fatherMenuItem.isNav;
   }
   if (props.optType === 'edit' && props.currentMenuItem && visible.value) {
     fatherName.value = props.fatherMenuItem.name;
-    const { name, route, color, code, sort, type, father, icon } =
+    const { name, route, color, code, sort, type, father, icon, isNav } =
       props.currentMenuItem;
-    menuForm.value = { name, route, color, code, sort, type, father, icon };
+    menuForm.value = { name, route, color, code, sort, type, father, icon, isNav };
   }
 });
 

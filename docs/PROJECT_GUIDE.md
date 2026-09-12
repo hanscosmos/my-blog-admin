@@ -30,7 +30,8 @@
 - **多标签页 TabBar + keep-alive**：`layout/index.vue` 中 `keep-alive` 排除 `['ArticleDetail', 'UpdateArticle', 'Home']`（每次重进重挂载）。缓存开关由 `systemStore.isOpenStore` 控制。
 - **响应约定**：后端统一 `ResType<T> = { code, msg, data }`，**`code === 0` 为成功**；非 0/非 401/非 501 会被拦截器自动 `ElMessage.error(msg)`。分页接口返回 `ResPageType<T> = { total, result }`，请求参数 `pageNumber` 从 1 开始。
 - **鉴权**：请求头 `Authorization: {token}` + `X-CSRFToken`（cookie）。`code === 401` 时走单飞队列刷新（`POST /user/refresh`），失败/无 refreshToken 则清数据跳登录页。
-- **权限体系（RBAC，查看 + 操作）**：菜单树 `type==='2'` 页面节点 = **查看权限**（决定侧边栏与路由可见性），`type==='3'` 按钮节点 = **操作权限**，其 `code` 即权限码，命名 `模块:资源:动作`（如 `article:delete`、`resource:icon-category:add`）。角色通过 `Role ↔ Menu` 多对多授权；超管角色 `code='10000'` 且 `isSuper=true`，绕过一切校验、不可编辑/删除/授权。登录时**前端**调 `GET /authority/permission/self` 写入 `usePermissionStore`（持久化 key `permission`），路由守卫与 `v-perm` 指令据此判断；**后端**由 `middleware/auth.py` + `config/permission.py` 的 `PERMISSION_PATH_MAP` 强制校验写接口（未映射路径默认放行，读权限由菜单可见性控制）。权限变更需重新登录才生效。
+- **权限体系（RBAC，查看 + 操作）**：菜单树 `type==='2'` 页面节点 = **查看权限**（决定侧边栏与路由可见性），`type==='3'` 按钮节点 = **操作权限**，其 `code` 即权限码，命名 `模块:资源:动作`（如 `article:delete`、`resource:icon-category:add`）。**`isNav=false` 的节点不上侧边栏**，用于顶部导航栏入口、系统设置、个人中心这类全局页面 —— 它们没有前端路由，可见性完全由 `code` 表达，前端用同一个 `hasPerm(code)` 判断。角色通过 `Role ↔ Menu` 多对多授权；超管角色 `code='10000'` 且 `isSuper=true`，绕过一切校验、不可编辑/删除/授权。登录时**前端**调 `GET /authority/permission/self` 写入 `usePermissionStore`（持久化 key `permission`），路由守卫与 `v-perm` 指令据此判断；**后端**由 `middleware/auth.py` + `config/permission.py` 的 `PERMISSION_PATH_MAP` 强制校验写接口（未映射路径默认放行，读权限由菜单可见性控制）。权限变更需重新登录才生效。
+- **权限码来源**：后端 `get_user_permission_codes()` 收集所有 **非目录** 节点的 `code`，即 `type in ('2','3')` —— 页面节点带的是「能否看到该入口」，按钮节点带的是「能否执行该动作」，两类在前端都走 `hasPerm(code)`。后端 `has_permission()` 只认按钮码（`PERMISSION_PATH_MAP` 里登记的都是按钮码）。
 
 ---
 
@@ -193,7 +194,7 @@ my-blog-admin/
 
 | 页面 | 说明 |
 |---|---|
-| `Menu` 菜单管理 | 树形表格(后端 `GET /authority/menu/tree/all`)，可新增/新增子菜单/编辑/删除（删除会级联清掉 `MenuAuthority`）。`MenuFormDrawer` 抽屉维护字段：`name/route(路由 name)/icon/color/code(权限码)/sort/father/type`。**`type` 可手选**：`'1'` 目录（侧边栏可折叠项）、`'2'` 页面（可点击跳转，必须有 `route`）、`'3'` 按钮（权限码载体，无 route/图标/颜色，必填 `code`）。抽屉里选「按钮」会自动隐藏并清空 route、颜色、图标。保存后需同时刷新菜单树 + `getNavMenuTreeList()` 双刷 |
+| `Menu` 菜单管理 | 树形表格(后端 `GET /authority/menu/tree/all`)，可新增/新增子菜单/编辑/删除（删除会级联清掉 `MenuAuthority`）。`MenuFormDrawer` 抽屉维护字段：`name/route(路由 name)/icon/color/code(权限码)/sort/father/type/isNav`。**`type` 由父节点推导、不可手选**：`'1'` 目录（侧边栏可折叠项）、`'2'` 页面（可点击跳转，必须有 `route`）、`'3'` 按钮（权限码载体，无 route/图标/颜色，必填 `code`）。按钮节点会自动隐藏 route/颜色/图标。**`isNav`（侧边栏显示开关）**只对目录/页面可见：关掉后该节点不下发到侧边栏，用于顶部导航栏入口、系统设置、个人中心这类全局页面；此时页面节点的 `route` 允许留空（非路由页面，可见性靠 `code`）。新建子节点默认继承父节点的 `isNav`。表格「侧边栏」列显示 显示/隐藏。保存后需同时刷新菜单树 + `getNavMenuTreeList()` 双刷 |
 | `Role` 角色管理 | 无分页列表，字段 `name/code/sort/limit(人数上限)/isSuper`；编辑/删除/权限分配均已接线。`isSuper` 行（角色码 `10000`）三个操作按钮全部禁用并带 title 提示。 |
 
 **角色授权 `DistributeAuthorityDialog`**：单棵 `el-tree` 勾选树，数据源 `GET /authority/menu/tree/all`。树上每个节点带类型标签，权限语义是：
@@ -202,7 +203,10 @@ my-blog-admin/
 |---|---|---|
 | `'1'` | 目录 | 仅容器，勾了才能让子页面挂上侧边栏 |
 | `'2'` | **查看** | **该角色能否看到并进入此页面**（= 读权限） |
+| `'2'` 且 `isNav=false` | **全局** | 不上侧边栏的入口（顶部导航栏、系统设置、个人中心），勾上该角色才看得见 |
 | `'3'` | 操作 | 页面内可执行的动作，`code` 即操作权限码 |
+
+「全局」子树由迁移 `0009_seed_menu_tree` 种下，结构是 `全局`(目录) → 各入口(页面节点) → 个人中心下的具体操作(按钮节点)。页面节点自带 `code`（如 `global:setting:open`、`user:center`），前端直接用 `v-perm` 引用；`个人中心` 下的按钮走 `user:*` 码，`创作` tab 的文章增改删复用文章管理已有的 `article:add/update/delete`。这些节点**种子只建不授权**，需要在角色管理里手动分配。
 
 - **必须用 `:check-strictly="true"`（关掉父子联动），否则「仅查看」根本配不出来。** 开启联动时 el-tree 会用子节点状态反推父节点——`node.mjs` 的 `reInitChecked()` 在「子节点全部未勾选」时会把父节点置为未勾选，于是取消最后一个操作必然连带取消「查看」。关掉联动后，「查看」只由页面/目录节点自身的勾选决定，与操作互不影响。
 - 联动没了要自己补两条规则（`onCheck`，`@check` 事件只在用户点击时触发，程序化 `setChecked*` 不触发，所以回显/全选不会误触发）：
@@ -214,7 +218,10 @@ my-blog-admin/
 - 对话框顶部有「全选 / 清空」，因为严格模式下勾全量需要逐个点。
 - 已知边界：「不允许查看」目前只由**前端**保证（侧边栏不下发 + 路由守卫拦截 + `v-perm` 隐藏）。读接口不在 `PERMISSION_PATH_MAP` 里，绕过前端直接调 `xxx/list` 仍能拿到数据；需要服务端也挡读时，在映射表里补 `xxx/list → 对应页面权限码` 即可。
 
-**权限码与按钮节点的关系**：一个页面的操作权限 = 该页面菜单（`type='2'`）下挂的 `type='3'` 子节点。新增后端写接口时必须同步在 `config/permission.py` 的 `PERMISSION_PATH_MAP` 里登记「路径 → 权限码」，否则该接口**默认放行**。种子权限用 `modules/authority/migrations/0007_seed_button_permissions.py` 维护（找不到父菜单 route 时会跳过并打印警告）。
+**权限码与按钮节点的关系**：一个页面的操作权限 = 该页面菜单（`type='2'`）下挂的 `type='3'` 子节点。新增后端写接口时必须同步在 `config/permission.py` 的 `PERMISSION_PATH_MAP` 里登记「路径 → 权限码」，否则该接口**默认放行**。
+
+**菜单数据的来源**（后端 `my-blog-service`）：`sys_menu` 全量结构由 `modules/authority/migrations/0009_seed_menu_tree.py` 维护 —— 按 `code` 做 `get_or_create`，幂等且不覆盖界面上改过的字段，也**不写 `MenuAuthority`**（授权始终由角色管理维护）。新增节点优先在「菜单管理」界面里加；需要固化到代码（换环境可重建）时，往该迁移的 `MENU_TREE` 里补一条。回滚为空操作，删节点会连带清掉授权记录。
+   - 新增 authority 迁移时**编号要从 0008 往后接**：0002~0007 已在数据库的 `django_migrations` 里注册，而对应文件只在开发机上（`migrations/` 被 `.gitignore` 忽略），编号撞车会在两边合并时出问题。
 
 ### 3. 资源管理（`views/pages/Resource/`，api `api/resource/**`）
 
@@ -291,6 +298,8 @@ my-blog-admin/
 3. **新页面/新按钮的权限接入**：① 页面要在后端菜单里挂到某个 `type='2'` 节点下才能被导航；② 页面内的按钮加 `v-perm="'模块:资源:动作'"`（数组表示「满足其一即可」），并在后端菜单表加对应 `type='3'` 节点（`code` 必须与 `v-perm` 完全一致）；③ 后端写接口在 `config/permission.py` 的 `PERMISSION_PATH_MAP` 登记路径→权限码。
    - `v-perm` 是**隐藏**（`display:none`）不是移除节点，因此只能防误操作，真正的拦截靠后端映射表。列表/表格里靠 `v-perm` 隐藏的按钮，仍需保证后端有对应权限校验。
    - 不写 `v-perm` 的按钮视为「任何能看到该页面的角色都能点」，适用于不敏感的读操作。
+   - **不在侧边栏的页面（顶栏入口、设置、弹窗里的功能）**：在菜单管理里挂到「全局」目录下（`isNav=false`），页面节点直接带 `code`（无路由时路由留空），按钮节点挂 `type='3'` 子节点。前端照常 `v-perm`。注意 `v-perm` 挂在**组件**上会作用到组件根元素，若根是 `el-popover` 之类（引用元素 + teleport）行为不确定，应挂在组件模板内部的根 `div` 上。
+   - `v-perm` 只处理按钮显隐，**键盘快捷键 / 程序化入口要自己判**（如 `AiChatWidget` 的 Ctrl+K 额外判了 `hasPerm('global:topbar:ai')`）。
 4. **列表页模板**：`AppSearchPanel` + `useSearch(originalParams, getDataFn, pageSize, isScroll)` + `AppPagination`；表单弹窗用 `useDialog<T>()`；字典用 `useDict(code)`。`useSearch` 翻页使用上次查询快照（`storageParams`），增删改后应 `initDataListHandler` 重置。搜索条件变更用 `filterDataListHandler`（回第 1 页）。
 5. **上传文件必须传对 `type`**（后端按它分目录）。通用场景参考：文章正文 `article`、文章封面 `article-cover`、专栏封面 `article-column-cover`、头像 `avatar`、图标 `icon`、图片 `image`、心情 `mood`、简历 `resume`。
 6. **事件总线**（mitt，类型强约束）：新增事件必须在 `src/utils/eventBus/index.ts` 的 `Events` 里补（历史坑：漏过 `task:copy`）。现有：`task:refresh(bool)/task:update/task:copy/user:stats-refresh`。

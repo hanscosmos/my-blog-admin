@@ -48,7 +48,8 @@
           <div class="flex items-center gap-3 flex-shrink-0">
             <el-checkbox :model-value="isAllSelected" :indeterminate="selectedIds.size > 0 && !isAllSelected"
               @change="toggleSelectAllHandler">全选本页</el-checkbox>
-            <el-button type="danger" plain :disabled="!selectedIds.size" @click="batchDelete">
+            <el-button v-perm="'user:task:delete'" type="danger" plain :disabled="!selectedIds.size"
+              @click="batchDelete">
               批量删除{{ selectedIds.size ? `（${selectedIds.size}）` : '' }}
             </el-button>
               <span v-if="selectedIds.size" class="text-sm text-gray-400">已选 {{ selectedIds.size }} 项</span>

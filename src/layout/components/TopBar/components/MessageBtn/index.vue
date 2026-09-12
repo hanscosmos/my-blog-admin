@@ -1,5 +1,5 @@
 <template>
-  <div class="hover-text flex flex-col items-center">
+  <div v-perm="'global:topbar:message'" class="hover-text flex flex-col items-center">
     <AppIcon name="message-one" :size="16"></AppIcon>
     <span class="text-xs mt-1">消息</span>
   </div>

@@ -10,7 +10,8 @@
 
       <div class="w-full h-full">
         <div class="entrance-wrapper">
-          <div class="entrance-item xy-center hover-weak-wrapper mb-2 " @click="gotoRelatedPage('UserCenter')">
+          <div v-perm="'user:center'" class="entrance-item xy-center hover-weak-wrapper mb-2 "
+            @click="gotoRelatedPage('UserCenter')">
             <div class="flex items-center">
               <AppIcon name="people" :size="16" theme="filled"></AppIcon>
               <span class="ml-4">个人中心</span>

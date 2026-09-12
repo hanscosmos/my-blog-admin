@@ -32,7 +32,8 @@
           <AppIcon name="camera" size="16" />
         </span>
 
-        <el-button type="primary" size="small" class="ml-auto" :loading="publishing" @click="publishHandler">
+        <el-button v-perm="'user:mood:add'" type="primary" size="small" class="ml-auto" :loading="publishing"
+          @click="publishHandler">
           发布
         </el-button>
       </div>
@@ -54,7 +55,8 @@
         </div>
         <div class="flex items-center mt-1 text-xs text-gray-400">
           <span>{{ dateDiff(item.createTime) }}前</span>
-          <span class="ml-auto cursor-pointer hover-text" @click="deleteMoodHandler(item)">删除</span>
+          <span v-perm="'user:mood:delete'" class="ml-auto cursor-pointer hover-text"
+            @click="deleteMoodHandler(item)">删除</span>
         </div>
       </div>
       <div v-if="loading" class="py-3 text-center text-xs text-gray-400">加载中...</div>

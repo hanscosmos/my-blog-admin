@@ -18,9 +18,9 @@
         </span>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item command="edit">编辑</el-dropdown-item>
-            <el-dropdown-item command="copy">复制</el-dropdown-item>
-            <el-dropdown-item command="delete">删除</el-dropdown-item>
+            <el-dropdown-item v-perm="'user:task:update'" command="edit">编辑</el-dropdown-item>
+            <el-dropdown-item v-perm="'user:task:add'" command="copy">复制</el-dropdown-item>
+            <el-dropdown-item v-perm="'user:task:delete'" command="delete">删除</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>

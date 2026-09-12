@@ -8,7 +8,7 @@
 
       <!-- 编辑资料 -->
       <div class="absolute top-3 right-3 z-10">
-        <span class="cover-edit-btn cursor-pointer" @click="openDrawerHandler">
+        <span v-perm="'user:profile:update'" class="cover-edit-btn cursor-pointer" @click="openDrawerHandler">
           <AppIcon name="edit" size="14" />
           <span class="ml-1">编辑个人资料</span>
         </span>

@@ -6,6 +6,8 @@
         「查看」= 该角色能在侧边栏看到并进入此页面；其下的「操作」= 页面内可执行的具体动作。
         两者互不影响：只给查看权限时，只勾「查看」即可，无需再处理它下面的操作。
         未勾选「查看」的页面不会出现在侧边栏；勾选「操作」会自动补上它所属的查看与目录。
+        <br />
+        「全局」= 不上侧边栏的入口（顶部导航栏、系统设置、个人中心），勾上该角色才看得见这些入口。
       </div>
       <div class="flex justify-end gap-4 mb-1">
         <el-button link type="primary" @click="checkAllHandler">全选</el-button>
@@ -17,7 +19,7 @@
           <template #default="{ data }">
             <span class="flex items-center">
               <span>{{ data.name }}</span>
-              <AppTag class="ml-2" size="small" v-bind="NODE_TAG_MAP[data.type]" />
+              <AppTag class="ml-2" size="small" v-bind="getNodeTag(data)" />
             </span>
           </template>
         </el-tree>
@@ -38,11 +40,17 @@ const treeProps = {
   children: 'children',
 };
 
-/** 节点类型 → 权限语义标签：目录只是容器，页面节点才是「查看」，按钮是「操作」 */
-const NODE_TAG_MAP: Record<string, { name: string; color: string }> = {
-  '1': { name: '目录', color: '#999' },
-  '2': { name: '查看', color: '' },
-  '3': { name: '操作', color: '#e6a23c' },
+/**
+ * 节点类型 → 权限语义标签
+ * 目录只是容器；页面节点按是否上侧边栏分「查看」与「全局」；
+ * 按钮是页面内的具体操作。
+ */
+const getNodeTag = (data: MenuItemType) => {
+  if (data.type === '1') return { name: '目录', color: '#999' };
+  if (data.type === '3') return { name: '操作', color: '#e6a23c' };
+  return data.isNav
+    ? { name: '查看', color: '' }
+    : { name: '全局', color: '#409eff' };
 };
 
 const props = defineProps<{

@@ -110,7 +110,7 @@ export const useTabListStore = defineStore(
   {
     persist: {
       key: 'tabList', // 修改存储的键名，默认为当前 Store 的 id
-      storage: window.sessionStorage, // 存储位置修改为 sessionStorage
+      storage: window.localStorage, // 存储位置修改为 sessionStorage
     },
   }
 );

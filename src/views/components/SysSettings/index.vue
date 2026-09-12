@@ -1,6 +1,7 @@
 <template>
   <div class="system-settings">
-    <div class="trigger-btn wrapper-solid-item xy-center rounded-full w-10 h-10" @click="openDrawer">
+    <div v-perm="'global:setting:open'" class="trigger-btn wrapper-solid-item xy-center rounded-full w-10 h-10"
+      @click="openDrawer">
       <AppIcon name="setting-one" color="#fff" :size="18"></AppIcon>
     </div>
     <el-drawer v-model="visible" :size="400" title="系统设置">

@@ -5,6 +5,8 @@ export type DrawerPropsType = {
     name: string;
     id: string | null;
     type: string;
+    /** 新建子节点时继承父节点的侧边栏可见性 */
+    isNav: boolean;
   };
   currentMenuItem: MenuItemType | null;
   optType: 'add' | 'edit';

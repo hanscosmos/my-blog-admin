@@ -46,7 +46,8 @@
             </el-popover>
           </div>
           <div class="flex items-center gap-3 flex-shrink-0">
-            <el-button type="danger" plain :disabled="!selectedIds.size" @click="batchDelete">
+            <el-button v-perm="'user:task:delete'" type="danger" plain :disabled="!selectedIds.size"
+              @click="batchDelete">
               批量删除{{ selectedIds.size ? `（${selectedIds.size}）` : '' }}
             </el-button>
               <span v-if="selectedIds.size" class="text-sm text-gray-400">已选 {{ selectedIds.size }} 项</span>
@@ -108,9 +109,9 @@
           </el-table-column>
           <el-table-column label="操作" fixed="right" width="160" align="center">
             <template #default="{ row }">
-              <el-button link type="primary" @click="editHandler(row)">编辑</el-button>
-              <el-button link type="primary" @click="copyHandler(row)">复制</el-button>
-              <el-button link type="danger" @click="deleteHandler(row)">删除</el-button>
+              <el-button v-perm="'user:task:update'" link type="primary" @click="editHandler(row)">编辑</el-button>
+              <el-button v-perm="'user:task:add'" link type="primary" @click="copyHandler(row)">复制</el-button>
+              <el-button v-perm="'user:task:delete'" link type="danger" @click="deleteHandler(row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>

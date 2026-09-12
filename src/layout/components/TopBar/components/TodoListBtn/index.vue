@@ -1,7 +1,7 @@
 <template>
   <el-popover placement="bottom-end" :width="320" trigger="click" popper-class="todo-popover">
     <template #reference>
-      <div class="hover-text flex flex-col items-center cursor-pointer">
+      <div v-perm="'global:topbar:todo'" class="hover-text flex flex-col items-center cursor-pointer">
         <el-badge :value="badgeCount" :hidden="badgeCount === 0" :max="99">
           <AppIcon name="list" :size="16"></AppIcon>
         </el-badge>
