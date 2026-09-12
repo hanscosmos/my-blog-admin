@@ -21,3 +21,30 @@ export const MENU_TYPE_OPTIONS = [
 
 export const getMenuTypeLabel = (type: string) =>
   MENU_TYPE_OPTIONS.find((item) => item.key === type)?.value || '—';
+
+/**
+ * 前端按关键词过滤菜单树
+ * - 名称 / 路由名称 / 菜单码 任意一项包含关键词即视为命中
+ * - 子节点命中时保留其父节点，命中节点保留完整子树
+ */
+export const filterMenuTree = (
+  list: MenuItemType[],
+  keyword: string
+): MenuItemType[] => {
+  const kw = keyword.trim().toLowerCase();
+  if (!kw) return list;
+  return list.reduce<MenuItemType[]>((acc, item) => {
+    const matched = [item.name, item.route, item.code].some((field) =>
+      field?.toLowerCase().includes(kw)
+    );
+    if (matched) {
+      acc.push(item);
+      return acc;
+    }
+    const children = filterMenuTree(item.children || [], keyword);
+    if (children.length) {
+      acc.push({ ...item, children });
+    }
+    return acc;
+  }, []);
+};

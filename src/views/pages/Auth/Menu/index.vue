@@ -1,8 +1,9 @@
 <template>
   <div class="menu-manage wh-full">
-    <AppSearchPanel :data-exist="menuTreeList.length > 0" :loading="loading">
+    <AppSearchPanel :data-exist="filteredMenuTreeList.length > 0" :loading="loading">
       <template #header>
-        <div class="flex">
+        <div class="flex items-center">
+          <el-input v-model="menuKeyword" class="!w-280px mr-4" placeholder="请输入关键词搜索" clearable></el-input>
           <app-button v-perm="'authority:menu:add'" @click="addDrawerHandler()">
             <AppIcon name="add" class="mr-2"></AppIcon>
             新增菜单
@@ -10,8 +11,8 @@
         </div>
       </template>
       <div class="p-4">
-        <el-table :data="menuTreeList" style="width: 100%; margin-bottom: 20px" row-key="id" size="large" stripe border
-          default-expand-all>
+        <el-table :data="filteredMenuTreeList" style="width: 100%; margin-bottom: 20px" row-key="id" size="large" stripe
+          border default-expand-all>
           <el-table-column prop="name" label="名称" align="center" />
           <el-table-column prop="route" label="路由名称" align="center" />
           <el-table-column prop="code" label="菜单码 / 权限码" align="center" />
@@ -65,7 +66,7 @@
 import { MenuItemType } from '@/api/authority/menu/type';
 import MenuFormDrawer from './components/MenuFormDrawer.vue';
 import { deleteMenuApi, getAllMenuTreeApi } from '@/api/authority/menu';
-import { DrawerPropsType, getMenuTypeLabel } from './service';
+import { DrawerPropsType, filterMenuTree, getMenuTypeLabel } from './service';
 import { useMenu } from '@/hooks/useMenu';
 
 const { getNavMenuTreeList } = useMenu();
@@ -110,6 +111,11 @@ const closeHandler = () => {
 };
 
 const menuTreeList = ref<MenuItemType[]>([]);
+/** 关键词筛选（前端过滤，接口一次性返回全部菜单） */
+const menuKeyword = ref('');
+const filteredMenuTreeList = computed(() =>
+  filterMenuTree(menuTreeList.value, menuKeyword.value)
+);
 
 const hasChildren = (row: MenuItemType) => !!row.children?.length;
 
