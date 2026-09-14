@@ -26,8 +26,8 @@
     <div v-loading="loading" class="image-wrapper flex-1 h-0 flex flex-col p-4">
       <ul class="image-list-wrapper flex-1 h-0 overflow-auto">
         <li class="image-item-wrapper" v-for="item in dataList" :key="item.id">
-          <ImageCardItem :item="item" :preview-list="previewList"
-            @edit="(item) => openDialog('edit', item)"></ImageCardItem>
+          <ImageCardItem :item="item" :preview-list="previewList" @edit="(item) => openDialog('edit', item)"
+            @delete="deleteImageHandler"></ImageCardItem>
         </li>
       </ul>
       <div class="mt-4">
@@ -49,9 +49,11 @@
 
 <script setup lang="ts">
 import {
+  deleteImageApi,
   getImageCategoryListApi,
   getImageListApi,
 } from '@/api/resource/image/index.ts';
+import { ElMessage } from 'element-plus';
 import ImageFormDialog from '../../components/ImageFormDialog.vue';
 import ImageBatchDialog from '../../components/ImageBatchDialog.vue';
 import { type FormDialogPropsType, originalForm } from '../../service.ts';
@@ -70,6 +72,7 @@ const {
   pageConfig,
   pageChangeHandler,
   filterDataListHandler,
+  getDataListHandler,
   initDataListHandler,
 } = useSearch<ImageSearchType, ImageItemType>(originalParams, getImageListApi);
 
@@ -101,6 +104,16 @@ const getCategoryList = async () => {
     },
     ...data,
   ];
+};
+
+const deleteImageHandler = (item: ImageItemType) => {
+  confirmHandler(`您将删除图片「${item.name}」`, async () => {
+    const { data, msg } = await deleteImageApi({ ids: [item.id] });
+    if (data) {
+      ElMessage.success(msg);
+      await getDataListHandler();
+    }
+  });
 };
 
 const openDialog = (optType: string, row?: any) => {
