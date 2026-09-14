@@ -8,6 +8,10 @@
           <AppIcon name="add" class="mr-2"></AppIcon>
           <span>新建图片</span>
         </app-button>
+        <app-button v-perm="'resource:image:add'" class="ml-4" @click="openBatchDialog">
+          <AppIcon name="upload" class="mr-2"></AppIcon>
+          <span>批量上传</span>
+        </app-button>
       </div>
     </div>
     <div class="category-wrapper border-bottom h-10">
@@ -22,7 +26,8 @@
     <div v-loading="loading" class="image-wrapper flex-1 h-0 flex flex-col p-4">
       <ul class="image-list-wrapper flex-1 h-0 overflow-auto">
         <li class="image-item-wrapper" v-for="item in dataList" :key="item.id">
-          <ImageCardItem :item="item" @edit="(item) => openDialog('edit', item)"></ImageCardItem>
+          <ImageCardItem :item="item" :preview-list="previewList"
+            @edit="(item) => openDialog('edit', item)"></ImageCardItem>
         </li>
       </ul>
       <div class="mt-4">
@@ -35,6 +40,10 @@
         :category-list="formDialogProps.categoryList" @close="closeDialog" @change-success="filterDataListHandler">
       </ImageFormDialog>
     </div>
+    <div v-if="batchDialogVisible">
+      <ImageBatchDialog :visible="batchDialogVisible" :category-list="formDialogProps.categoryList"
+        @close="batchDialogVisible = false" @change-success="filterDataListHandler"></ImageBatchDialog>
+    </div>
   </div>
 </template>
 
@@ -44,6 +53,7 @@ import {
   getImageListApi,
 } from '@/api/resource/image/index.ts';
 import ImageFormDialog from '../../components/ImageFormDialog.vue';
+import ImageBatchDialog from '../../components/ImageBatchDialog.vue';
 import { type FormDialogPropsType, originalForm } from '../../service.ts';
 import { ImageItemType, ImageSearchType } from '@/api/resource/image/type.ts';
 import ImageCardItem from '../../components/ImageCardItem.vue';
@@ -67,6 +77,9 @@ const changeCategory = async (category: string) => {
   searchParams.value.category = category;
   await filterDataListHandler();
 };
+
+// 预览时左右切换的范围就是当前页的图片
+const previewList = computed(() => dataList.value.map((item) => item.url));
 
 const formDialogProps = reactive<FormDialogPropsType>({
   visible: false,
@@ -97,6 +110,11 @@ const openDialog = (optType: string, row?: any) => {
 };
 const closeDialog = () => {
   formDialogProps.visible = false;
+};
+
+const batchDialogVisible = ref(false);
+const openBatchDialog = () => {
+  batchDialogVisible.value = true;
 };
 
 const initData = async () => {

@@ -1,4 +1,6 @@
 import {
+  ImageBatchFormType,
+  ImageBatchResType,
   ImageFormType,
   ImageIdType,
   ImageItemType,
@@ -12,6 +14,9 @@ import {
 } from '@/api/resource/type.ts';
 export const addImageApi = (data: ImageFormType) =>
   request.post<boolean>('/resource/image/add', data);
+
+export const addImageBatchApi = (data: ImageBatchFormType) =>
+  request.post<ImageBatchResType>('/resource/image/batch/add', data);
 
 export const editImageApi = (data: ImageFormType & ImageIdType) =>
   request.post<boolean>('/resource/image/edit', data);
@@ -36,6 +41,7 @@ export const getImageCategoryListApi = () =>
 
 export default {
   addImageApi,
+  addImageBatchApi,
   editImageApi,
   deleteImageApi,
   getImageListApi,

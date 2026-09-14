@@ -235,6 +235,15 @@ my-blog-admin/
 资源分类共用类型 `api/resource/type.ts`（`CategoryFormType{name,value,sort}`）。图标实体多 `source` 字段，图片无。上传统一走 `uploadFile`，靠 `type` 参数分目录。
 坑：`getIconCategoryListApi` 是 **GET**、`getImageCategoryListApi` 是 **POST**（不一致）；「全部」假项别误传给表单分类下拉。
 
+**图片批量上传**（`ImageBatchDialog.vue`，入口在 `ImageLib` 头部「新建图片」右侧）：
+
+- 弹窗内先选**图片类型**（本批统一使用该类型），再选图；**未选类型时选图区禁用**（`.upload-disabled` 样式 + handler 内兜底提示），确定前也会再校验一次。
+- 一次多选图片 → 并发 `uploadFile(..., 'image')` 拿到 url → 预览确认后一次提交 `addImageBatchApi`（`/resource/image/batch/add`）。**上传与入库分离**：文件先传、点「确定」才落库，取消不留脏数据；类型在确定时才读取，中途改类型对本批全部生效。
+- 其余字段自动填充：`name` = 文件名去扩展名后**截断到 15 字符**、`sort` = 0、`desc` = ''。前端截断长度常量 `NAME_MAX` 必须与后端 `service/image.py` 的 `BATCH_NAME_MAX` 一致。
+- 重名（批内/库内）与长度不符的条目由后端 `validate_batch_add_image_params` **逐条跳过**，其余正常入库；返回 `{total, success, skipList}`，前端汇总提示。全部被跳过时返回 501，走 axios 拦截器提示。
+- 预览里对「截断后批内同名会被跳过的那些」打橙色标记（前端预判，后端跳过为准）；缩略图用 `URL.createObjectURL`，需在移除/关闭/卸载时 `revokeObjectURL` 释放。
+- 无图片分类时弹窗内提示去创建（入口按钮不置灰，因为 `AppButton` 无 `disabled` 属性，见坑点清单）。后端新接口必须在 `config/permission.py` 登记，否则未登记路径默认放行。
+
 ### 4. 系统管理（`views/pages/System/`，api `api/system/**`）
 
 | 页面 | 说明 |
@@ -327,6 +336,7 @@ my-blog-admin/
 - 多处 `prop` 名与字段名不一致（`el-form-item prop="visible"` vs `isCurrentVersion` 等），多为无害遗留。
 - service.ts 中 `fmtResData/columnList` 部分冗余未用（ArticleCategory、User Task 等）。
 - `StatEnum.UserTask='column'` 命名误导；`getIconCategoryListApi`(GET) 与 `getImageCategoryListApi`(POST) 方法不一致。
+- `AppButton` **没有 `disabled` 属性**（渲染成裸 `<div>`，`click` 走 attrs 透传），传 `:disabled` 不生效、仍可点击。需要禁用时用样式（`opacity`+`pointer-events:none`）配合 handler 内兜底判断。
 
 **行为 / 逻辑坑**
 - ReleaseArticle(新建) 被 keep-alive 缓存，切 tab 回来内容残留且 store reset 不触发。

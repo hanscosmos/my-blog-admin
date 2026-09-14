@@ -19,3 +19,20 @@ export type ImageItemType = {
   createTime: string;
 } & ImageFormType &
   ImageIdType;
+
+export type ImageBatchFormType = {
+  category: string;
+  list: {
+    name: string;
+    url: string;
+  }[];
+};
+
+export type ImageBatchResType = {
+  total: number;
+  success: number;
+  skipList: {
+    name: string;
+    reason: string;
+  }[];
+};
