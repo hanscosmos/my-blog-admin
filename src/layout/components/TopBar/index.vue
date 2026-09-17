@@ -4,8 +4,11 @@
 
     </div>
     <div class="flex items-center">
-      <TodoListBtn class="!mr-6"></TodoListBtn>
-      <MessageBtn class="mx-6"></MessageBtn>
+      <TodoListBtn></TodoListBtn>
+      <div class="mx-2"></div>
+      <MessageBtn></MessageBtn>
+      <div class="mx-2"></div>
+
       <ArticleBtn class="mr-6"></ArticleBtn>
       <UserInfo></UserInfo>
       <AiChatWidget class="ml-6" />

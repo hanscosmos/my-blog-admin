@@ -6,6 +6,7 @@ type Events = {
   'task:update': UserTaskItemType;
   'task:copy': UserTaskItemType;
   'user:stats-refresh': void;
+  'notice:refresh': void;
 };
 
 const emitter = mitt<Events>();

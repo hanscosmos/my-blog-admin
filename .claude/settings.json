@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv/bin/python manage.py makemigrations notice)",
+      "Bash(rm -f /tmp/test_notice.py; sed -n '1,60p' src/components/common/AppSearchPanel/index.vue)",
+      "Bash(npm run *)"
+    ],
+    "additionalDirectories": [
+      "/private/tmp"
+    ]
+  }
+}

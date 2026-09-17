@@ -59,7 +59,7 @@ my-blog-admin/
     │   └── SelectImage/       #   图片选择器（空占位，未使用）
     ├── config/                # 全局配置：dict.ts(字典分类树，前端硬编码)、module.ts、mock.ts(菜单 mock)、index.ts(MAX_IMAGE_SIZE=10)
     ├── directives/            # 全局指令：permission.ts（v-perm，无权限时 display:none）
-    ├── hooks/                 # 组合式函数：useDialog/useSearch/useDict/useMenu/useScroll/useTaskReminder/useSpeechRecognition/usePermission
+    ├── hooks/                 # 组合式函数：useDialog/useSearch/useDict/useMenu/useScroll/useTaskReminder/useNotice/useSpeechRecognition/usePermission
     ├── layout/                # 主框架布局
     │   ├── index.vue          #   侧栏 + 顶栏 + 标签页 + 内容(keep-alive)
     │   └── components/        #   SideBar(+FoldBtn)/TopBar(TodoListBtn·MessageBtn·ArticleBtn·UserInfo·AiChatWidget)/TabBar
@@ -74,7 +74,7 @@ my-blog-admin/
     │   ├── request/           #   Axios 封装（base、other 两种实例；401 刷新队列）
     │   ├── tool/              #   ★ 模板内免 import 的工具（见下）
     │   ├── storage/           #   session/localStorage 包装（含带时效版本）
-    │   ├── eventBus/          #   mitt 事件总线（task:refresh/update/copy、user:stats-refresh）
+    │   ├── eventBus/          #   mitt 事件总线（task:refresh/update/copy、user:stats-refresh、notice:refresh）
     │   └── validate/          #   FormValidate 表单校验工厂
     └── views/
         ├── components/        # 全局自动导入的视图组件：Charts(BaseBarLineChart 等)、TabPage、SysSettings
@@ -145,7 +145,7 @@ my-blog-admin/
 - baseURL `/backapi`；开发代理 → `http://127.0.0.1:8000/`（见 vite.config.ts）。
 - 拦截器：请求注入 `Authorization: token` 与 `X-CSRFToken`（读 cookie `csrftoken`）；响应 `code===401` → 队列化刷新，`/user/login`、`/user/refresh`、已重试请求或缺少 refreshToken 时直接清空跳登录；`code===501` 仅 console；其它非 0 code 自动 `ElMessage.error`。
 - 登录接口集中在 `src/api/index.ts`：`loginApi`（MD5 密码 + key + 图形验证码文本）、`refreshTokenApi`、`getValidCodeApi`、`uploadFileApi`（`POST /sys/file/upload`，FormData `file/name/nanoid+原名/type`）。
-- **接口前缀约定**：文章 `/article*`、权限 `/authority*`、资源 `/resource*`（图标实际见 `/resource/icon|image`，分类接口方法 GET/POST 不一）、系统 `/sys*`、用户 `/user*`、博主档案 `/blogger*`、AI `/ai*`。
+- **接口前缀约定**：文章 `/article*`、权限 `/authority*`、资源 `/resource*`（图标实际见 `/resource/icon|image`，分类接口方法 GET/POST 不一）、系统 `/sys*`、用户 `/user*`、博主档案 `/blogger*`、评论 `/comment*`（**后台**，前台评论是 `/client/comment*`）、站内消息 `/notice*`、AI `/ai*`。前缀与权限码前缀不绑定（如 `/user/add` → `system:user:add`、`/comment/delete` → `system:comment:delete`），以页面所属模块为准。
 - **成功判断不一致（已知问题）**：多数页面用 `if (data)` 判断 boolean，部分组件（BloggerProfile、DistributeAuthorityDialog、ArticleFormDrawer 部分）用 `res.code === 0`。新代码建议统一 `code === 0`。
 
 ---
@@ -157,7 +157,7 @@ my-blog-admin/
 | `layout/index.vue` | 三明治布局：SideBar(宽度 14rem/4rem 随 `isSideExpand`) + TopBar(4rem) + TabBar(条件显示) + 内容。`keep-alive` 排除 `ArticleDetail/UpdateArticle/Home`；`route.meta.hideSide/hideTab/hideSide` 控制局部隐藏 |
 | `SideBar` | `el-menu` 渲染 `menuStore.menuTreeList`；`item.type==='1'` 渲染 `el-sub-menu`(目录)，否则叶子。图标是后端图片 URL（`<img>`）。顶部「博客后台」点击回 Home；`FoldBtn` 切换 `isSideExpand`。跳转 `router.push({name:item.route})`，路由不存在 → warning |
 | `TabBar/TabItem` | 多标签：`TransitionGroup` 横排、`useScroll` 左右箭头；Home 标签固定不可关。左键切换、关闭图标、**右键菜单**(关当前/左/右/其他/刷新)、**拖拽排序**(pragmatic-drag-and-drop，Home 除外)。持久化 sessionStorage `tabList` |
-| `TopBar` | 右侧按钮依次：`TodoListBtn`（待办角标+下拉，见用户中心）→ `MessageBtn`(**占位无逻辑**) → `ArticleBtn`（跳 `ReleaseArticle`）→ `UserInfo`(个人中心/退出登录下拉) → `AiChatWidget`(AI 助手悬浮面板) |
+| `TopBar` | 右侧按钮依次：`TodoListBtn`（待办角标+下拉，见用户中心）→ `MessageBtn`（站内消息角标+下拉，见用户中心）→ `ArticleBtn`（跳 `ReleaseArticle`）→ `UserInfo`(个人中心/退出登录下拉) → `AiChatWidget`(AI 助手悬浮面板) |
 | `SysSettings` | `App.vue` 全局挂载，左下角圆形按钮打开抽屉：开关 keep-alive(`isOpenStore`)、显示/隐藏标签页(`tabVisible`)、浅色/深色、5 主题色。纯前端，无接口 |
 
 ---
@@ -252,6 +252,7 @@ my-blog-admin/
 | `UpdateLog` 更新日志 | 分页 + keyword；字段 `summary/version/plannedReleaseDate(计划)/actualReleaseDate(实际)/details(Markdown)/releasedType(字典)/status(字典)/isCurrentVersion`；表单 add/edit/view 三态弹窗，view 全 disabled。**`deleteUpdateLogApi` 已定义但页面无删除按钮** |
 | `Users` 用户管理 | 分页，筛选 keyword + roleId(下拉取 role list)。列：头像昵称 / 邮箱(`row.profile.email`) / 角色标签 / 创建时间。新增 `AddUserDialog`(username/nickName/email/roleIds)；edit 模式仅可改角色，调 `setUserRoleApi`。**重置密码按钮无点击无 API；无删除用户、无头像上传**。`UserItemType.profile` 是 `any`，顶层 email 与 profile.email 混用 |
 | `BloggerProfile` 博主档案 | 给**博客前台展示的博主信息**做配置（admin 只存，前台另行消费）。`el-tabs` 四块：基本介绍(`IntroductionEdit` Markdown，AppMdEditor+`@save`)、联系方式(`ContactEdit` phone/wechat/qq/github/weibo/site，`defineExpose({getForm})`)、资产信息(`AssetsEdit` 可编辑表格 items[{label,value}])、简历(`ResumeEdit`，AppImageAutoUpload `accept=".pdf"` type=`resume` ≤5MB)。**任一 tab 保存都会把整份档案 `updateBloggerProfileApi(form)` 全量提交** |
+| `Comment` 评论管理 | 只做查询与删除（无新增/编辑，发评论在前台）。**表格不用 el-table 树形**（树形的箭头会独占第一列、层级也看不出来）：顶层评论一行，其下回复由 `CommentThread` 嵌在「评论内容」单元格内渲染（左侧竖线缩进，回复带自己的时间与操作）；因此没有「回复对象」列，回复对象内联在回复行里。筛选：关键词(正文) / 评论对象(文章、留言板) / 时间范围。评论正文是 markdown 源码，列表里 line-clamp 截断，**点正文**或点「查看」都开 `CommentPreviewDialog`(AppDialog `hide-footer` + `v-md-preview`) 看完整渲染。操作：删除（顶层评论连带其下回复一起**软删**）、禁用用户（写 `Users.isForbidden`，文案随 `user.isForbidden` 切换；后端拒绝禁用自己与超管）。后端接口 `/comment/{list,delete,forbid-user}`（`modules/comment/views.py`，与前台 `/client/comment/*` 分文件），权限码 `system:comment:delete`、`system:comment:forbid-user`。**从消息提醒跳转定位**：`?focus=<评论 id>` → 页内 `watch(() => route.query.focus)`（用 watch 而非 onMounted，页面被 keep-alive 复用时也能响应）带 `focusId` 查一次（后端会把回复解析到它所属的顶层评论，保证能渲染出来），查完立即把 `focusId` 置回 `undefined` 避免翻页/筛选被锁死，命中后给 `CommentThread` 传 `focusId` 高亮并 `scrollIntoView` |
 
 `api/system/sys`：是**数据统计接口**，与主题设置无关——`getSysStatApi({type,rangeType})→POST /sys/stat`、`getSelfStatApi()→POST /sys/self/stat`（首页用）。
 
@@ -259,11 +260,13 @@ my-blog-admin/
 
 ### 5. 用户中心（`views/pages/User/`，api `api/user/**`）
 
-- **入口**：`UserCenter`(`/user-profile`) 一个路由；个人中心 `Profile/index.vue` 是**单页内 `<component :is>` tab 切换**（动态/创作/事项），非内嵌路由。`?tab=task|dynamic|article` 可指定初始 tab（外部跳任务页统一用 `/user-profile?tab=task`）。子组件通过 `provide/inject('updateTabCount')` 上报数量；整体统计走 `POST /user/stats`，事件 `user:stats-refresh` 触发刷新。改资料后回写 `useUserInfoStore` 保证顶栏一致。
+- **入口**：`UserCenter`(`/user-profile`) 一个路由；个人中心 `Profile/index.vue` 是**单页内 `<component :is>` tab 切换**（动态/创作/事项/消息），非内嵌路由。`?tab=task|dynamic|article|notice` 可指定初始 tab（外部跳任务页统一用 `/user-profile?tab=task`，顶部消息下拉用 `/user-profile?tab=notice`）。子组件通过 `provide/inject('updateTabCount')` 上报数量；整体统计走 `POST /user/stats`，事件 `user:stats-refresh` 触发刷新。改资料后回写 `useUserInfoStore` 保证顶栏一致。
 - **个人资料 `UserProFileForm`**（el-drawer）：头像(AppAvatarUpload 裁剪 200×200, type=`avatar`)、昵称(2-10 必填)、性别、邮箱、签名 talks、背景封面(AppImageAutoUpload type=`avatar` 不裁剪)。`birthday` 字段在类型中定义但**表单未实现**。保存 `updateUserProfileApi`。
 - **心情 `UserMoodPanel`**（独立 `sys_user_mood` 表，与静态签名 talks 语义分离）：发文字+emoji 表情(8 个)+图片(多选 type=`mood`)，「文字和图片至少一个」；发布后事件刷新计数（后端记 create_mood 动态）。历史滚动加载(`useSearch isScroll`)；hover 删除。
 - **用户动态 `Activity`**：时间线无限滚动(`AppInfiniteList` + useSearch pageSize=20 isScroll)。类型映射 `activityMetaMap` 覆盖 7 种 action：`publish_article/create_draft/update_article/delete_article/create_task/complete_task/create_mood`。文章类渲染卡片并跳 ArticleDetail(正文)/UpdateArticle(草稿)；被删文章显示「已删除《》」。类型定义 `IActivityItem` 在 `types/user/index.ts`（**注意不是 UserInfoType**）。
 - **我的创作 `User/Article`**：个人文章列表，行组件 `ArticleListItem`，分页。
+- **消息 `User/Notice`**（api `api/notice/**`，与顶部 `MessageBtn` 同一套接口）：站内消息提醒，一条评论可给多人生成消息。tab 数字显示**未读数**（与顶部角标同源，Profile 里拉 `/notice/unread/count` 并在 `notice:refresh` 时同步）。列表 `useSearch` + `AppSearchPanel` + `AppPagination`，`el-segmented` 切「全部/未读」（`isRead` 不传=全部、传 `false`=未读），「全部已读」按钮仅在页内有未读时出现。行内容：触发人头像昵称 + 动作文案（`comment_reply` 回复了你的评论 / `article_comment` 评论了你的文章或留言板）+ 评论摘要（`isDeleted` 时显示「该评论已删除」且不跳转）+ 评论对象名 + 时间；回复类额外展示「你的评论：xxx」。**点击行 → 标记已读 + 跳 `/comment-manage?focus=<sourceId>` 定位高亮**。
+- 消息 hook `useNotice`：`badgeCount` 60s 轮询 `/notice/unread/count`，`getPreviewList` 取最新 8 条供下拉；`readNotice` 先本地置位再请求（失败由随后的未读数拉取纠正），任何已读操作都 `emitter.emit('notice:refresh')`，**该事件是角标、Profile tab 数字、消息列表三处刷新的统一信号**（各自的监听都是具名 handler，`off` 时不要省略 handler，否则会误摘掉 `MessageBtn` 的监听）。动作文案函数 `getNoticeActionText` 也从这里导出复用。
 
 **我的任务（个人事项，功能最重的模块）** —— `User/Task/index.vue` 内 `el-segmented` 三视图：
 - `pages/TaskDashboard` 面板：按状态 `todo/pending/done/aborted` 分列，取 `getUserTaskPanelListApi({startTime,endTime})`，窗口「今天±2 天」；卡片纯展示。
@@ -277,6 +280,8 @@ my-blog-admin/
 
 用户中心 API 一览（api/user/index.ts + api/user/task/index.ts）：
 `/user/get/self`、`/user/update/self`、`/user/stats`、`/user/activity/list`、`/user/article/list`、`/user/mood/list|add|delete`；`/user/task/add|update|delete|list|panel/list|tag/list|recent/list|remind/list|score/stat`。博主档案 `/blogger/profile/get|update`。
+
+站内消息 API（api/notice/index.ts，后端 `modules/notice/`）：`/notice/list`（`{pageNumber,pageSize,isRead?}` → `{total,result}`）、`/notice/unread/count` → `{count}`、`/notice/read`（`{ids}`）、`/notice/read/all`。消息属于「用户自身数据」，**不登记 `PERMISSION_PATH_MAP`**，任何登录用户只能查改 `recipient` 为自己的记录。
 
 ### 6. 登录 / 全局
 
@@ -324,7 +329,7 @@ my-blog-admin/
 
 **功能未完成（多数前端已留 UI / api 已备，但未接线）**
 - 文章分类「删除」；文章标签「删除」；图标/图片分类「删除」——按钮无 `@click`（相应 `deleteXxxApi` 多已定义）。菜单管理「删除」已接线。
-- `MessageBtn` 无逻辑；`ActiveUser`、`StatCard` 首页被注释/空实现。
+- `ActiveUser`、`StatCard` 首页被注释/空实现。
 - 用户管理：重置密码（无 API）、删除用户、头像上传 均缺。
 - 更新日志无删除按钮；字典页「新增」文案歧义（实为给当前字典码加 key/value）。
 - 个人资料 `birthday` 未实现编辑；`SelectImage`、`AppAutoUpload` 空壳。

@@ -79,6 +79,7 @@
 </template>
 <script lang="ts" setup>
 import { getUserProfileApi, updateUserProfileApi, getUserStatsApi } from '@/api/user';
+import { getNoticeUnreadCountApi } from '@/api/notice';
 import { UserInfoType, UserFormType } from '@/api/user/type';
 import { useUserInfoStore } from '@/store/user';
 import UserProfileForm from './components/UserProFileForm.vue';
@@ -86,6 +87,7 @@ import UserMoodPanel from './components/UserMoodPanel.vue';
 import UserActivity from '../Activity/index.vue';
 import UserArticle from '../Article/index.vue';
 import UserTask from '../Task/index.vue';
+import UserNotice from '../Notice/index.vue';
 import type { Component } from 'vue';
 import emitter from '@/utils/eventBus';
 
@@ -144,14 +146,20 @@ const tabList: TabItem[] = [
     key: 'task',
     component: shallowRef(UserTask),
   },
+  {
+    name: '消息',
+    key: 'notice',
+    component: shallowRef(UserNotice),
+  },
 ];
 const activeItem = ref<TabItem>(tabList[0]);
 
-// 各 tab 的数据总数，由子组件通过 inject 上报
+// 各 tab 的数据总数，由子组件通过 inject 上报；消息 tab 显示未读数，与顶部角标同源
 const tabCounts = reactive<Record<string, number>>({
   article: 0,
   dynamic: 0,
   task: 0,
+  notice: 0,
 });
 
 provide('updateTabCount', (key: string, count: number) => {
@@ -169,6 +177,16 @@ const getUserStatsHandler = async () => {
   }
 };
 
+/** 消息 tab 的未读数：与顶部角标同源，标记已读后由 notice:refresh 触发同步 */
+const getNoticeCountHandler = async () => {
+  try {
+    const { data } = await getNoticeUnreadCountApi();
+    tabCounts.notice = data.count;
+  } catch {
+    // 未读数非关键路径，静默失败
+  }
+};
+
 const setActiveTabItem = (item: TabItem) => {
   activeItem.value = item;
 };
@@ -176,7 +194,9 @@ const setActiveTabItem = (item: TabItem) => {
 onMounted(() => {
   getUserInfoHandler();
   getUserStatsHandler();
+  getNoticeCountHandler();
   emitter.on('user:stats-refresh', getUserStatsHandler);
+  emitter.on('notice:refresh', getNoticeCountHandler);
   const route = useRoute();
   const tabKey = route.query.tab as string;
   const target = tabList.find((item) => item.key === tabKey);
@@ -185,6 +205,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   emitter.off('user:stats-refresh', getUserStatsHandler);
+  emitter.off('notice:refresh', getNoticeCountHandler);
 });
 </script>
 <style lang="scss" scoped>

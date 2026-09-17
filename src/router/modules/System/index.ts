@@ -29,6 +29,15 @@ export const SystemRouteList: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/comment-manage',
+    name: 'CommentManage',
+    component: () => import('@/views/pages/System/Comment/index.vue'),
+    meta: {
+      name: '评论管理',
+      icon: 'message',
+    },
+  },
+  {
     path: '/blogger-profile',
     name: 'BloggerProfile',
     component: () => import('@/views/pages/System/BloggerProfile/index.vue'),
