@@ -26,6 +26,7 @@ export const remindOptions = [
   { key: 15, value: '提前 15 分钟' },
   { key: 30, value: '提前 30 分钟' },
   { key: 60, value: '提前 1 小时' },
+  { key: 360, value: '提前 6 小时' },
   { key: 1440, value: '提前 1 天' },
 ];
 
@@ -41,7 +42,12 @@ export const formRules = {
   ],
   status: [{ required: true, trigger: 'change', message: '请选择事项状态' }],
   tags: [
-    { required: true, type: 'array' as const, trigger: 'change', message: '请选择事项标签' },
+    {
+      required: true,
+      type: 'array' as const,
+      trigger: 'change',
+      message: '请选择事项标签',
+    },
   ],
   deadline: [{ required: true, trigger: 'change', message: '请选择截止时间' }],
 };
