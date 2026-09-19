@@ -42,12 +42,13 @@
                 <div class="flex items-center justify-between gap-2">
                   <span class="flex-shrink-0 text-sm">文章类别</span>
                   <el-tree-select v-model="searchParams.category" :data="categoryList" node-key="id" clearable
-                    check-strictly filterable :props="{ label: 'name' }" class="!w-220px"
+                    check-strictly filterable :props="{ label: 'name' }" class="!w-220px" :teleported="false"
                     placeholder="请选择"></el-tree-select>
                 </div>
                 <div class="flex items-center justify-between gap-2">
                   <span class="flex-shrink-0 text-sm">文章状态</span>
-                  <el-select v-model="searchParams.status" placeholder="请选择" class="!w-220px" clearable>
+                  <el-select v-model="searchParams.status" placeholder="请选择" class="!w-220px" clearable
+                    :teleported="false">
                     <el-option label="正文" value="publish"></el-option>
                     <el-option label="草稿" value="draft"></el-option>
                   </el-select>

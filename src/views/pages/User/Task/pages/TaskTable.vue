@@ -5,51 +5,54 @@
         <div class="w-full">
           <div class="flex items-center justify-between gap-4">
             <div class="flex items-center gap-4 flex-wrap">
-            <span class="flex items-center gap-2 flex-shrink-0">
-              <app-tag size="large">关键字</app-tag>
-              <el-input v-model="searchParams.keyword" placeholder="请输入关键词搜索" class="!w-200px" clearable
-                @change="filterUserTaskList"></el-input>
-            </span>
-            <span class="flex items-center gap-2">
-              <app-tag size="large">任务状态</app-tag>
-              <el-select v-model="searchParams.status" placeholder="请选择" class="!w-150px" clearable
-                @change="filterUserTaskList">
-                <el-option v-for="item in statusList" :key="item.key" :value="item.key" :label="item.value"></el-option>
-              </el-select>
-            </span>
-            <el-popover ref="moreFilterPopoverRef" placement="bottom-end" :width="360" trigger="click">
-              <template #reference>
-                <el-button>
-                  <AppIcon name="filter" class="mr-1"></AppIcon>
-                  更多筛选
-                  <AppIcon name="arrow-down" class="ml-1"></AppIcon>
-                </el-button>
-              </template>
-              <div class="flex flex-col gap-4">
-                <div class="flex items-center justify-between gap-2">
-                  <span class="flex-shrink-0 text-sm">优先级</span>
-                  <el-select v-model="searchParams.priority" placeholder="请选择" class="!w-220px" clearable>
-                    <el-option v-for="item in priorityList" :key="item.key" :value="item.key"
-                      :label="item.value"></el-option>
-                  </el-select>
+              <span class="flex items-center gap-2 flex-shrink-0">
+                <app-tag size="large">关键字</app-tag>
+                <el-input v-model="searchParams.keyword" placeholder="请输入关键词搜索" class="!w-200px" clearable
+                  @change="filterUserTaskList"></el-input>
+              </span>
+              <span class="flex items-center gap-2">
+                <app-tag size="large">任务状态</app-tag>
+                <el-select v-model="searchParams.status" placeholder="请选择" class="!w-150px" clearable
+                  @change="filterUserTaskList">
+                  <el-option v-for="item in statusList" :key="item.key" :value="item.key"
+                    :label="item.value"></el-option>
+                </el-select>
+              </span>
+              <el-popover ref="moreFilterPopoverRef" placement="bottom-end" :width="360" trigger="click">
+                <template #reference>
+                  <el-button>
+                    <AppIcon name="filter" class="mr-1"></AppIcon>
+                    更多筛选
+                    <AppIcon name="arrow-down" class="ml-1"></AppIcon>
+                  </el-button>
+                </template>
+                <div class="flex flex-col gap-4">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="flex-shrink-0 text-sm">优先级</span>
+                    <el-select v-model="searchParams.priority" placeholder="请选择" class="!w-220px" clearable
+                      :teleported="false">
+                      <el-option v-for="item in priorityList" :key="item.key" :value="item.key"
+                        :label="item.value"></el-option>
+                    </el-select>
+                  </div>
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="flex-shrink-0 text-sm">截止日期</span>
+                    <el-date-picker v-model="deadlineDateRange" type="daterange" class="!w-220px"
+                      value-format="YYYY-MM-DD HH:mm:ss" range-separator="至" clearable
+                      :teleported="false"></el-date-picker>
+                  </div>
+                  <div class="flex justify-end gap-2 pt-1">
+                    <el-button @click="resetMoreFilter">重置</el-button>
+                    <el-button type="primary" @click="searchMoreFilter">搜索</el-button>
+                  </div>
                 </div>
-                <div class="flex items-center justify-between gap-2">
-                  <span class="flex-shrink-0 text-sm">截止日期</span>
-                  <el-date-picker v-model="deadlineDateRange" type="daterange" class="!w-220px"
-                    value-format="YYYY-MM-DD HH:mm:ss" range-separator="至" clearable></el-date-picker>
-                </div>
-                <div class="flex justify-end gap-2 pt-1">
-                  <el-button @click="resetMoreFilter">重置</el-button>
-                  <el-button type="primary" @click="searchMoreFilter">搜索</el-button>
-                </div>
-              </div>
-            </el-popover>
-          </div>
-          <div class="flex items-center gap-3 flex-shrink-0">
-            <el-button v-perm="'user:task:delete'" type="danger" plain :disabled="!selectedIds.size"
-              @click="batchDelete">
-              批量删除{{ selectedIds.size ? `（${selectedIds.size}）` : '' }}
-            </el-button>
+              </el-popover>
+            </div>
+            <div class="flex items-center gap-3 flex-shrink-0">
+              <el-button v-perm="'user:task:delete'" type="danger" plain :disabled="!selectedIds.size"
+                @click="batchDelete">
+                批量删除{{ selectedIds.size ? `（${selectedIds.size}）` : '' }}
+              </el-button>
               <span v-if="selectedIds.size" class="text-sm text-gray-400">已选 {{ selectedIds.size }} 项</span>
             </div>
           </div>
@@ -93,6 +96,10 @@
           </el-table-column>
           <el-table-column label="截止时间" width="160" align="center">
             <template #default="{ row }">{{ row.deadline ? fmtTime(row.deadline, 'YYYY-MM-DD HH:mm') : '—' }}</template>
+          </el-table-column>
+          <el-table-column prop="startTime" label="开始时间" width="160" align="center" sortable="custom">
+            <template #default="{ row }">{{ row.startTime ? fmtTime(row.startTime, 'YYYY-MM-DD HH:mm') : '—'
+              }}</template>
           </el-table-column>
           <el-table-column prop="endTime" label="结束时间" width="160" align="center" sortable="custom">
             <template #default="{ row }">{{ row.endTime ? fmtTime(row.endTime, 'YYYY-MM-DD HH:mm') : '—' }}</template>

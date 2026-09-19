@@ -28,7 +28,8 @@
               <div class="flex flex-col gap-4">
                 <div class="flex items-center justify-between gap-2">
                   <span class="flex-shrink-0 text-sm">优先级</span>
-                  <el-select v-model="searchParams.priority" placeholder="请选择" class="!w-220px" clearable>
+                  <el-select v-model="searchParams.priority" placeholder="请选择" class="!w-220px" clearable
+                    :teleported="false">
                     <el-option v-for="item in priorityList" :key="item.key" :value="item.key"
                       :label="item.value"></el-option>
                   </el-select>
@@ -36,7 +37,8 @@
                 <div class="flex items-center justify-between gap-2">
                   <span class="flex-shrink-0 text-sm">截止日期</span>
                   <el-date-picker v-model="deadlineDateRange" type="daterange" class="!w-220px"
-                    value-format="YYYY-MM-DD HH:mm:ss" range-separator="至" clearable></el-date-picker>
+                    value-format="YYYY-MM-DD HH:mm:ss" range-separator="至" clearable
+                    :teleported="false"></el-date-picker>
                 </div>
                 <div class="flex justify-end gap-2 pt-1">
                   <el-button @click="resetMoreFilter">重置</el-button>
