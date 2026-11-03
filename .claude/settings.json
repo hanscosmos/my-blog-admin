@@ -3,7 +3,13 @@
     "allow": [
       "Bash(.venv/bin/python manage.py makemigrations notice)",
       "Bash(rm -f /tmp/test_notice.py; sed -n '1,60p' src/components/common/AppSearchPanel/index.vue)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(curl -s -m 10 -H \"Referer: https://www.chinamoney.com.cn/\" -H \"User-Agent: Mozilla/5.0\" \"https://www.chinamoney.com.cn/ags/ms/cm-u-bk-ccpr/CcprHisNew?currency=USD/CNY&startDate=2026-10-28&endDate=2026-11-03&pageSize=10&pageNum=1\")",
+      "Bash(curl -s -m 10 -H \"User-Agent: Mozilla/5.0\" \"https://www.chinamoney.com.cn/fe/api/fx/ccpr/latest\")",
+      "Bash(curl -s -m 8 \"https://qt.gtimg.cn/q=sh000300,sz399006,sh000688,usINX,usNDX,hf_XAU,hf_XAG,hf_OIL,hf_CL\")",
+      "Bash(iconv -f gbk -t utf-8)",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s -m 8 \"https://qt.gtimg.cn/q=usINX,usNDX,hf_XAU,hf_XAG,hf_OIL,hf_CL\")"
     ],
     "additionalDirectories": [
       "/private/tmp"

@@ -19,6 +19,11 @@
     </el-row>
     <el-row :gutter="24" class="!w-full mt-6">
       <el-col :span="24">
+        <MarketOverview></MarketOverview>
+      </el-col>
+    </el-row>
+    <el-row :gutter="24" class="!w-full mt-6">
+      <el-col :span="24">
         <StatKPIBar></StatKPIBar>
       </el-col>
     </el-row>
@@ -64,6 +69,7 @@ import StatKPIBar from './components/StatKPIBar.vue';
 import UserTaskScoreStat from './components/UserTaskScoreStat.vue';
 import ArticlePublishStat from './components/ArticlePublishStat.vue';
 import HotArticle from './components/HotArticle.vue';
+import MarketOverview from './components/MarketOverview.vue';
 import ActiveUser from './components/ActiveUser.vue';
 import { StatEnum } from '@/types/sys/enum.ts';
 </script>

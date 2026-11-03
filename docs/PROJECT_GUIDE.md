@@ -166,10 +166,11 @@ my-blog-admin/
 
 ### 0. 首页 / 工作台（`views/pages/WorkBench/Home/`）
 
-入口路由 `Home`（`/`）。页面堆叠：`HomeOverview`（欢迎语+今年/本月/本周进度%+发文/草稿数，取 `POST /sys/self/stat`）→ `StatKPIBar`（文章/草稿/用户三 KPI + 较上月 diff，取 `POST /sys/stat` type 为 `article/drafts/user`）→ `ArticlePublishStat`（`POST /article/publish/trend`）→ `RecentUserTask`（`POST /user/task/recent/list`，时间线，分数按 `getColorPair` 上色，查看更多跳 UserCenter）+ `HotArticle`（`POST /article/hot`，点击跳 ArticleDetail）→ `UserTaskScoreStat`（`POST /user/task/score/stat`）。
+入口路由 `Home`（`/`）。页面堆叠：`HomeOverview`（欢迎语+今年/本月/本周进度%+发文/草稿数，取 `POST /sys/self/stat`）→ `MarketOverview`（A股/美股/贵金属原油/外汇四组行情，取 `POST /sys/market/overview`）→ `StatKPIBar`（文章/草稿/用户三 KPI + 较上月 diff，取 `POST /sys/stat` type 为 `article/drafts/user`）→ `ArticlePublishStat`（`POST /article/publish/trend`）→ `RecentUserTask`（`POST /user/task/recent/list`，时间线，分数按 `getColorPair` 上色，查看更多跳 UserCenter）+ `HotArticle`（`POST /article/hot`，点击跳 ArticleDetail）→ `UserTaskScoreStat`（`POST /user/task/score/stat`）。
 
 - 图表统一用 `views/components/Charts/BaseBarLineChart.vue`（props `title/getDataFn/xDataKey/yDataKey/unit/chartType/showToggle`，内部 week/month/year/custom 时间范围切换、明暗自适应、渐变配色）；`BaseBarChart/BaseLineChart` 只是 `chartType` 固定封装。
 - **StatEnum 坑**：`types/sys/enum.ts` 里 `UserTask = 'column'`，`column` 实际指个人事项统计口径，勿被命名误导。
+- **市场行情**：`components/MarketOverview.vue` + `api/market/**`，四列展示 A股/美股/贵金属原油/外汇（含 USD/CNH 与人民币中间价），涨红跌绿、显示组内交易状态（交易中/午间休市/已收盘/休市），悬停条目看行情时间。后端 `POST /sys/market/overview`（`modules/system/views/market.py` + `service/market.py`）代理腾讯/新浪/CFETS 免费行情，Redis 缓存 30s（`force:true` 绕过），上游失败时回退 10 分钟旧缓存并置 `stale:true`；单组失败仅该组价格为 `null`。自动刷新默认关闭，开启后 60s 一次且页面隐藏时暂停。
 - 注释掉/未启用：`StatCard`（统计卡）、`ActiveUser`（活跃用户）在 `Home/index.vue` 被注释；`ActiveUser.vue` 是空实现。首页 keep-alive 排除，重进重拉。
 
 ### 1. 文章管理（`views/pages/Article/`，api `api/article/**`，路由见 `router/modules/Article`）
