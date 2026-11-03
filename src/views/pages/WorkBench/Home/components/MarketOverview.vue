@@ -107,14 +107,25 @@
           <div
             v-for="(item, index) in group.items"
             :key="item.key"
-            class="flex items-baseline justify-between py-2.5"
+            class="group flex items-baseline justify-between px-2 -mx-2 rounded py-2.5"
+            :class="{ 'market-item-clickable': canTrend(item) }"
             :style="{
               borderTop:
                 index > 0 ? 'dashed 1px var(--sys-border-color)' : 'none',
             }"
-            :title="item.quoteTime ? `行情时间：${item.quoteTime}` : ''"
+            :title="itemTitle(item)"
+            @click="openTrend(item)"
           >
-            <span class="text-sm">{{ item.name }}</span>
+            <span class="flex items-center gap-1 text-sm">
+              {{ item.name }}
+              <AppIcon
+                v-if="canTrend(item)"
+                name="trend"
+                :size="12"
+                class="opacity-0 group-hover:opacity-100 transition-opacity"
+                style="color: var(--sys-text-secondary-color)"
+              ></AppIcon>
+            </span>
             <div class="flex flex-col items-end">
               <span class="text-sm font-beauty">{{ formatPrice(item) }}</span>
               <span
@@ -140,6 +151,13 @@
     >
       数据仅供参考，美股行情可能延迟约 15 分钟。
     </p>
+
+    <MarketTrendDialog
+      v-if="trendVisible"
+      :visible="trendVisible"
+      :item="trendItem"
+      @close="closeTrend"
+    />
   </div>
 </template>
 
@@ -151,14 +169,48 @@ import type {
   MarketStatusType,
 } from '@/api/market/type';
 import { useDocumentVisibility, useIntervalFn } from '@vueuse/core';
+import MarketTrendDialog from './MarketTrendDialog.vue';
 
 const AUTO_REFRESH_INTERVAL = 60 * 1000;
-const SKELETON_ITEM_COUNTS = [3, 2, 4, 2];
+const SKELETON_ITEM_COUNTS = [4, 2, 5, 2];
+const TREND_KEYS = new Set([
+  'sh000001',
+  'sh000300',
+  'sz399006',
+  'sh000688',
+  'usINX',
+  'usNDX',
+  'hf_XAU',
+  'hf_XAG',
+  'hf_OIL',
+  'hf_CL',
+]);
 
 const overview = ref<MarketOverviewType | null>(null);
 const loading = ref(false);
 const errorMsg = ref('');
 const autoRefresh = ref(false);
+const trendVisible = ref(false);
+const trendItem = ref<MarketItemType | null>(null);
+
+const canTrend = (item: MarketItemType) => TREND_KEYS.has(item.key);
+
+const itemTitle = (item: MarketItemType) => {
+  const parts: string[] = [];
+  if (canTrend(item)) parts.push('点击查看趋势');
+  if (item.quoteTime) parts.push(`行情时间：${item.quoteTime}`);
+  return parts.join(' · ');
+};
+
+const openTrend = (item: MarketItemType) => {
+  if (!canTrend(item)) return;
+  trendItem.value = item;
+  trendVisible.value = true;
+};
+
+const closeTrend = () => {
+  trendVisible.value = false;
+};
 
 const visibility = useDocumentVisibility();
 
@@ -235,4 +287,13 @@ onMounted(() => {
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.market-item-clickable {
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+
+  &:hover {
+    background-color: var(--theme-hover);
+  }
+}
+</style>

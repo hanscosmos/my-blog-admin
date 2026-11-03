@@ -24,3 +24,31 @@ export type MarketOverviewType = {
   stale: boolean;
   groups: MarketGroupType[];
 };
+
+export type MarketTrendPeriodType = 'minute' | 'day' | 'week' | 'month';
+
+export type MarketTrendMinutePointType = {
+  time: string;
+  price: number | null;
+  avg: number | null;
+  volume: number | null;
+};
+
+export type MarketTrendKlineItemType = {
+  date: string;
+  open: number | null;
+  close: number | null;
+  high: number | null;
+  low: number | null;
+  volume: number | null;
+};
+
+export type MarketTrendType = {
+  key: string;
+  name: string;
+  period: MarketTrendPeriodType;
+  precision: number;
+  preClose?: number | null;
+  points?: MarketTrendMinutePointType[];
+  items?: MarketTrendKlineItemType[];
+};
