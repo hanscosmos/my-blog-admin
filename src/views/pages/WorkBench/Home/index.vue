@@ -17,7 +17,7 @@
         </div>
       </el-col> -->
     </el-row>
-    <el-row :gutter="24" class="!w-full mt-6">
+    <el-row v-if="isSuper" :gutter="24" class="!w-full mt-6">
       <el-col :span="24">
         <MarketOverview></MarketOverview>
       </el-col>
@@ -64,13 +64,14 @@
 <script setup lang="ts">
 import RecentUserTask from './components/RecentUserTask.vue';
 import HomeOverview from './components/HomeOverview.vue';
-import StatCard from './components/StatCard.vue';
 import StatKPIBar from './components/StatKPIBar.vue';
 import UserTaskScoreStat from './components/UserTaskScoreStat.vue';
 import ArticlePublishStat from './components/ArticlePublishStat.vue';
 import HotArticle from './components/HotArticle.vue';
 import MarketOverview from './components/MarketOverview.vue';
-import ActiveUser from './components/ActiveUser.vue';
-import { StatEnum } from '@/types/sys/enum.ts';
+import { usePermissionStore } from '@/store/permission';
+import { storeToRefs } from 'pinia';
+
+const { isSuper } = storeToRefs(usePermissionStore());
 </script>
 <style lang="scss" scoped></style>
