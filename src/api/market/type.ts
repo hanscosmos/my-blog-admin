@@ -3,6 +3,7 @@ export type MarketStatusType = 'open' | 'break' | 'closed' | 'holiday';
 export type MarketItemType = {
   key: string;
   name: string;
+  symbol?: string;
   price: number | null;
   change: number | null;
   changePercent: number | null;

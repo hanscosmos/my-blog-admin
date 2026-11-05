@@ -62,13 +62,18 @@
               borderTop:
                 index > 0 ? 'dashed 1px var(--sys-border-color)' : 'none',
             }" :title="itemTitle(item)" @click="openTrend(item)">
-            <span class="flex items-center gap-1 text-sm">
-              {{ item.name }}
-              <AppIcon v-if="canTrend(item)" name="trend" :size="12"
-                class="opacity-0 group-hover:opacity-100 transition-opacity"
-                style="color: var(--sys-text-secondary-color)">
-              </AppIcon>
-            </span>
+            <div class="flex flex-col">
+              <span class="flex items-center gap-1 text-sm">
+                {{ item.name }}
+                <AppIcon v-if="canTrend(item)" name="trend" :size="12"
+                  class="opacity-0 group-hover:opacity-100 transition-opacity"
+                  style="color: var(--sys-text-secondary-color)">
+                </AppIcon>
+              </span>
+              <span v-if="item.symbol" class="text-xs" style="color: var(--sys-text-secondary-color)">
+                {{ item.symbol }}
+              </span>
+            </div>
             <div class="flex flex-col items-end">
               <span class="text-sm font-beauty">{{ formatPrice(item) }}</span>
               <span v-if="item.change !== null || item.changePercent !== null" class="text-xs"
@@ -77,7 +82,7 @@
                 {{ formatPercent(item.changePercent) }}
               </span>
               <span v-else-if="item.price !== null" class="text-xs text-gray-400">
-                {{ item.quoteTime || '暂无数据' }}
+                {{ fmtTime(item.quoteTime, 'YYYY-MM-DD') || '暂无数据' }}
               </span>
             </div>
           </div>
@@ -102,9 +107,10 @@ import type {
 } from '@/api/market/type';
 import { useDocumentVisibility, useIntervalFn } from '@vueuse/core';
 import MarketTrendDialog from './MarketTrendDialog.vue';
+import { fmtTime } from '@/utils/tool'
 
 const AUTO_REFRESH_INTERVAL = 60 * 1000;
-const SKELETON_ITEM_COUNTS = [4, 2, 5, 3];
+const SKELETON_ITEM_COUNTS = [4, 4, 5, 3];
 const TREND_KEYS = new Set([
   'sh000001',
   'sh000300',
@@ -112,6 +118,8 @@ const TREND_KEYS = new Set([
   'sh000688',
   'usINX',
   'usNDX',
+  'usDJI',
+  'usIXIC',
   'usd_index',
   'hf_XAU',
   'hf_XAG',
