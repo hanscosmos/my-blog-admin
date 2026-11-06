@@ -186,7 +186,9 @@ const chartOption = computed<EChartsOption | null>(() => {
         formatter: (params: any) => {
           const list = Array.isArray(params) ? params : [params];
           if (!list.length) return '';
-          const priceItem = list.find((item: any) => item.seriesName === '价格');
+          const priceItem = list.find(
+            (item: any) => item.seriesName === '价格'
+          );
           const avgItem = list.find((item: any) => item.seriesName === '均价');
           const lines = [
             list[0].axisValue,
@@ -234,13 +236,13 @@ const chartOption = computed<EChartsOption | null>(() => {
       axisPointer: { type: 'cross' },
       formatter: (params: any) => {
         const point = Array.isArray(params) ? params[0] : params;
-        const [open, close, low, high] = point.data;
+        const [open, close, high, low] = point.data;
         return [
           point.axisValue,
           `开盘 ${formatValue(open)}`,
           `收盘 ${formatValue(close)}`,
-          `最低 ${formatValue(low)}`,
           `最高 ${formatValue(high)}`,
+          `最低 ${formatValue(low)}`,
         ].join('<br/>');
       },
     },
@@ -283,12 +285,7 @@ const chartOption = computed<EChartsOption | null>(() => {
       {
         name: data.name,
         type: 'candlestick',
-        data: items.map((item) => [
-          item.open,
-          item.close,
-          item.low,
-          item.high,
-        ]),
+        data: items.map((item) => [item.open, item.close, item.low, item.high]),
         itemStyle: {
           color: '#ef4444',
           color0: '#22c55e',
