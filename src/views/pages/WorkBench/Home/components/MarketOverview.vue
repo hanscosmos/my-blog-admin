@@ -16,83 +16,93 @@
           <el-switch v-model="autoRefresh" size="small" />
           自动刷新
         </span>
-        <el-button size="small" :loading="loading" @click="refresh">
-          刷新
-        </el-button>
+        <button type="button" class="market-icon-action" :title="collapsed ? '展开' : '收起'"
+          @click="collapsed = !collapsed">
+          <AppIcon :name="collapsed ? 'double-down' : 'double-up'" :size="16"></AppIcon>
+        </button>
+        <button type="button" class="market-icon-action" title="刷新" :disabled="loading" @click="refresh">
+          <AppIcon name="refresh" :size="16" :class="{ 'animate-spin': loading }"></AppIcon>
+        </button>
       </div>
     </div>
 
-    <p v-if="errorMsg" class="text-xs text-amber-500 mb-3">{{ errorMsg }}</p>
+    <el-collapse-transition>
+      <div v-show="!collapsed">
+        <p v-if="errorMsg" class="text-xs text-amber-500 mb-3">{{ errorMsg }}</p>
 
-    <el-skeleton v-if="!overview && !errorMsg" animated>
-      <template #template>
-        <el-row :gutter="16">
-          <el-col v-for="(count, index) in SKELETON_ITEM_COUNTS" :key="index" :xs="24" :sm="12" :lg="6"
-            class="mb-4 lg:mb-0">
+        <el-skeleton v-if="!overview && !errorMsg" animated>
+          <template #template>
+            <el-row :gutter="16">
+              <el-col v-for="(count, index) in SKELETON_ITEM_COUNTS" :key="index" :xs="24" :sm="12" :lg="8"
+                class="mb-4">
+                <div class="h-full rounded-lg px-4 py-2" style="border: 1px solid var(--sys-border-color)">
+                  <div class="flex items-center justify-between py-1.5 mb-1">
+                    <el-skeleton-item variant="h3" style="width: 35%" />
+                    <el-skeleton-item variant="text" style="width: 22%" />
+                  </div>
+                  <div v-for="n in count" :key="n" class="flex items-center justify-between py-2.5">
+                    <el-skeleton-item variant="text" style="width: 38%" />
+                    <el-skeleton-item variant="text" style="width: 30%" />
+                  </div>
+                </div>
+              </el-col>
+            </el-row>
+          </template>
+        </el-skeleton>
+        <div v-else-if="!overview" class="py-10 text-center text-sm"
+          style="color: var(--sys-text-secondary-color)">
+          行情加载失败，点击右上角刷新重试
+        </div>
+        <el-row v-else element-loading-text="更新中..." element-loading-background="rgba(128, 128, 128, 0.18)"
+          :gutter="16">
+          <el-col v-for="group in overview.groups" :key="group.key" :xs="24" :sm="12" :lg="8" class="mb-4">
             <div class="h-full rounded-lg px-4 py-2" style="border: 1px solid var(--sys-border-color)">
-              <div class="flex items-center justify-between py-1.5 mb-1">
-                <el-skeleton-item variant="h3" style="width: 35%" />
-                <el-skeleton-item variant="text" style="width: 22%" />
+              <div class="flex items-center justify-between py-1.5">
+                <span class="text-sm font-bold">{{ group.name }}</span>
+                <span class="flex items-center gap-1.5 text-xs" style="color: var(--sys-text-secondary-color)">
+                  <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: statusColor(group.status) }"></span>
+                  {{ group.statusText }}
+                </span>
               </div>
-              <div v-for="n in count" :key="n" class="flex items-center justify-between py-2.5">
-                <el-skeleton-item variant="text" style="width: 38%" />
-                <el-skeleton-item variant="text" style="width: 30%" />
+              <div v-for="(item, index) in group.items" :key="item.key"
+                class="group flex items-baseline justify-between px-2 -mx-2 rounded py-2.5"
+                :class="{ 'market-item-clickable': canTrend(item) }" :style="{
+                  borderTop:
+                    index > 0 ? 'dashed 1px var(--sys-border-color)' : 'none',
+                }" :title="itemTitle(item)" @click="openTrend(item)">
+                <div class="flex flex-col">
+                  <span class="flex items-center gap-1 text-sm">
+                    {{ item.name }}
+                    <AppIcon v-if="canTrend(item)" name="trend" :size="12"
+                      class="opacity-0 group-hover:opacity-100 transition-opacity"
+                      style="color: var(--sys-text-secondary-color)">
+                    </AppIcon>
+                  </span>
+                  <span v-if="item.symbol" class="text-xs" style="color: var(--sys-text-secondary-color)">
+                    {{ item.symbol }}
+                  </span>
+                </div>
+                <div class="flex flex-col items-end">
+                  <span class="text-sm font-beauty">{{ formatPrice(item) }}</span>
+                  <span v-if="item.change !== null || item.changePercent !== null" class="text-xs"
+                    :class="changeClass(item.change)">
+                    {{ formatChange(item.change, item.precision) }}
+                    {{ formatPercent(item.changePercent) }}
+                  </span>
+                  <span v-else-if="item.price !== null" class="text-xs text-gray-400">
+                    {{ fmtTime(item.quoteTime, 'YYYY-MM-DD') || '暂无数据' }}
+                  </span>
+                </div>
               </div>
             </div>
           </el-col>
         </el-row>
-      </template>
-    </el-skeleton>
-    <div v-else-if="!overview" class="py-10 text-center text-sm" style="color: var(--sys-text-secondary-color)">
-      行情加载失败，点击右上角刷新重试
-    </div>
-    <el-row v-else element-loading-text="更新中..." element-loading-background="rgba(128, 128, 128, 0.18)" :gutter="16">
-      <el-col v-for="group in overview.groups" :key="group.key" :xs="24" :sm="12" :lg="6" class="mb-4 lg:mb-0">
-        <div class="h-full rounded-lg px-4 py-2" style="border: 1px solid var(--sys-border-color)">
-          <div class="flex items-center justify-between py-1.5">
-            <span class="text-sm font-bold">{{ group.name }}</span>
-            <span class="flex items-center gap-1.5 text-xs" style="color: var(--sys-text-secondary-color)">
-              <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: statusColor(group.status) }"></span>
-              {{ group.statusText }}
-            </span>
-          </div>
-          <div v-for="(item, index) in group.items" :key="item.key"
-            class="group flex items-baseline justify-between px-2 -mx-2 rounded py-2.5"
-            :class="{ 'market-item-clickable': canTrend(item) }" :style="{
-              borderTop:
-                index > 0 ? 'dashed 1px var(--sys-border-color)' : 'none',
-            }" :title="itemTitle(item)" @click="openTrend(item)">
-            <div class="flex flex-col">
-              <span class="flex items-center gap-1 text-sm">
-                {{ item.name }}
-                <AppIcon v-if="canTrend(item)" name="trend" :size="12"
-                  class="opacity-0 group-hover:opacity-100 transition-opacity"
-                  style="color: var(--sys-text-secondary-color)">
-                </AppIcon>
-              </span>
-              <span v-if="item.symbol" class="text-xs" style="color: var(--sys-text-secondary-color)">
-                {{ item.symbol }}
-              </span>
-            </div>
-            <div class="flex flex-col items-end">
-              <span class="text-sm font-beauty">{{ formatPrice(item) }}</span>
-              <span v-if="item.change !== null || item.changePercent !== null" class="text-xs"
-                :class="changeClass(item.change)">
-                {{ formatChange(item.change, item.precision) }}
-                {{ formatPercent(item.changePercent) }}
-              </span>
-              <span v-else-if="item.price !== null" class="text-xs text-gray-400">
-                {{ fmtTime(item.quoteTime, 'YYYY-MM-DD') || '暂无数据' }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </el-col>
-    </el-row>
 
-    <p class="text-xs mt-1" style="color: var(--sys-text-secondary-color)">
-      数据仅供参考，美股行情可能延迟约 15 分钟。
-    </p>
+        <p class="text-xs mt-1" style="color: var(--sys-text-secondary-color)">
+          数据仅供参考，美股、美股期货行情可能延迟约 15 分钟，亚太指数行情可能延迟。
+        </p>
+      </div>
+    </el-collapse-transition>
 
     <MarketTrendDialog v-if="trendVisible" :visible="trendVisible" :item="trendItem" @close="closeTrend" />
   </div>
@@ -105,17 +115,20 @@ import type {
   MarketOverviewType,
   MarketStatusType,
 } from '@/api/market/type';
-import { useDocumentVisibility, useIntervalFn } from '@vueuse/core';
+import { useDocumentVisibility, useIntervalFn, useStorage } from '@vueuse/core';
 import MarketTrendDialog from './MarketTrendDialog.vue';
 import { fmtTime } from '@/utils/tool'
 
 const AUTO_REFRESH_INTERVAL = 60 * 1000;
-const SKELETON_ITEM_COUNTS = [4, 4, 5, 3];
+const SKELETON_ITEM_COUNTS = [4, 3, 4, 3, 5, 3];
 const TREND_KEYS = new Set([
   'sh000001',
   'sh000300',
   'sz399006',
   'sh000688',
+  'kr_kospi',
+  'jp_n225',
+  'tw_twii',
   'usINX',
   'usNDX',
   'usDJI',
@@ -131,6 +144,7 @@ const overview = ref<MarketOverviewType | null>(null);
 const loading = ref(false);
 const errorMsg = ref('');
 const autoRefresh = ref(false);
+const collapsed = useStorage('market-overview-collapsed', false);
 const trendVisible = ref(false);
 const trendItem = ref<MarketItemType | null>(null);
 
@@ -235,6 +249,31 @@ onMounted(() => {
 
   &:hover {
     background-color: var(--theme-hover);
+  }
+}
+
+.market-icon-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+
+  &:hover:not(:disabled) {
+    color: var(--el-color-primary);
+    background-color: var(--theme-hover);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 }
 </style>
