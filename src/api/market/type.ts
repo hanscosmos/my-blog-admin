@@ -53,3 +53,36 @@ export type MarketTrendType = {
   points?: MarketTrendMinutePointType[];
   items?: MarketTrendKlineItemType[];
 };
+
+export type MarketNewsCategoryKeyType = 'finance' | 'world' | 'society';
+
+export type MarketNewsItemType = {
+  id: string;
+  category: MarketNewsCategoryKeyType;
+  title: string;
+  summary: string;
+  source: string;
+  publishTime: string;
+  url: string;
+};
+
+export type MarketNewsCategoryType = {
+  key: MarketNewsCategoryKeyType;
+  name: string;
+  items: MarketNewsItemType[];
+};
+
+export type MarketNewsFlashType = {
+  id: string;
+  title: string;
+  content: string;
+  publishTime: string;
+  url: string;
+};
+
+export type MarketNewsType = {
+  updateTime: string;
+  stale: boolean;
+  categories: MarketNewsCategoryType[];
+  flashes: MarketNewsFlashType[];
+};

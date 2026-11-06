@@ -1,26 +1,33 @@
 <template>
   <div class="market-overview section-wrapper p-6">
     <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-      <h3 class="text-lg font-title flex items-center gap-2">
-        <AppIcon name="chart-line" size="18"></AppIcon>
-        市场行情
-      </h3>
+      <div class="flex items-center gap-3">
+        <h3 class="text-lg font-title flex items-center gap-2 m-0">
+          <AppIcon name="chart-line" size="18"></AppIcon>
+          市场行情
+        </h3>
+        <el-segmented v-model="activeTab" :options="tabOptions" size="small" />
+      </div>
       <div class="flex items-center gap-3 text-xs" style="color: var(--sys-text-secondary-color)">
-        <span v-if="overview">更新于 {{ overview.updateTime }}</span>
-        <span v-if="overview?.stale" class="text-amber-500">数据可能延迟</span>
-        <span v-if="autoRefresh" class="flex items-center gap-1.5" title="每 60 秒自动刷新一次；页面切到后台时暂停，回到前台后继续">
-          <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-          自动刷新中 · 60s/次
-        </span>
-        <span class="flex items-center gap-1.5">
-          <el-switch v-model="autoRefresh" size="small" />
-          自动刷新
-        </span>
+        <template v-if="activeTab === 'market'">
+          <span v-if="overview">更新于 {{ overview.updateTime }}</span>
+          <span v-if="overview?.stale" class="text-amber-500">数据可能延迟</span>
+          <span v-if="autoRefresh" class="flex items-center gap-1.5"
+            title="每 60 秒自动刷新一次；页面切到后台时暂停，回到前台后继续">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+            自动刷新中 · 60s/次
+          </span>
+          <span class="flex items-center gap-1.5">
+            <el-switch v-model="autoRefresh" size="small" />
+            自动刷新
+          </span>
+        </template>
         <button type="button" class="market-icon-action" :title="collapsed ? '展开' : '收起'"
           @click="collapsed = !collapsed">
           <AppIcon :name="collapsed ? 'double-down' : 'double-up'" :size="16"></AppIcon>
         </button>
-        <button type="button" class="market-icon-action" title="刷新" :disabled="loading" @click="refresh">
+        <button v-if="activeTab === 'market'" type="button" class="market-icon-action" title="刷新" :disabled="loading"
+          @click="refresh">
           <AppIcon name="refresh" :size="16" :class="{ 'animate-spin': loading }"></AppIcon>
         </button>
       </div>
@@ -28,45 +35,49 @@
 
     <el-collapse-transition>
       <div v-show="!collapsed" ref="groupsRef">
-        <p v-if="errorMsg" class="text-xs text-amber-500 mb-3">{{ errorMsg }}</p>
+        <div v-show="activeTab === 'market'">
+          <p v-if="errorMsg" class="text-xs text-amber-500 mb-3">{{ errorMsg }}</p>
 
-        <el-skeleton v-if="!overview && !errorMsg" animated>
-          <template #template>
-            <el-row :gutter="16">
-              <el-col v-for="(count, index) in SKELETON_ITEM_COUNTS" :key="index" :xs="24"
-                :sm="index === 0 ? 24 : 12" :lg="index === 0 ? 24 : 8" class="mb-4">
-                <div class="h-full rounded-lg px-4 py-2" style="border: 1px solid var(--sys-border-color)">
-                  <div class="flex items-center justify-between py-1.5 mb-1">
-                    <el-skeleton-item variant="h3" style="width: 35%" />
-                    <el-skeleton-item variant="text" style="width: 22%" />
+          <el-skeleton v-if="!overview && !errorMsg" animated>
+            <template #template>
+              <el-row :gutter="16">
+                <el-col v-for="(count, index) in SKELETON_ITEM_COUNTS" :key="index" :xs="24"
+                  :sm="index === 0 ? 24 : 12" :lg="index === 0 ? 24 : 8" class="mb-4">
+                  <div class="h-full rounded-lg px-4 py-2" style="border: 1px solid var(--sys-border-color)">
+                    <div class="flex items-center justify-between py-1.5 mb-1">
+                      <el-skeleton-item variant="h3" style="width: 35%" />
+                      <el-skeleton-item variant="text" style="width: 22%" />
+                    </div>
+                    <div v-for="n in count" :key="n" class="flex items-center justify-between py-2.5">
+                      <el-skeleton-item variant="text" style="width: 38%" />
+                      <el-skeleton-item variant="text" style="width: 30%" />
+                    </div>
                   </div>
-                  <div v-for="n in count" :key="n" class="flex items-center justify-between py-2.5">
-                    <el-skeleton-item variant="text" style="width: 38%" />
-                    <el-skeleton-item variant="text" style="width: 30%" />
-                  </div>
-                </div>
-              </el-col>
-            </el-row>
-          </template>
-        </el-skeleton>
-        <div v-else-if="!overview" class="py-10 text-center text-sm"
-          style="color: var(--sys-text-secondary-color)">
-          行情加载失败，点击右上角刷新重试
+                </el-col>
+              </el-row>
+            </template>
+          </el-skeleton>
+          <div v-else-if="!overview" class="py-10 text-center text-sm"
+            style="color: var(--sys-text-secondary-color)">
+            行情加载失败，点击右上角刷新重试
+          </div>
+          <el-row v-else element-loading-text="更新中..." element-loading-background="rgba(128, 128, 128, 0.18)"
+            :gutter="16">
+            <el-col v-for="group in displayGroups" :key="group.key" :data-flip-key="group.key" :xs="24"
+              :sm="group.isFavorite ? 24 : 12" :lg="group.isFavorite ? 24 : 8" class="mb-4">
+              <MarketGroupCard :group="group" :is-favorite="isFavorite" :can-trend="canTrend"
+                :get-pnl="getPnl" :total-pnl-cny="totalPnlCny" :has-pnl-data="hasPnlData"
+                @move-group="moveGroup" @move-item="handleMoveItem" @toggle-favorite="toggleFavorite"
+                @open-trend="openTrend" @open-portfolio="openPortfolio" />
+            </el-col>
+          </el-row>
+
+          <p class="text-xs mt-1" style="color: var(--sys-text-secondary-color)">
+            数据仅供参考，美股、美股期货行情可能延迟约 15 分钟，亚太指数行情可能延迟。
+          </p>
         </div>
-        <el-row v-else element-loading-text="更新中..." element-loading-background="rgba(128, 128, 128, 0.18)"
-          :gutter="16">
-          <el-col v-for="group in displayGroups" :key="group.key" :data-flip-key="group.key" :xs="24"
-            :sm="group.isFavorite ? 24 : 12" :lg="group.isFavorite ? 24 : 8" class="mb-4">
-            <MarketGroupCard :group="group" :is-favorite="isFavorite" :can-trend="canTrend"
-              :get-pnl="getPnl" :total-pnl-cny="totalPnlCny" :has-pnl-data="hasPnlData"
-              @move-group="moveGroup" @move-item="handleMoveItem" @toggle-favorite="toggleFavorite"
-              @open-trend="openTrend" @open-portfolio="openPortfolio" />
-          </el-col>
-        </el-row>
 
-        <p class="text-xs mt-1" style="color: var(--sys-text-secondary-color)">
-          数据仅供参考，美股、美股期货行情可能延迟约 15 分钟，亚太指数行情可能延迟。
-        </p>
+        <MarketNewsPanel v-if="newsMounted" v-show="activeTab === 'news'" />
       </div>
     </el-collapse-transition>
 
@@ -85,6 +96,7 @@ import type {
 import { useDocumentVisibility, useIntervalFn, useStorage } from '@vueuse/core';
 import MarketTrendDialog from './MarketTrendDialog.vue';
 import MarketGroupCard from './MarketGroupCard.vue';
+import MarketNewsPanel from './MarketNewsPanel.vue';
 import MarketPortfolioDialog from './MarketPortfolioDialog.vue';
 import {
   useMarketLayout,
@@ -95,6 +107,13 @@ import { useMarketPortfolio } from '../hooks/useMarketPortfolio';
 
 const AUTO_REFRESH_INTERVAL = 60 * 1000;
 const SKELETON_ITEM_COUNTS = [2, 4, 3, 4, 3, 5, 4];
+
+type MarketTabType = 'market' | 'news';
+
+const tabOptions: { label: string; value: MarketTabType }[] = [
+  { label: '行情', value: 'market' },
+  { label: '新闻', value: 'news' },
+];
 const TREND_KEYS = new Set([
   'sh000001',
   'sh000300',
@@ -114,6 +133,8 @@ const TREND_KEYS = new Set([
   'hf_CL',
 ]);
 
+const activeTab = ref<MarketTabType>('market');
+const newsMounted = ref(false);
 const overview = ref<MarketOverviewType | null>(null);
 const loading = ref(false);
 const errorMsg = ref('');
@@ -134,9 +155,15 @@ const {
 
 useMarketFlip({
   container: groupsRef,
-  selector: ':scope > .el-row > .el-col[data-flip-key]',
+  selector: '.el-row > .el-col[data-flip-key]',
   keys: () => displayGroups.value.map((group) => group.key),
   duration: 220,
+});
+
+watch(activeTab, (tab) => {
+  if (tab === 'news') {
+    newsMounted.value = true;
+  }
 });
 
 const {
@@ -201,7 +228,7 @@ const refresh = () => fetchMarket(true);
 
 const { pause, resume } = useIntervalFn(
   () => {
-    if (visibility.value === 'visible') {
+    if (visibility.value === 'visible' && activeTab.value === 'market') {
       fetchMarket(true);
     }
   },
