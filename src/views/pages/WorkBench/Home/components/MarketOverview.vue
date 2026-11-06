@@ -27,7 +27,7 @@
     </div>
 
     <el-collapse-transition>
-      <div v-show="!collapsed">
+      <div v-show="!collapsed" ref="groupsRef">
         <p v-if="errorMsg" class="text-xs text-amber-500 mb-3">{{ errorMsg }}</p>
 
         <el-skeleton v-if="!overview && !errorMsg" animated>
@@ -55,7 +55,7 @@
         </div>
         <el-row v-else element-loading-text="更新中..." element-loading-background="rgba(128, 128, 128, 0.18)"
           :gutter="16">
-          <el-col v-for="group in displayGroups" :key="group.key" :xs="24"
+          <el-col v-for="group in displayGroups" :key="group.key" :data-flip-key="group.key" :xs="24"
             :sm="group.isFavorite ? 24 : 12" :lg="group.isFavorite ? 24 : 8" class="mb-4">
             <MarketGroupCard :group="group" :is-favorite="isFavorite" :can-trend="canTrend"
               :get-pnl="getPnl" :total-pnl-cny="totalPnlCny" :has-pnl-data="hasPnlData"
@@ -90,6 +90,7 @@ import {
   useMarketLayout,
   type MarketItemMovePayloadType,
 } from '../hooks/useMarketLayout';
+import { useMarketFlip } from '../hooks/useMarketFlip';
 import { useMarketPortfolio } from '../hooks/useMarketPortfolio';
 
 const AUTO_REFRESH_INTERVAL = 60 * 1000;
@@ -120,6 +121,7 @@ const autoRefresh = ref(false);
 const collapsed = useStorage('market-overview-collapsed', false);
 const trendVisible = ref(false);
 const trendItem = ref<MarketItemType | null>(null);
+const groupsRef = ref<HTMLElement | null>(null);
 
 const {
   displayGroups,
@@ -129,6 +131,13 @@ const {
   moveItem,
   toggleFavorite,
 } = useMarketLayout(() => overview.value?.groups ?? []);
+
+useMarketFlip({
+  container: groupsRef,
+  selector: ':scope > .el-row > .el-col[data-flip-key]',
+  keys: () => displayGroups.value.map((group) => group.key),
+  duration: 220,
+});
 
 const {
   positions,

@@ -236,7 +236,7 @@ const chartOption = computed<EChartsOption | null>(() => {
       axisPointer: { type: 'cross' },
       formatter: (params: any) => {
         const point = Array.isArray(params) ? params[0] : params;
-        const [open, close, high, low] = point.data;
+        const [_, open, close, high, low] = point.data;
         return [
           point.axisValue,
           `开盘 ${formatValue(open)}`,

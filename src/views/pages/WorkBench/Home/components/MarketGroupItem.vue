@@ -202,15 +202,16 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .market-item {
-  transition: background-color 0.2s ease-in-out, opacity 0.2s ease-in-out;
+  box-shadow: inset 0 0 0 0 transparent;
+  transition: background-color 0.2s ease-in-out, opacity 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
 
   &.is-dragging {
     opacity: 0.45;
   }
 
   &.is-drop-target {
-    outline: 1px dashed var(--el-color-primary);
-    outline-offset: -1px;
+    box-shadow: inset 0 0 0 1px var(--el-color-primary);
   }
 }
 

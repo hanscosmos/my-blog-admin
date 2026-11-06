@@ -31,8 +31,9 @@
       <span>点击行情条目的 ☆ 加入自选</span>
     </div>
 
-    <div class="market-group-items" :class="{ 'is-grid': group.isFavorite }">
+    <div ref="itemsRef" class="market-group-items" :class="{ 'is-grid': group.isFavorite }">
       <MarketGroupItem v-for="(item, index) in group.items" :key="item.uid" :item="item" :group-key="group.key"
+        :data-flip-key="item.uid"
         :favorite="isFavorite(item.uid)" :can-trend="canTrend(item)"
         :show-top-border="!group.isFavorite && index > 0" :show-pnl="group.isFavorite"
         :pnl="group.isFavorite ? getPnl(item) : null" @open-trend="emit('open-trend', $event)"
@@ -56,6 +57,7 @@ import {
   formatCny,
   type MarketPnlType,
 } from '../hooks/useMarketPortfolio';
+import { useMarketFlip } from '../hooks/useMarketFlip';
 import MarketGroupItem from './MarketGroupItem.vue';
 
 type PropsType = {
@@ -84,8 +86,16 @@ const emit = defineEmits<{
 
 const cardRef = ref<HTMLElement | null>(null);
 const headerRef = ref<HTMLElement | null>(null);
+const itemsRef = ref<HTMLElement | null>(null);
 const isDragging = ref(false);
 const isDropTarget = ref(false);
+
+useMarketFlip({
+  container: itemsRef,
+  selector: ':scope > [data-flip-key]',
+  keys: () => props.group.items.map((item) => item.uid),
+  duration: 180,
+});
 
 let cleanupDraggable: (() => void) | undefined;
 let cleanupDropTarget: (() => void) | undefined;
