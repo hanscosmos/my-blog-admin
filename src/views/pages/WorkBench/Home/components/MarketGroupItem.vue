@@ -1,5 +1,5 @@
 <template>
-  <div ref="itemRef" class="market-item flex items-baseline justify-between px-2 -mx-2 rounded py-2.5" :class="{
+  <div ref="itemRef" class="market-item flex items-start justify-between px-2 -mx-2 rounded py-2.5" :class="{
     'market-item-clickable': canTrend,
     'is-dragging': isDragging,
     'is-drop-target': isDropTarget,
@@ -18,8 +18,7 @@
         </span>
         <AppIcon v-if="canTrend" name="trend" :size="12" class="market-item-trend"></AppIcon>
       </span>
-      <span v-if="item.symbol" class="market-item-symbol text-xs"
-        style="color: var(--sys-text-secondary-color)">
+      <span v-if="item.symbol" class="market-item-symbol text-xs" style="color: var(--sys-text-secondary-color)">
         {{ item.symbol }}
       </span>
     </div>

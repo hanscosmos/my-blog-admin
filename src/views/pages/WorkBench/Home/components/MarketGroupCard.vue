@@ -33,8 +33,7 @@
 
     <div ref="itemsRef" class="market-group-items" :class="{ 'is-grid': group.isFavorite }">
       <MarketGroupItem v-for="(item, index) in group.items" :key="item.uid" :item="item" :group-key="group.key"
-        :data-flip-key="item.uid"
-        :favorite="isFavorite(item.uid)" :can-trend="canTrend(item)"
+        :data-flip-key="item.uid" :favorite="isFavorite(item.uid)" :can-trend="canTrend(item)"
         :show-top-border="!group.isFavorite && index > 0" :show-pnl="group.isFavorite"
         :pnl="group.isFavorite ? getPnl(item) : null" @open-trend="emit('open-trend', $event)"
         @toggle-favorite="handleToggleFavorite" @move="(payload) => emit('move-item', payload)" />
@@ -230,7 +229,6 @@ onBeforeUnmount(() => {
   padding-bottom: 2px;
 
   :deep(.market-item) {
-    align-items: center;
     margin-right: 0;
     margin-left: 0;
   }

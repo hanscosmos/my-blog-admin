@@ -1,36 +1,18 @@
 <template>
-  <AppDialog
-    :visible="visible"
-    width="720px"
-    :title="`${item?.name || ''} 趋势`"
-    hide-footer
-    @close="closeHandler"
-  >
+  <AppDialog :visible="visible" width="720px" :title="`${item?.name || ''} 趋势`" hide-footer @close="closeHandler">
     <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
       <el-segmented v-model="period" :options="periodOptions" />
       <span class="text-xs" style="color: var(--sys-text-secondary-color)">
         {{ dataRangeText }}
       </span>
     </div>
-    <div
-      v-loading="loading"
-      element-loading-text="加载中..."
-      element-loading-background="rgba(128, 128, 128, 0.15)"
-      class="h-360px"
-    >
+    <div v-loading="loading" element-loading-text="加载中..." element-loading-background="rgba(128, 128, 128, 0.15)"
+      class="h-360px">
       <AppEcharts v-if="chartOption" :option="chartOption" />
-      <div
-        v-else-if="!loading"
-        class="h-full flex flex-col items-center justify-center gap-2 text-sm"
-        style="color: var(--sys-text-secondary-color)"
-      >
+      <div v-else-if="!loading" class="h-full flex flex-col items-center justify-center gap-2 text-sm"
+        style="color: var(--sys-text-secondary-color)">
         <span>{{ errorMsg || '暂无趋势数据' }}</span>
-        <el-button
-          v-if="errorMsg"
-          link
-          type="primary"
-          @click="fetchTrend(true)"
-        >
+        <el-button v-if="errorMsg" link type="primary" @click="fetchTrend(true)">
           重试
         </el-button>
       </div>
@@ -159,12 +141,12 @@ const chartOption = computed<EChartsOption | null>(() => {
         areaStyle: { color: 'rgba(59, 130, 246, 0.12)' },
         markLine: data.preClose
           ? {
-              symbol: 'none',
-              silent: true,
-              label: { show: false },
-              lineStyle: { type: 'dashed', color: textColor },
-              data: [{ yAxis: data.preClose }],
-            }
+            symbol: 'none',
+            silent: true,
+            label: { show: false },
+            lineStyle: { type: 'dashed', color: textColor },
+            data: [{ yAxis: data.preClose }],
+          }
           : undefined,
       },
     ];
@@ -236,7 +218,7 @@ const chartOption = computed<EChartsOption | null>(() => {
       axisPointer: { type: 'cross' },
       formatter: (params: any) => {
         const point = Array.isArray(params) ? params[0] : params;
-        const [_, open, close, high, low] = point.data;
+        const [_, open, close, low, high] = point.data;
         return [
           point.axisValue,
           `开盘 ${formatValue(open)}`,

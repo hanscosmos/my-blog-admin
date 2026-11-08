@@ -3,83 +3,94 @@
     <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
       <el-segmented v-model="category" :options="categoryOptions" size="small" />
       <div class="flex items-center gap-3 text-xs" style="color: var(--sys-text-secondary-color)">
-        <span v-if="news">更新于 {{ news.updateTime }}</span>
-        <span v-if="news?.stale" class="text-amber-500">数据可能延迟</span>
-        <button type="button" class="market-icon-action" title="刷新" :disabled="loading" @click="refresh">
-          <AppIcon name="refresh" :size="16" :class="{ 'animate-spin': loading }"></AppIcon>
+        <span v-if="currentData">更新于 {{ currentData.updateTime }}</span>
+        <span v-if="currentData?.stale" class="text-amber-500">数据可能延迟</span>
+        <button type="button" class="market-icon-action" title="刷新" :disabled="currentLoading" @click="refresh">
+          <AppIcon name="refresh" :size="16" :class="{ 'animate-spin': currentLoading }"></AppIcon>
         </button>
       </div>
     </div>
 
-    <p v-if="errorMsg" class="text-xs text-amber-500 mb-3">{{ errorMsg }}</p>
+    <p v-if="currentError" class="text-xs text-amber-500 mb-3">{{ currentError }}</p>
 
-    <el-row v-if="!news && !errorMsg" :gutter="20">
+    <el-row v-loading="currentLoading" element-loading-text="更新中..." :gutter="20">
       <el-col :xs="24" :lg="16">
-        <div class="news-column">
-          <el-skeleton animated>
-            <template #template>
-              <div v-for="n in 6" :key="n" class="py-2.5">
-                <el-skeleton-item variant="h3" style="width: 70%" />
-                <div class="mt-2">
-                  <el-skeleton-item variant="text" style="width: 94%" />
-                </div>
-                <div class="mt-1">
-                  <el-skeleton-item variant="text" style="width: 32%" />
-                </div>
-              </div>
-            </template>
-          </el-skeleton>
-        </div>
-      </el-col>
-      <el-col :xs="24" :lg="8" class="news-flash-col">
-        <div class="flash-column">
-          <p class="flash-title">7×24 快讯</p>
-          <el-skeleton animated>
-            <template #template>
-              <div v-for="n in 5" :key="n" class="py-2">
-                <el-skeleton-item variant="text" style="width: 90%" />
-                <div class="mt-1">
-                  <el-skeleton-item variant="text" style="width: 60%" />
-                </div>
-              </div>
-            </template>
-          </el-skeleton>
-        </div>
-      </el-col>
-    </el-row>
-
-    <div v-else-if="!news" class="py-10 text-center text-sm" style="color: var(--sys-text-secondary-color)">
-      资讯加载失败，点击右上角刷新重试
-    </div>
-
-    <el-row v-else v-loading="loading" element-loading-text="更新中..." :gutter="20">
-      <el-col :xs="24" :lg="16">
-        <div class="news-column">
-          <a v-for="item in displayItems" :key="item.id" :href="item.url" target="_blank" rel="noopener noreferrer"
-            class="news-item">
-            <div class="news-item-title">
-              <span v-if="category === 'all'" class="news-tag">{{ CATEGORY_NAMES[item.category] }}</span>
-              <span class="news-title">{{ item.title }}</span>
+        <template v-if="category === 'hot'">
+          <div v-if="!hot && !hotError" class="hot-columns">
+            <div v-for="n in 2" :key="n" class="hot-skeleton">
+              <el-skeleton animated>
+                <template #template>
+                  <el-skeleton-item variant="h3" style="width: 40%" />
+                  <div v-for="i in 8" :key="i" class="mt-3">
+                    <el-skeleton-item variant="text" style="width: 92%" />
+                  </div>
+                </template>
+              </el-skeleton>
             </div>
-            <p v-if="item.summary" class="news-summary">{{ item.summary }}</p>
-            <p class="news-meta">{{ item.source }} · {{ formatTime(item.publishTime) }}</p>
-          </a>
-          <div v-if="!displayItems.length" class="news-empty">暂无{{ categoryLabel }}新闻</div>
+          </div>
+          <div v-else-if="!hot" class="news-empty">热榜加载失败，点击右上角刷新重试</div>
+          <div v-else class="hot-columns">
+            <MarketHotList v-for="source in hot.sources" :key="source.key" :source="source" />
+          </div>
+        </template>
+
+        <div v-else class="news-column">
+          <template v-if="!news && !errorMsg">
+            <el-skeleton animated>
+              <template #template>
+                <div v-for="n in 6" :key="n" class="py-2.5">
+                  <el-skeleton-item variant="h3" style="width: 70%" />
+                  <div class="mt-2">
+                    <el-skeleton-item variant="text" style="width: 94%" />
+                  </div>
+                  <div class="mt-1">
+                    <el-skeleton-item variant="text" style="width: 32%" />
+                  </div>
+                </div>
+              </template>
+            </el-skeleton>
+          </template>
+          <div v-else-if="!news" class="news-empty">资讯加载失败，点击右上角刷新重试</div>
+          <template v-else>
+            <a v-for="item in displayItems" :key="item.id" :href="item.url" target="_blank" rel="noopener noreferrer"
+              class="news-item">
+              <div class="news-item-title">
+                <span v-if="category === 'all'" class="news-tag">{{ CATEGORY_NAMES[item.category] }}</span>
+                <span class="news-title">{{ item.title }}</span>
+              </div>
+              <p v-if="item.summary" class="news-summary">{{ item.summary }}</p>
+              <p class="news-meta">{{ item.source }} · {{ formatTime(item.publishTime) }}</p>
+            </a>
+            <div v-if="!displayItems.length" class="news-empty">暂无{{ categoryLabel }}新闻</div>
+          </template>
         </div>
       </el-col>
       <el-col :xs="24" :lg="8" class="news-flash-col">
         <div class="flash-column">
           <p class="flash-title">7×24 快讯</p>
           <div class="flash-list">
-            <a v-for="flash in news.flashes" :key="flash.id" :href="flash.url || undefined" target="_blank"
-              rel="noopener noreferrer" class="flash-item">
-              <span class="flash-time">{{ formatTime(flash.publishTime) }}</span>
-              <div class="flash-body">
-                <p class="flash-headline">{{ flash.title }}</p>
-                <p v-if="flash.content && flash.content !== flash.title" class="flash-text">{{ flash.content }}</p>
-              </div>
-            </a>
-            <div v-if="!news.flashes.length" class="news-empty">暂无快讯</div>
+            <template v-if="news">
+              <a v-for="flash in news.flashes" :key="flash.id" :href="flash.url || undefined" target="_blank"
+                rel="noopener noreferrer" class="flash-item">
+                <span class="flash-time">{{ formatTime(flash.publishTime) }}</span>
+                <div class="flash-body">
+                  <p class="flash-headline">{{ flash.title }}</p>
+                  <p v-if="flash.content && flash.content !== flash.title" class="flash-text">{{ flash.content }}</p>
+                </div>
+              </a>
+              <div v-if="!news.flashes.length" class="news-empty">暂无快讯</div>
+            </template>
+            <el-skeleton v-else-if="!errorMsg" animated>
+              <template #template>
+                <div v-for="n in 5" :key="n" class="py-2">
+                  <el-skeleton-item variant="text" style="width: 90%" />
+                  <div class="mt-1">
+                    <el-skeleton-item variant="text" style="width: 60%" />
+                  </div>
+                </div>
+              </template>
+            </el-skeleton>
+            <div v-else class="news-empty">快讯加载失败</div>
           </div>
         </div>
       </el-col>
@@ -88,32 +99,43 @@
 </template>
 
 <script setup lang="ts">
-import { getMarketNewsApi } from '@/api/market';
+import { getMarketHotApi, getMarketNewsApi } from '@/api/market';
 import type {
+  MarketHotType,
   MarketNewsCategoryKeyType,
   MarketNewsType,
 } from '@/api/market/type';
 import dayjs from 'dayjs';
+import MarketHotList from './MarketHotList.vue';
 
-type CategoryFilterType = 'all' | MarketNewsCategoryKeyType;
+type CategoryFilterType = 'all' | MarketNewsCategoryKeyType | 'hot';
 
 const CATEGORY_NAMES: Record<MarketNewsCategoryKeyType, string> = {
   finance: '金融',
   world: '国际',
-  society: '社会',
 };
 
 const categoryOptions: { label: string; value: CategoryFilterType }[] = [
   { label: '全部', value: 'all' },
   { label: '金融', value: 'finance' },
   { label: '国际', value: 'world' },
-  { label: '社会', value: 'society' },
+  { label: '热榜', value: 'hot' },
 ];
 
 const category = ref<CategoryFilterType>('all');
 const news = ref<MarketNewsType | null>(null);
 const loading = ref(false);
 const errorMsg = ref('');
+const hot = ref<MarketHotType | null>(null);
+const hotLoading = ref(false);
+const hotError = ref('');
+
+const isHot = computed(() => category.value === 'hot');
+const currentData = computed(() => (isHot.value ? hot.value : news.value));
+const currentLoading = computed(() =>
+  isHot.value ? hotLoading.value || loading.value : loading.value
+);
+const currentError = computed(() => (isHot.value ? hotError.value : errorMsg.value));
 
 const categoryLabel = computed(
   () => categoryOptions.find((item) => item.value === category.value)?.label ?? ''
@@ -153,7 +175,38 @@ const fetchNews = async (force = false) => {
   }
 };
 
-const refresh = () => fetchNews(true);
+const fetchHot = async (force = false) => {
+  if (hotLoading.value) return;
+  hotLoading.value = true;
+  try {
+    const { data } = await getMarketHotApi(force);
+    hot.value = data;
+    hotError.value = '';
+  } catch (err) {
+    console.error('获取热榜数据失败:', err);
+    hotError.value = hot.value
+      ? `热榜更新失败，当前展示 ${hot.value.updateTime} 的数据`
+      : '热榜更新失败';
+  } finally {
+    hotLoading.value = false;
+  }
+};
+
+const refresh = () => {
+  if (isHot.value) {
+    // 热榜与右侧快讯属于不同接口，刷新热榜时一并刷新快讯
+    fetchHot(true);
+    fetchNews(true);
+    return;
+  }
+  fetchNews(true);
+};
+
+watch(category, (value) => {
+  if (value === 'hot' && !hot.value) {
+    fetchHot();
+  }
+});
 
 onMounted(() => {
   fetchNews();
@@ -239,6 +292,25 @@ onMounted(() => {
   font-size: 12px;
   text-align: center;
   color: var(--sys-text-secondary-color);
+}
+
+.hot-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  height: 440px;
+}
+
+.hot-skeleton {
+  min-width: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 1199px) {
+  .hot-columns {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+  }
 }
 
 .news-flash-col {

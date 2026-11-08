@@ -1,4 +1,5 @@
 import type {
+  MarketHotType,
   MarketNewsType,
   MarketOverviewType,
   MarketTrendPeriodType,
@@ -11,6 +12,9 @@ export const getMarketOverviewApi = (force = false) =>
 
 export const getMarketNewsApi = (force = false) =>
   request.post<MarketNewsType>('/sys/market/news', { force });
+
+export const getMarketHotApi = (force = false) =>
+  request.post<MarketHotType>('/sys/market/hot', { force });
 
 export const getMarketTrendApi = (data: {
   key: string;

@@ -54,7 +54,7 @@ export type MarketTrendType = {
   items?: MarketTrendKlineItemType[];
 };
 
-export type MarketNewsCategoryKeyType = 'finance' | 'world' | 'society';
+export type MarketNewsCategoryKeyType = 'finance' | 'world';
 
 export type MarketNewsItemType = {
   id: string;
@@ -85,4 +85,26 @@ export type MarketNewsType = {
   stale: boolean;
   categories: MarketNewsCategoryType[];
   flashes: MarketNewsFlashType[];
+};
+
+export type MarketHotSourceKeyType = 'weibo' | 'baidu';
+
+export type MarketHotItemType = {
+  rank: number;
+  title: string;
+  hot: number | null;
+  tag: string;
+  url: string;
+};
+
+export type MarketHotSourceType = {
+  key: MarketHotSourceKeyType;
+  name: string;
+  items: MarketHotItemType[];
+};
+
+export type MarketHotType = {
+  updateTime: string;
+  stale: boolean;
+  sources: MarketHotSourceType[];
 };
