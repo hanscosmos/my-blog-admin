@@ -45,6 +45,7 @@ const { isDark } = storeToRefs(useSystemStore());
 
 const periodOptions = [
   { label: '分时', value: 'minute' },
+  { label: '60分K', value: 'hour' },
   { label: '日K', value: 'day' },
   { label: '周K', value: 'week' },
   { label: '月K', value: 'month' },
@@ -108,7 +109,8 @@ const dataRangeText = computed(() => {
   }
   const items = data.items || [];
   if (!items.length) return '';
-  return `${items[0].date} 至 ${items[items.length - 1].date}`;
+  const formatDate = (value: string) => (data.period === 'hour' ? value.slice(0, 16) : value);
+  return `${formatDate(items[0].date)} 至 ${formatDate(items[items.length - 1].date)}`;
 });
 
 const formatValue = (value: number | null | undefined) => {
@@ -231,7 +233,9 @@ const chartOption = computed<EChartsOption | null>(() => {
     xAxis: {
       type: 'category',
       data: items.map((item) => item.date),
-      axisLabel,
+      axisLabel: data.period === 'hour'
+        ? { ...axisLabel, formatter: (value: string) => value.slice(5, 16) }
+        : axisLabel,
       axisLine,
       axisTick: { show: false },
     },

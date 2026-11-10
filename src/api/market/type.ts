@@ -26,7 +26,7 @@ export type MarketOverviewType = {
   groups: MarketGroupType[];
 };
 
-export type MarketTrendPeriodType = 'minute' | 'day' | 'week' | 'month';
+export type MarketTrendPeriodType = 'minute' | 'hour' | 'day' | 'week' | 'month';
 
 export type MarketTrendMinutePointType = {
   time: string;

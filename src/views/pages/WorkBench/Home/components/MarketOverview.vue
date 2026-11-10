@@ -122,6 +122,8 @@ const TREND_KEYS = new Set([
   'kr_kospi',
   'jp_n225',
   'tw_twii',
+  'hk_hsi',
+  'hk_hstech',
   'usINX',
   'usNDX',
   'usDJI',
