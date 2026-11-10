@@ -13,12 +13,6 @@
       </span>
       <span v-if="group.isFavorite" class="favorite-summary">
         <span class="text-xs favorite-count">{{ group.statusText }}</span>
-        <span class="portfolio-pnl" :class="pnlClass(totalPnlCny)" :title="portfolioTitle">
-          今日 {{ hasPnlData ? formatCny(totalPnlCny, true) : '--' }}
-        </span>
-        <button type="button" class="portfolio-setting" title="设置持仓" @click.stop="emit('open-portfolio')">
-          <AppIcon name="setting-one" :size="14"></AppIcon>
-        </button>
       </span>
       <span v-else class="flex items-center gap-1.5 text-xs" style="color: var(--sys-text-secondary-color)">
         <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: statusColor(group.status) }"></span>
@@ -34,8 +28,7 @@
     <div ref="itemsRef" class="market-group-items" :class="{ 'is-grid': group.isFavorite }">
       <MarketGroupItem v-for="(item, index) in group.items" :key="item.uid" :item="item" :group-key="group.key"
         :data-flip-key="item.uid" :favorite="isFavorite(item.uid)" :can-trend="canTrend(item)"
-        :show-top-border="!group.isFavorite && index > 0" :show-pnl="group.isFavorite"
-        :pnl="group.isFavorite ? getPnl(item) : null" @open-trend="emit('open-trend', $event)"
+        :show-top-border="!group.isFavorite && index > 0" @open-trend="emit('open-trend', $event)"
         @toggle-favorite="handleToggleFavorite" @move="(payload) => emit('move-item', payload)" />
     </div>
   </div>
@@ -49,13 +42,8 @@ import {
 import type { MarketItemType, MarketStatusType } from '@/api/market/type';
 import type {
   MarketDisplayGroupType,
-  MarketDisplayItemType,
   MarketItemMovePayloadType,
 } from '../hooks/useMarketLayout';
-import {
-  formatCny,
-  type MarketPnlType,
-} from '../hooks/useMarketPortfolio';
 import { useMarketFlip } from '../hooks/useMarketFlip';
 import MarketGroupItem from './MarketGroupItem.vue';
 
@@ -63,9 +51,6 @@ type PropsType = {
   group: MarketDisplayGroupType;
   isFavorite: (uid: string) => boolean;
   canTrend: (item: MarketItemType) => boolean;
-  getPnl: (item: MarketDisplayItemType) => MarketPnlType | null;
-  totalPnlCny: number;
-  hasPnlData: boolean;
 };
 
 type GroupDragDataType = {
@@ -80,7 +65,6 @@ const emit = defineEmits<{
   (e: 'move-item', payload: MarketItemMovePayloadType): void;
   (e: 'toggle-favorite', groupKey: string, itemKey: string): void;
   (e: 'open-trend', item: MarketItemType): void;
-  (e: 'open-portfolio'): void;
 }>();
 
 const cardRef = ref<HTMLElement | null>(null);
@@ -104,15 +88,6 @@ const statusColor = (status: MarketStatusType) => {
   if (status === 'break') return '#f59e0b';
   return '#9ca3af';
 };
-
-const pnlClass = (value: number) =>
-  value > 0 ? 'is-up' : value < 0 ? 'is-down' : '';
-
-const portfolioTitle = computed(() =>
-  props.hasPnlData
-    ? '按人民币持仓市值 × 最新涨跌幅估算'
-    : '点击设置图标填写人民币持仓市值，按当日涨跌幅估算盈亏'
-);
 
 const handleToggleFavorite = (groupKey: string, itemKey: string) => {
   emit('toggle-favorite', groupKey, itemKey);
@@ -265,40 +240,6 @@ onBeforeUnmount(() => {
 
 .favorite-count {
   color: #d97706;
-}
-
-.portfolio-pnl {
-  font-weight: 600;
-  color: var(--sys-text-secondary-color);
-  white-space: nowrap;
-
-  &.is-up {
-    color: #ef4444;
-  }
-
-  &.is-down {
-    color: #22c55e;
-  }
-}
-
-.portfolio-setting {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  color: var(--sys-text-secondary-color);
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  border-radius: 4px;
-  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
-
-  &:hover {
-    color: var(--el-color-primary);
-    background-color: var(--theme-hover);
-  }
 }
 
 .favorite-empty {

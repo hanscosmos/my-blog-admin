@@ -32,9 +32,6 @@
       <span v-else-if="item.price !== null" class="text-xs text-gray-400">
         {{ fmtTime(item.quoteTime, 'YYYY-MM-DD') || '暂无数据' }}
       </span>
-      <span v-if="showPnl" class="market-item-pnl text-xs" :class="pnlClass" :title="pnlTitle">
-        {{ pnl ? formatPnlValue(pnl) : '--' }}
-      </span>
     </div>
   </div>
 </template>
@@ -49,10 +46,6 @@ import type {
   MarketDisplayItemType,
   MarketItemMovePayloadType,
 } from '../hooks/useMarketLayout';
-import {
-  formatPnlValue,
-  type MarketPnlType,
-} from '../hooks/useMarketPortfolio';
 import { fmtTime } from '@/utils/tool';
 
 type PropsType = {
@@ -61,8 +54,6 @@ type PropsType = {
   favorite: boolean;
   canTrend: boolean;
   showTopBorder: boolean;
-  showPnl: boolean;
-  pnl: MarketPnlType | null;
 };
 
 type ItemDragDataType = {
@@ -126,18 +117,6 @@ const changeClass = (value: number | null) => {
   }
   return value > 0 ? 'text-red-500' : 'text-green-500';
 };
-
-const pnlValue = computed(() => props.pnl?.pnl ?? 0);
-
-const pnlClass = computed(() =>
-  props.pnl ? changeClass(pnlValue.value) : 'text-gray-400'
-);
-
-const pnlTitle = computed(() =>
-  props.pnl
-    ? '按持仓市值 × 当日涨跌幅估算'
-    : '未设置持仓或暂无涨跌幅数据'
-);
 
 onMounted(() => {
   if (!itemRef.value || !dragHandleRef.value) return;

@@ -1,4 +1,7 @@
 import type {
+  MarketFundHoldingFormType,
+  MarketFundPortfolioType,
+  MarketFundSearchItemType,
   MarketHotType,
   MarketNewsType,
   MarketOverviewType,
@@ -21,3 +24,15 @@ export const getMarketTrendApi = (data: {
   period: MarketTrendPeriodType;
   force?: boolean;
 }) => request.post<MarketTrendType>('/sys/market/trend', data);
+
+export const getMarketFundPortfolioApi = (force = false) =>
+  request.post<MarketFundPortfolioType>('/sys/market/fund/portfolio', { force });
+
+export const searchMarketFundApi = (keyword: string) =>
+  request.post<MarketFundSearchItemType[]>('/sys/market/fund/search', { keyword });
+
+export const saveMarketFundHoldingApi = (data: MarketFundHoldingFormType) =>
+  request.post<boolean>('/sys/market/fund/holding/save', data);
+
+export const deleteMarketFundHoldingApi = (data: { ids: string[] }) =>
+  request.post<boolean>('/sys/market/fund/holding/delete', data);

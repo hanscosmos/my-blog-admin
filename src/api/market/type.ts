@@ -108,3 +108,95 @@ export type MarketHotType = {
   stale: boolean;
   sources: MarketHotSourceType[];
 };
+
+export type MarketFundCategoryType =
+  | 'bond'
+  | 'equity'
+  | 'mixed'
+  | 'overseas'
+  | 'money'
+  | 'commodity'
+  | 'other';
+
+export type MarketFundStyleType = 'passive' | 'active' | 'unknown';
+
+export type MarketFundSearchItemType = {
+  code: string;
+  name: string;
+  type: string;
+  category: MarketFundCategoryType;
+  style: MarketFundStyleType;
+  nav: number | null;
+  navDate: string;
+  company: string;
+  manager: string;
+};
+
+export type MarketFundHoldingItemType = {
+  id: string;
+  fundCode: string;
+  fundName: string;
+  fundType: string;
+  category: MarketFundCategoryType;
+  style: MarketFundStyleType;
+  shares: number;
+  costNav: number;
+  remark: string;
+  sort: number;
+  nav: number | null;
+  navDate: string;
+  estimateNav: number | null;
+  estimateChangePercent: number | null;
+  estimateTime: string;
+  currentNav: number | null;
+  prevNav: number | null;
+  changePercent: number | null;
+  quoteTime: string;
+  dataMode: 'estimate' | 'nav' | 'none';
+  costAmount: number;
+  marketValue: number | null;
+  todayPnl: number | null;
+  totalPnl: number | null;
+  totalReturnRate: number | null;
+  dayReturnRate: number | null;
+  ratio: number | null;
+};
+
+export type MarketFundCategoryStatType = {
+  category: MarketFundCategoryType;
+  name: string;
+  count: number;
+  marketValue: number;
+  todayPnl: number;
+  totalPnl: number;
+  ratio: number | null;
+};
+
+export type MarketFundSummaryType = {
+  totalCost: number;
+  totalMarketValue: number;
+  totalTodayPnl: number;
+  totalPnl: number;
+  totalReturnRate: number | null;
+  todayReturnRate: number | null;
+  incomplete: boolean;
+};
+
+export type MarketFundPortfolioType = {
+  updateTime: string;
+  stale: boolean;
+  summary: MarketFundSummaryType;
+  categories: MarketFundCategoryStatType[];
+  items: MarketFundHoldingItemType[];
+};
+
+export type MarketFundHoldingFormType = {
+  id?: string;
+  fundCode: string;
+  shares: number;
+  costNav: number;
+  category: MarketFundCategoryType;
+  style: MarketFundStyleType;
+  remark?: string;
+  sort?: number;
+};

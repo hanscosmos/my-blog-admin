@@ -22,6 +22,10 @@
             自动刷新
           </span>
         </template>
+        <template v-else-if="activeTab === 'fund'">
+          <span v-if="fundPanelRef?.updateTime">更新于 {{ fundPanelRef.updateTime }}</span>
+          <span v-if="fundPanelRef?.stale" class="text-amber-500">数据可能延迟</span>
+        </template>
         <template v-else>
           <span v-if="newsPanelRef?.updateTime">更新于 {{ newsPanelRef.updateTime }}</span>
           <span v-if="newsPanelRef?.stale" class="text-amber-500">数据可能延迟</span>
@@ -70,9 +74,8 @@
             <el-col v-for="group in displayGroups" :key="group.key" :data-flip-key="group.key" :xs="24"
               :sm="group.isFavorite ? 24 : 12" :lg="group.isFavorite ? 24 : 8" class="mb-4">
               <MarketGroupCard :group="group" :is-favorite="isFavorite" :can-trend="canTrend"
-                :get-pnl="getPnl" :total-pnl-cny="totalPnlCny" :has-pnl-data="hasPnlData"
                 @move-group="moveGroup" @move-item="handleMoveItem" @toggle-favorite="toggleFavorite"
-                @open-trend="openTrend" @open-portfolio="openPortfolio" />
+                @open-trend="openTrend" />
             </el-col>
           </el-row>
 
@@ -81,13 +84,12 @@
           </p>
         </div>
 
+        <MarketFundPanel v-if="fundMounted" v-show="activeTab === 'fund'" ref="fundPanelRef" />
         <MarketNewsPanel v-if="newsMounted" v-show="activeTab === 'news'" ref="newsPanelRef" />
       </div>
     </el-collapse-transition>
 
     <MarketTrendDialog v-if="trendVisible" :visible="trendVisible" :item="trendItem" @close="closeTrend" />
-    <MarketPortfolioDialog v-if="portfolioVisible" :visible="portfolioVisible" :items="favoriteItems"
-      :positions="positions" @close="portfolioVisible = false" @save="handleSavePositions" />
   </div>
 </template>
 
@@ -101,21 +103,21 @@ import { useDocumentVisibility, useIntervalFn, useStorage } from '@vueuse/core';
 import MarketTrendDialog from './MarketTrendDialog.vue';
 import MarketGroupCard from './MarketGroupCard.vue';
 import MarketNewsPanel from './MarketNewsPanel.vue';
-import MarketPortfolioDialog from './MarketPortfolioDialog.vue';
+import MarketFundPanel from './MarketFundPanel.vue';
 import {
   useMarketLayout,
   type MarketItemMovePayloadType,
 } from '../hooks/useMarketLayout';
 import { useMarketFlip } from '../hooks/useMarketFlip';
-import { useMarketPortfolio } from '../hooks/useMarketPortfolio';
 
 const AUTO_REFRESH_INTERVAL = 60 * 1000;
 const SKELETON_ITEM_COUNTS = [2, 4, 3, 4, 3, 5, 4];
 
-type MarketTabType = 'market' | 'news';
+type MarketTabType = 'market' | 'fund' | 'news';
 
 const tabOptions: { label: string; value: MarketTabType; icon: string }[] = [
   { label: '市场行情', value: 'market', icon: 'chart-line' },
+  { label: '我的持仓', value: 'fund', icon: 'funds' },
   { label: '市场新闻', value: 'news', icon: 'newspaper-folding' },
 ];
 const TREND_KEYS = new Set([
@@ -141,6 +143,7 @@ const TREND_KEYS = new Set([
 
 const activeTab = ref<MarketTabType>('market');
 const newsMounted = ref(false);
+const fundMounted = ref(false);
 const overview = ref<MarketOverviewType | null>(null);
 const loading = ref(false);
 const errorMsg = ref('');
@@ -158,9 +161,16 @@ type MarketNewsPanelExposeType = {
 };
 const newsPanelRef = ref<MarketNewsPanelExposeType | null>(null);
 
+type MarketFundPanelExposeType = {
+  updateTime: string;
+  stale: boolean;
+  loading: boolean;
+  refresh: () => void;
+};
+const fundPanelRef = ref<MarketFundPanelExposeType | null>(null);
+
 const {
   displayGroups,
-  favoriteItems,
   favoriteUids,
   moveGroup,
   moveItem,
@@ -175,31 +185,26 @@ useMarketFlip({
 });
 
 watch(activeTab, (tab) => {
-  if (tab === 'news') {
-    newsMounted.value = true;
+  if (tab === 'fund') {
+    if (!fundMounted.value) {
+      // 首次挂载时面板自身会拉取最新数据
+      fundMounted.value = true;
+      return;
+    }
+    fundPanelRef.value?.refresh();
+    return;
   }
+  if (tab === 'news') {
+    if (!newsMounted.value) {
+      // 首次挂载时面板自身会拉取最新数据
+      newsMounted.value = true;
+      return;
+    }
+    newsPanelRef.value?.refresh();
+    return;
+  }
+  fetchMarket(true);
 });
-
-const {
-  positions,
-  getPnl,
-  totalPnlCny,
-  hasPnlData,
-  savePositions,
-} = useMarketPortfolio({
-  favorites: () => favoriteItems.value,
-});
-
-const portfolioVisible = ref(false);
-
-const openPortfolio = () => {
-  portfolioVisible.value = true;
-};
-
-const handleSavePositions = (next: Record<string, number>) => {
-  savePositions(next);
-  portfolioVisible.value = false;
-};
 
 const canTrend = (item: MarketItemType) => TREND_KEYS.has(item.key);
 
@@ -240,15 +245,17 @@ const fetchMarket = async (force = false) => {
 
 const refresh = () => fetchMarket(true);
 
-const activeLoading = computed(() =>
-  activeTab.value === 'market'
-    ? loading.value
-    : Boolean(newsPanelRef.value?.loading)
-);
+const activeLoading = computed(() => {
+  if (activeTab.value === 'market') return loading.value;
+  if (activeTab.value === 'fund') return Boolean(fundPanelRef.value?.loading);
+  return Boolean(newsPanelRef.value?.loading);
+});
 
 const refreshActive = () => {
   if (activeTab.value === 'market') {
     refresh();
+  } else if (activeTab.value === 'fund') {
+    fundPanelRef.value?.refresh();
   } else {
     newsPanelRef.value?.refresh();
   }
