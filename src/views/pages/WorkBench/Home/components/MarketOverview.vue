@@ -1,12 +1,12 @@
 <template>
   <div class="market-overview section-wrapper p-6">
     <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-      <div class="flex items-center gap-3">
-        <h3 class="text-lg font-title flex items-center gap-2 m-0">
-          <AppIcon name="chart-line" size="18"></AppIcon>
-          市场行情
-        </h3>
-        <el-segmented v-model="activeTab" :options="tabOptions" size="small" />
+      <div class="market-tabs flex items-center">
+        <button v-for="tab in tabOptions" :key="tab.value" type="button" class="market-tab"
+          :class="{ 'is-active': activeTab === tab.value }" @click="activeTab = tab.value">
+          <AppIcon :name="tab.icon" :size="18"></AppIcon>
+          <span class="text-lg font-title">{{ tab.label }}</span>
+        </button>
       </div>
       <div class="flex items-center gap-3 text-xs" style="color: var(--sys-text-secondary-color)">
         <template v-if="activeTab === 'market'">
@@ -22,13 +22,17 @@
             自动刷新
           </span>
         </template>
+        <template v-else>
+          <span v-if="newsPanelRef?.updateTime">更新于 {{ newsPanelRef.updateTime }}</span>
+          <span v-if="newsPanelRef?.stale" class="text-amber-500">数据可能延迟</span>
+        </template>
         <button type="button" class="market-icon-action" :title="collapsed ? '展开' : '收起'"
           @click="collapsed = !collapsed">
           <AppIcon :name="collapsed ? 'double-down' : 'double-up'" :size="16"></AppIcon>
         </button>
-        <button v-if="activeTab === 'market'" type="button" class="market-icon-action" title="刷新" :disabled="loading"
-          @click="refresh">
-          <AppIcon name="refresh" :size="16" :class="{ 'animate-spin': loading }"></AppIcon>
+        <button type="button" class="market-icon-action" title="刷新" :disabled="activeLoading"
+          @click="refreshActive">
+          <AppIcon name="refresh" :size="16" :class="{ 'animate-spin': activeLoading }"></AppIcon>
         </button>
       </div>
     </div>
@@ -77,7 +81,7 @@
           </p>
         </div>
 
-        <MarketNewsPanel v-if="newsMounted" v-show="activeTab === 'news'" />
+        <MarketNewsPanel v-if="newsMounted" v-show="activeTab === 'news'" ref="newsPanelRef" />
       </div>
     </el-collapse-transition>
 
@@ -110,9 +114,9 @@ const SKELETON_ITEM_COUNTS = [2, 4, 3, 4, 3, 5, 4];
 
 type MarketTabType = 'market' | 'news';
 
-const tabOptions: { label: string; value: MarketTabType }[] = [
-  { label: '行情', value: 'market' },
-  { label: '新闻', value: 'news' },
+const tabOptions: { label: string; value: MarketTabType; icon: string }[] = [
+  { label: '市场行情', value: 'market', icon: 'chart-line' },
+  { label: '市场新闻', value: 'news', icon: 'newspaper-folding' },
 ];
 const TREND_KEYS = new Set([
   'sh000001',
@@ -145,6 +149,14 @@ const collapsed = useStorage('market-overview-collapsed', false);
 const trendVisible = ref(false);
 const trendItem = ref<MarketItemType | null>(null);
 const groupsRef = ref<HTMLElement | null>(null);
+
+type MarketNewsPanelExposeType = {
+  updateTime: string;
+  stale: boolean;
+  loading: boolean;
+  refresh: () => void;
+};
+const newsPanelRef = ref<MarketNewsPanelExposeType | null>(null);
 
 const {
   displayGroups,
@@ -228,6 +240,20 @@ const fetchMarket = async (force = false) => {
 
 const refresh = () => fetchMarket(true);
 
+const activeLoading = computed(() =>
+  activeTab.value === 'market'
+    ? loading.value
+    : Boolean(newsPanelRef.value?.loading)
+);
+
+const refreshActive = () => {
+  if (activeTab.value === 'market') {
+    refresh();
+  } else {
+    newsPanelRef.value?.refresh();
+  }
+};
+
 const { pause, resume } = useIntervalFn(
   () => {
     if (visibility.value === 'visible' && activeTab.value === 'market') {
@@ -252,6 +278,42 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+.market-tabs {
+  gap: 20px;
+}
+
+.market-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0 6px;
+  border: none;
+  background: transparent;
+  color: var(--sys-text-secondary-color);
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+
+  &:hover {
+    color: var(--el-color-primary);
+  }
+
+  &.is-active {
+    color: var(--sys-text-color);
+
+    &::after {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 2px;
+      background-color: var(--el-color-primary);
+      border-radius: 1px;
+      content: '';
+    }
+  }
+}
+
 .market-icon-action {
   display: flex;
   align-items: center;
