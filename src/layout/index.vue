@@ -26,6 +26,7 @@
         </div>
       </div>
     </div>
+    <MusicPlayer v-if="isSuper" />
   </div>
 </template>
 <script lang="ts" setup>
@@ -33,12 +34,15 @@ import { storeToRefs } from 'pinia';
 import SideBar from './components/SideBar/index.vue';
 import TopBar from './components/TopBar/index.vue';
 import TabBar from './components/TabBar/index.vue';
+import MusicPlayer from './components/MusicPlayer/index.vue';
 import { useSystemStore } from '@/store/system';
 import { useTabListStore } from '@/store/tab/tabList';
+import { usePermissionStore } from '@/store/permission';
 
 const route = useRoute();
 const { isSideExpand, isOpenStore } = storeToRefs(useSystemStore());
 const { visible: tabVisible } = storeToRefs(useTabListStore());
+const { isSuper } = storeToRefs(usePermissionStore());
 const disabledStoreRoutes = ['ArticleDetail', 'UpdateArticle', 'Home'];
 const sideWidth = computed(() => {
   return isSideExpand.value ? '14rem' : '4rem';

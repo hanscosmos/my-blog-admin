@@ -57,12 +57,12 @@ my-blog-admin/
     │   │   └── Upload/        #   AppAutoUpload(空壳)、AppImageAutoUpload、AppAvatarUpload/Cropper
     │   ├── SelectIcon/        #   图标选择器（菜单图标用，已实现）
     │   └── SelectImage/       #   图片选择器（空占位，未使用）
-    ├── config/                # 全局配置：dict.ts(字典分类树，前端硬编码)、module.ts、mock.ts(菜单 mock)、index.ts(MAX_IMAGE_SIZE=10)
+    ├── config/                # 全局配置：dict.ts(字典分类树，前端硬编码)、module.ts、mock.ts(菜单 mock)、index.ts(MAX_IMAGE_SIZE=10、MAX_MUSIC_SIZE=50)
     ├── directives/            # 全局指令：permission.ts（v-perm，无权限时 display:none）
     ├── hooks/                 # 组合式函数：useDialog/useSearch/useDict/useMenu/useScroll/useTaskReminder/useNotice/useSpeechRecognition/usePermission
     ├── layout/                # 主框架布局
     │   ├── index.vue          #   侧栏 + 顶栏 + 标签页 + 内容(keep-alive)
-    │   └── components/        #   SideBar(+FoldBtn)/TopBar(TodoListBtn·MessageBtn·ArticleBtn·UserInfo·AiChatWidget)/TabBar
+    │   └── components/        #   SideBar(+FoldBtn)/TopBar(TodoListBtn·MessageBtn·MarketBtn·ArticleBtn·UserInfo·AiChatWidget)/TabBar/MusicPlayer(超管全局悬浮播放器)
     ├── plugins/               # iconpark（全量注册）、v-md-editor（编辑器+预览全局组件与插件）
     ├── router/
     │   ├── index.ts           # 路由创建 + 登录守卫 + 自动加标签
@@ -92,6 +92,7 @@ my-blog-admin/
 | `store/tab/tabList` | 多标签页列表，persist key `tabList`（sessionStorage） |
 | `store/menu` | 后端菜单树 `menuTreeList`，persist key `menu`（localStorage），登录/菜单增删改后刷新 |
 | `store/permission` | 权限码集合 `permCodes` + `isSuper/roles/menuRoutes`，persist key `permission`（localStorage）；`hasPerm(code\|code[])`、`clearPermission()`（退出登录时调） |
+| `store/music` | 音乐播放器状态：`playlist/currentSong/isPlaying/volume/mode('list'\|'single'\|'shuffle')/collapsed/lastSongId`，persist key `music`（localStorage，仅持久化 `volume/mode/collapsed/lastSongId`）；`loadPlaylist(force)` 拉 `/resource/music/all`（手动顺序），`playSong/toggle/next/prev/setVolume/setMode/stop` |
 | `hooks/usePermission` | `loadPermission()` 拉 `permission/self`、`ensurePermission()` 已有则跳过（路由守卫用）、`canAccessRoute(name)` 判断路由是否可访问 |
 | `utils/tool` | 被 `unplugin-auto-import` 扫描且 `vueTemplate:true` → **`.vue` 模板/脚本与 `.ts` 中直接可用免 import**：`fmtTime/dateDiff/getTagColor/toRgba/copyClick/confirmHandler/getCookie/setCookie/randomColor/getColorPair/getImg/getSvg/uploadFile/getDictLabelByKey` 等 |
 | `types/global.d.ts` | 无 export 的**全局类型**（免 import）：`PageType/ResType/ResPageType/ReqPageType/IdType/IdsType/DictType/TableColumnType` |
@@ -157,7 +158,7 @@ my-blog-admin/
 | `layout/index.vue` | 三明治布局：SideBar(宽度 14rem/4rem 随 `isSideExpand`) + TopBar(4rem) + TabBar(条件显示) + 内容。`keep-alive` 排除 `ArticleDetail/UpdateArticle/Home`；`route.meta.hideSide/hideTab/hideSide` 控制局部隐藏 |
 | `SideBar` | `el-menu` 渲染 `menuStore.menuTreeList`；`item.type==='1'` 渲染 `el-sub-menu`(目录)，否则叶子。图标是后端图片 URL（`<img>`）。顶部「博客后台」点击回 Home；`FoldBtn` 切换 `isSideExpand`。跳转 `router.push({name:item.route})`，路由不存在 → warning |
 | `TabBar/TabItem` | 多标签：`TransitionGroup` 横排、`useScroll` 左右箭头；Home 标签固定不可关。左键切换、关闭图标、**右键菜单**(关当前/左/右/其他/刷新)、**拖拽排序**(pragmatic-drag-and-drop，Home 除外)。持久化 sessionStorage `tabList` |
-| `TopBar` | 右侧按钮依次：`TodoListBtn`（待办角标+下拉，见用户中心）→ `MessageBtn`（站内消息角标+下拉，见用户中心）→ `ArticleBtn`（跳 `ReleaseArticle`）→ `UserInfo`(个人中心/退出登录下拉) → `AiChatWidget`(AI 助手悬浮面板) |
+| `TopBar` | 右侧按钮依次：`TodoListBtn`（待办角标+下拉，见用户中心）→ `MessageBtn`（站内消息角标+下拉，见用户中心）→ `MarketBtn`（超管可见，点击打开行情弹窗，见首页章节）→ `ArticleBtn`（跳 `ReleaseArticle`）→ `UserInfo`(个人中心/退出登录下拉) → `AiChatWidget`(AI 助手悬浮面板) |
 | `SysSettings` | `App.vue` 全局挂载，左下角圆形按钮打开抽屉：开关 keep-alive(`isOpenStore`)、显示/隐藏标签页(`tabVisible`)、浅色/深色、5 主题色。纯前端，无接口 |
 
 ---
@@ -166,16 +167,19 @@ my-blog-admin/
 
 ### 0. 首页 / 工作台（`views/pages/WorkBench/Home/`）
 
-入口路由 `Home`（`/`）。页面堆叠：`HomeOverview`（欢迎语+今年/本月/本周进度%+发文/草稿数，取 `POST /sys/self/stat`）→ `MarketOverview`（自选 + A股/港股/亚太/美股/美股期货/贵金属原油/外汇/加密货币八组行情，取 `POST /sys/market/overview`）→ `StatKPIBar`（文章/草稿/用户三 KPI + 较上月 diff，取 `POST /sys/stat` type 为 `article/drafts/user`）→ `ArticlePublishStat`（`POST /article/publish/trend`）→ `RecentUserTask`（`POST /user/task/recent/list`，时间线，分数按 `getColorPair` 上色，查看更多跳 UserCenter）+ `HotArticle`（`POST /article/hot`，点击跳 ArticleDetail）→ `UserTaskScoreStat`（`POST /user/task/score/stat`）。
+入口路由 `Home`（`/`）。页面堆叠：`HomeOverview`（欢迎语+今年/本月/本周进度%+发文/草稿数，取 `POST /sys/self/stat`）→ `StatKPIBar`（文章/草稿/用户三 KPI + 较上月 diff，取 `POST /sys/stat` type 为 `article/drafts/user`）→ `ArticlePublishStat`（`POST /article/publish/trend`）→ `RecentUserTask`（`POST /user/task/recent/list`，时间线，分数按 `getColorPair` 上色，查看更多跳 UserCenter）+ `HotArticle`（`POST /article/hot`，点击跳 ArticleDetail）→ `UserTaskScoreStat`（`POST /user/task/score/stat`）。
 
 - 图表统一用 `views/components/Charts/BaseBarLineChart.vue`（props `title/getDataFn/xDataKey/yDataKey/unit/chartType/showToggle`，内部 week/month/year/custom 时间范围切换、明暗自适应、渐变配色）；`BaseBarChart/BaseLineChart` 只是 `chartType` 固定封装。
 - **StatEnum 坑**：`types/sys/enum.ts` 里 `UserTask = 'column'`，`column` 实际指个人事项统计口径，勿被命名误导。
-- **市场行情**：`components/MarketOverview.vue` + `api/market/**`，仅在超级管理员（`permission.isSuper`）首页显示，三列展示 自选行情/ A股（上证指数/沪深300/创业板指/科创50）/港股（恒生指数/恒生科技指数）/亚太（韩国KOSPI/日经225/台湾加权）/美股（标普500/纳斯达克100/道琼斯/纳斯达克综合）/美股指数期货（纳斯达克100/标普500/道琼斯期货）/贵金属原油（伦敦金/伦敦银/Au9999/布伦特原油/NYMEX原油）/外汇（含 USD/CNH、伦敦金按离岸汇率折算的国内金价、人民币中间价与美元指数）/加密货币（比特币/以太坊/币安币/Solana/瑞波币/艾达币），每条中文名下方显示英文标识（后端 `ITEM_SYMBOLS` 提供 `symbol` 字段，如 XAUUSD/DXY），涨红跌绿、显示组内交易状态（交易中/午间休市/已收盘/休市），悬停条目看行情时间；顶部「市场行情 / 我的持仓 / 市场新闻」标题并列切换（各带图标，当前项高亮并带下划线），右上角箭头/刷新图标控制整块内容显隐与刷新，收起状态存 localStorage（`market-overview-collapsed`）。**排序与自选**：板块与板块内指标均可拖拽排序（指标不可跨板块），自选行情板块独占一行（整行宽度，条目按网格横向排列（宽屏两列、窄屏单列），名称与涨跌幅均单行完整展示、行高统一）、固定置顶且不参与板块拖拽；条目星标可加入/移出自选，自选条目保留原板块位置，板块使用金色高亮区分；拖拽基于 `@atlaskit/pragmatic-drag-and-drop`（`MarketGroupCard.vue` 管板块、`MarketGroupItem.vue` 管指标），排序/自选统一存 localStorage（`market-overview-layout`），布局计算在 `hooks/useMarketLayout.ts`；拖拽换位后的滑动过渡由 `hooks/useMarketFlip.ts` 的 FLIP 动画实现（板块与条目各自注册，通过 `data-flip-key` 记录位置，遵循 `prefers-reduced-motion`）。后端 `POST /sys/market/overview`（`modules/system/views/market.py` + `service/market.py`）代理腾讯/新浪/东方财富/CFETS 免费行情（港股走东方财富 `100.HSI/124.HSTECH`，亚太指数走东方财富 `100.KS11/100.N225/100.TWII`，加密货币走新浪 `btc_btcbtcusd/btc_btcethusd/btc_btcbnbusd/btc_btcsolusd/btc_btcxrpusd/btc_btcadausd` 且 7×24 显示交易中，美股期货走新浪 `hf_NQ/hf_ES/hf_YM`，Au9999 走东方财富 `118.AU9999`；新浪期货不返回涨跌幅，后端按昨收计算），Redis 缓存 30s（`force:true` 绕过），上游失败时回退 10 分钟旧缓存并置 `stale:true`；单组失败仅该组价格为 `null`。自动刷新默认关闭，开启后 60s 一次且页面隐藏时暂停。
+- 注释掉/未启用：`StatCard`（统计卡）、`ActiveUser`（活跃用户）在 `Home/index.vue` 被注释；`ActiveUser.vue` 是空实现。首页 keep-alive 排除，重进重拉。
+
+### 0.1 行情中心（顶栏 `MarketBtn`，原首页市场行情）
+
+- **市场行情**：已从首页移出，改为顶栏 `MarketBtn`（`layout/components/TopBar/components/MarketBtn/`）入口：按钮仅超级管理员（`permission.isSuper`）可见，点击打开 `AppDialog`（`Teleport` 到 body，宽 1200px），弹窗内嵌 `components/MarketOverview.vue`：固定高度 72vh 的 flex 布局，头部 tab/刷新栏常驻，只有下方内容滚动——「市场行情」把自选行情固定在上方、其余板块在下方滚动区；「我的持仓」同样把汇总统计固定在上方、明细在下方滚动区；「市场新闻」整块放在下方滚动区。原来的「收起」按钮属于首页内嵌场景，已随之移除。组件与 `hooks/` 均随之迁到 `MarketBtn/` 下，相对路径不变；弹窗关闭即卸载（`v-if`），重新打开重新拉取数据。三列展示 自选行情/ A股（上证指数/沪深300/创业板指/科创50）/港股（恒生指数/恒生科技指数）/亚太（韩国KOSPI/日经225/台湾加权）/美股（标普500/纳斯达克100/道琼斯/纳斯达克综合）/美股指数期货（纳斯达克100/标普500/道琼斯期货）/贵金属原油（伦敦金/伦敦银/Au9999/布伦特原油/NYMEX原油）/外汇（含 USD/CNH、伦敦金按离岸汇率折算的国内金价、人民币中间价与美元指数）/加密货币（比特币/以太坊/币安币/Solana/瑞波币/艾达币），每条中文名下方显示英文标识（后端 `ITEM_SYMBOLS` 提供 `symbol` 字段，如 XAUUSD/DXY），涨红跌绿、显示组内交易状态（交易中/午间休市/已收盘/休市），悬停条目看行情时间；顶部「市场行情 / 我的持仓 / 市场新闻」标题并列切换（各带图标，当前项高亮并带下划线），右上角刷新图标刷新当前 tab 数据。**排序与自选**：板块与板块内指标均可拖拽排序（指标不可跨板块），自选行情板块独占一行（整行宽度，条目按网格横向排列（宽屏两列、窄屏单列），名称与涨跌幅均单行完整展示、行高统一）、固定置顶且不参与板块拖拽；条目星标可加入/移出自选，自选条目保留原板块位置，板块使用金色高亮区分；拖拽基于 `@atlaskit/pragmatic-drag-and-drop`（`MarketGroupCard.vue` 管板块、`MarketGroupItem.vue` 管指标），排序/自选统一存 localStorage（`market-overview-layout`），布局计算在 `hooks/useMarketLayout.ts`；拖拽换位后的滑动过渡由 `hooks/useMarketFlip.ts` 的 FLIP 动画实现（板块与条目各自注册，通过 `data-flip-key` 记录位置，遵循 `prefers-reduced-motion`）。后端 `POST /sys/market/overview`（`modules/system/views/market.py` + `service/market.py`）代理腾讯/新浪/东方财富/CFETS 免费行情（港股走东方财富 `100.HSI/124.HSTECH`，亚太指数走东方财富 `100.KS11/100.N225/100.TWII`，加密货币走新浪 `btc_btcbtcusd/btc_btcethusd/btc_btcbnbusd/btc_btcsolusd/btc_btcxrpusd/btc_btcadausd` 且 7×24 显示交易中，美股期货走新浪 `hf_NQ/hf_ES/hf_YM`，Au9999 走东方财富 `118.AU9999`；新浪期货不返回涨跌幅，后端按昨收计算），Redis 缓存 30s（`force:true` 绕过），上游失败时回退 10 分钟旧缓存并置 `stale:true`；单组失败仅该组价格为 `null`。自动刷新默认关闭，开启后 60s 一次且页面隐藏时暂停。
 - **行情趋势弹窗**：除 `fx_susdcnh`/`usdcny_ccpr`（外汇）外的指数、商品及美元指数条目可点击，打开 `components/MarketTrendDialog.vue`，分时/60分K/日K/周K/月K 五档（默认分时，60分/日/周/月K 为蜡烛图，红涨绿跌）。数据走后端 `POST /sys/market/trend`（body `{key, period: minute|hour|day|week|month, force?}`），统一代理东方财富 `push2his.eastmoney.com`（`trends2/get` 分时、`kline/get` 60分/日/周/月K，`klt` 分别 60/101/102/103），key→secid 映射在 `service/market.py` 的 `TREND_SECID_MAP`；缓存分时 30s、60分K 2min、日/周K 5min、月K 10min。注意纳斯达克100 用 `100.NDX100`、纳斯达克综合用 `100.NDX`、道琼斯用 `100.DJIA`，亚太指数用 `100.HSI/124.HSTECH/100.KS11/100.N225/100.TWII`，伦敦金银用 `122.XAU/XAG`，美元指数用 `100.UDI`；美股期货（`hf_NQ/hf_ES/hf_YM`）与加密货币暂未接入趋势。国内金价（`xau_cny`）不单独取数，由后端按 `伦敦金（美元/盎司）× USD/CNH ÷ 31.1035` 实时折算为元/克，不参与趋势弹窗。
-- **我的持仓（场外基金）**：`MarketOverview.vue` 第二个 tab，首次切换才挂载 `components/MarketFundPanel.vue`（之后 `v-show` 保留），更新时间/延迟提示/刷新按钮仍由外层标题栏统一控制（面板 `defineExpose({updateTime,stale,loading,refresh})`）。**仅超级管理员可用**：首页外层本就按 `permission.isSuper` 渲染，后端四个接口再次校验（未登录 401、非超管 403）。数据存数据库表 `sys_fund_holding`（本功能唯一新增表，见 `modules/system/models.py` 的 `FundHolding`，DDL 在 `migrations/0005_fundholding.py`）：`user/fundCode/fundName/fundType/category/style/shares/costNav/remark/sort`，`(user, fundCode)` 唯一，`category` 为资产类别（bond/equity/mixed/overseas/money/commodity/other），`style` 为管理方式（passive/active/unknown），两者正交。新增/编辑走 `components/MarketFundHoldingDialog.vue`：基金代码/名称通过东方财富联想接口远程搜索（300ms 防抖，输入完整 6 位代码自动选中），自动带出名称、类型、公司、经理、最新净值、资产类别与管理方式，用户只需填份额和成本价（另可改类别/管理方式/备注）；编辑时基金身份只读。面板顶部汇总总市值/今日盈亏/累计收益/总成本，下方按资产类别分组，展示分类占比条、单支净值或估值/今日盈亏/累计收益/占比，可编辑/删除。计算公式（后端 Decimal 计算，保留 2 位金额、4 位净值）：市值 = 份额 × 当前净值/估值；今日盈亏 = 份额 ×（当前净值/估值 − 昨日净值）；累计收益 = 市值 − 份额 × 成本净值；收益率 = 累计收益 ÷ 成本金额 × 100；分类占比 = 分类市值 ÷ 总市值 × 100。行情优先用当日已公布净值（`dataMode='nav'`），否则用当日估值（`'estimate'`），都没有则展示旧净值（`'none'`，前端提示暂无行情），汇总数据因此可能标记 `incomplete`。接口：`POST /sys/market/fund/portfolio`（body `{force?}`，返回 `summary/items/categories/updateTime/stale`）、`POST /sys/market/fund/search`（body `{keyword}`，≤10 条）、`POST /sys/market/fund/holding/save`（新增不传 id，编辑传 id；同用户同基金重复会 501）、`POST /sys/market/fund/holding/delete`（body `{ids}`）。后端实现在 `modules/system/service/fund.py` + `views/fund.py`，搜索与净值代理东方财富 `fundsuggest.eastmoney.com` / `fundmobapi.eastmoney.com`（`fundgz.1234567.com.cn` 已失效勿用），Redis 缓存：行情 60s（失败回退 10 分钟旧缓存并置 `stale`）、搜索 5 分钟、基金元数据 1 天。这四个接口走超管校验而非 `PERMISSION_PATH_MAP` 权限码。
+- **我的持仓（场外基金）**：`MarketOverview.vue` 第二个 tab，首次切换才挂载 `components/MarketFundPanel.vue`（之后 `v-show` 保留），更新时间/延迟提示/刷新按钮仍由外层标题栏统一控制（面板 `defineExpose({updateTime,stale,loading,refresh})`）。**仅超级管理员可用**：顶栏 `MarketBtn` 本就按 `permission.isSuper` 渲染，后端四个接口再次校验（未登录 401、非超管 403）。数据存数据库表 `sys_fund_holding`（本功能唯一新增表，见 `modules/system/models.py` 的 `FundHolding`，DDL 在 `migrations/0005_fundholding.py`）：`user/fundCode/fundName/fundType/category/style/shares/costNav/remark/sort`，`(user, fundCode)` 唯一，`category` 为资产类别（bond/equity/mixed/overseas/money/commodity/other），`style` 为管理方式（passive/active/unknown），两者正交。新增/编辑走 `components/MarketFundHoldingDialog.vue`：基金代码/名称通过东方财富联想接口远程搜索（300ms 防抖，输入完整 6 位代码自动选中），自动带出名称、类型、公司、经理、最新净值、资产类别与管理方式，用户只需填份额和成本价（另可改类别/管理方式/备注）；编辑时基金身份只读。面板顶部汇总总市值/今日盈亏/累计收益/总成本，下方按资产类别分组，展示分类占比条、单支净值或估值/今日盈亏/累计收益/占比，可编辑/删除。计算公式（后端 Decimal 计算，保留 2 位金额、4 位净值）：市值 = 份额 × 当前净值/估值；今日盈亏 = 份额 ×（当前净值/估值 − 昨日净值）；累计收益 = 市值 − 份额 × 成本净值；收益率 = 累计收益 ÷ 成本金额 × 100；分类占比 = 分类市值 ÷ 总市值 × 100。行情优先用当日已公布净值（`dataMode='nav'`），否则用当日估值（`'estimate'`），都没有则展示旧净值（`'none'`，前端提示暂无行情），汇总数据因此可能标记 `incomplete`。接口：`POST /sys/market/fund/portfolio`（body `{force?}`，返回 `summary/items/categories/updateTime/stale`）、`POST /sys/market/fund/search`（body `{keyword}`，≤10 条）、`POST /sys/market/fund/holding/save`（新增不传 id，编辑传 id；同用户同基金重复会 501）、`POST /sys/market/fund/holding/delete`（body `{ids}`）。后端实现在 `modules/system/service/fund.py` + `views/fund.py`，搜索与净值代理东方财富 `fundsuggest.eastmoney.com` / `fundmobapi.eastmoney.com`（`fundgz.1234567.com.cn` 已失效勿用），Redis 缓存：行情 60s（失败回退 10 分钟旧缓存并置 `stale`）、搜索 5 分钟、基金元数据 1 天。这四个接口走超管校验而非 `PERMISSION_PATH_MAP` 权限码。
 - **市场新闻**：`MarketOverview.vue` 顶部「市场行情 / 我的持仓 / 市场新闻」标题并列切换，新闻首次切换才挂载 `components/MarketNewsPanel.vue`（之后 `v-show` 保留）。面板只保留左栏热榜与右栏 7×24 快讯时间线，点击标题新窗口打开来源原文；更新时间与刷新按钮统一放在外层标题栏右上角（与市场行情同一位置，通过 `defineExpose` 调面板刷新）。快讯走后端 `POST /sys/market/news`（`modules/system/service/market_news.py`，无数据库/迁移）：东方财富 7×24 + 华尔街见闻 `us-stock-channel`；后端仍会聚合金融/国际分类文章但前端已不展示。Redis 缓存快讯 60 秒，`force:true` 绕过，失败回退 30 分钟旧缓存并置 `stale:true`。行情自动刷新在新闻 tab 下不触发；切换 tab 时会强制刷新对应面板（切回行情走 `force:true` 拉取行情，切到新闻触发面板刷新热榜与快讯）。
 - **热榜**：与快讯共用新闻面板，进入新闻 tab 时请求 `POST /sys/market/hot`（`modules/system/service/market_news.py` 的 `get_market_hot_data`），并排展示 `components/MarketHotList.vue` 渲染的微博热搜（`weibo.com/ajax/side/hotSearch`，带 Referer）与百度热榜（`top.baidu.com/api/board?platform=pc&tab=realtime`）各前 20 条，含排名/热度/标签，点击跳来源；两源并行抓取、单源失败不影响另一源，Redis 缓存 5 分钟，失败回退 30 分钟旧缓存并置 `stale:true`。
-- 注释掉/未启用：`StatCard`（统计卡）、`ActiveUser`（活跃用户）在 `Home/index.vue` 被注释；`ActiveUser.vue` 是空实现。首页 keep-alive 排除，重进重拉。
 
 ### 1. 文章管理（`views/pages/Article/`，api `api/article/**`，路由见 `router/modules/Article`）
 
@@ -249,6 +253,28 @@ my-blog-admin/
 - 预览里对「截断后批内同名会被跳过的那些」打橙色标记（前端预判，后端跳过为准）；缩略图用 `URL.createObjectURL`，需在移除/关闭/卸载时 `revokeObjectURL` 释放。
 - 无图片分类时弹窗内提示去创建（入口按钮不置灰，因为 `AppButton` 无 `disabled` 属性，见坑点清单）。后端新接口必须在 `config/permission.py` 登记，否则未登记路径默认放行。
 
+#### 音乐管理（`Music/`，api `api/resource/music/**`，**仅超级管理员**）
+
+| 文件 | 说明 |
+|---|---|
+| `Music/index.vue` | 管理列表。非超管显示 `AppEmptyData`「该功能仅超级管理员可用」，且不发起列表请求。搜索：歌曲名/歌手/排序方式；表列：封面/歌曲名(播放中 tag)/歌手/时长/播放次数/累计时长/创建时间/操作(播放·编辑·删除)。`sortBy` 为 `'manual'` 时才显示「调整顺序」按钮 |
+| `Music/components/MusicFormDialog.vue` | 新增/编辑。音频走 `AppImageAutoUpload type="music" accept=AUDIO_ACCEPT file-icon="music"`，前端校验扩展名与 `MAX_MUSIC_SIZE=50`；上传成功后用 `new Audio()` 读 metadata 自动填 `duration`（可手改）。封面 `type="music-cover"` |
+| `Music/components/MusicSortDialog.vue` | 手动排序弹窗。拉 `/resource/music/all`，用 `@atlaskit/pragmatic-drag-and-drop` 绑定每一行（`getInitialData` 带 `{type:'music-sort', id}`），`onDragEnter` 时在数组内 move，保存调 `/resource/music/sort {ids}` 重写 `sort` |
+| `Music/service.ts` | `AUDIO_ACCEPT='.mp3,.flac,.wav,.m4a,.aac,.ogg'`、`originalForm/originalSearch`、`sortOptions`、`formRules`、`getFormByRow`（只挑表单字段，避免把统计字段带进表单） |
+
+**字段与接口**：`sys_music` 表字段 `name/singer/cover/url/duration/playCount/listenSeconds/sort/createTime`（**无专辑**）。列表接口 `POST /resource/music/list {pageNumber,pageSize,name?,singer?,sortBy?}`，`sortBy`：`manual`（`sort,createTime` 升序）/`playCount`（播放次数降序）/`listenSeconds`（累计时长降序）。其余：`/music/all`（播放器歌单，始终手动顺序）、`/music/add`、`/music/edit`、`/music/delete {ids}`、`/music/sort {ids}`、`/music/play {id}`、`/music/stat {id,seconds}`。**8 个接口都在后端 `views/music.py` 用 `_get_super_user_id` 单独校验超管，不登记 `PERMISSION_PATH_MAP`**——若登记成权限码，被授权的普通角色就能绕过「仅超管」。
+
+**全局播放器**（`layout/components/MusicPlayer/index.vue`，在 `layout/index.vue` 里 `v-if="isSuper"` 挂载）：右下角固定悬浮，收起态是圆形按钮，展开为玻璃渐变卡片（旋转封面、歌曲信息、进度条、播放/暂停/上一首/下一首、模式循环、音量、播放列表面板），`<audio>` 隐藏。
+
+- 听歌统计：`timeupdate` 累加相邻两次的 `currentTime` 增量，**只在 `0 < delta <= 2` 且非拖动进度时计入**（跳进度的大增量直接丢弃）；累计满 15 秒或暂停/切歌/页面隐藏/卸载时上报 `/music/stat`。`visibilitychange(hidden)` 与 `pagehide` 用 `fetch(...,{keepalive:true})`（`flushMusicListenSecondsKeepalive`，因为组件卸载后 axios 请求可能被取消）。
+- 播放次数：`play` 事件每加载一首歌上报一次 `/music/play`；失败回滚本地计数。
+- 正常上报失败会把秒数回退到 `pendingSeconds` 并还原本地 `listenSeconds`；`flushStat(songId)` 的 songId 必须显式传（watch 的旧 id 可能是 `undefined`，默认参数会取到新歌）。
+- 后端 `increase_listen_seconds` 将单次上报钳制在 `0..MAX_REPORT_SECONDS(300)`，防止异常数据。
+- 切换歌曲靠监听 `currentSong.id`；`onMounted` 里额外手动回填一次 `audio.src`（页面被 keep-alive/重新挂载时 id 可能没变、watch 不触发），`onBeforeUnmount` 先 keepalive 上报再 `musicStore.stop()`。
+- Element Plus 的 `@input/@change` 可能给 `number | number[]`，slider handler 需统一 `toNumber()`。
+- **缓存**：上传 `type` 为 `music`/`music-cover` 时，后端 `upload_file_to_server` 会写入 COS 对象元数据 `Cache-Control: public, max-age=31536000`（文件名带 nanoid，内容不会被原地覆盖，可放心长缓存）；**该头只对改动后新上传的文件生效**，历史文件需在 COS 控制台补元数据或重新上传。前端在列表循环模式下用独立 `new Audio()`（`preload='auto'`）预加载下一首，命中缓存后切歌更快；单曲/随机模式不预载，暂停、切歌、卸载时释放预加载实例。没有 IndexedDB/Cache Storage/Service Worker，因此仍不支持离线播放。
+- 菜单节点：后端 `authority` 迁移 `0010_seed_music_menu` 种下 `code=80003`、`route=MusicManage`（前端路由 `src/router/modules/Resource/index.ts`）；迁移按 code 幂等 `get_or_create`，图标留空可在菜单管理里补。
+
 ### 4. 系统管理（`views/pages/System/`，api `api/system/**`）
 
 | 页面 | 说明 |
@@ -320,7 +346,7 @@ my-blog-admin/
    - **不在侧边栏的页面（顶栏入口、设置、弹窗里的功能）**：在菜单管理里挂到「全局」目录下（`isNav=false`），页面节点直接带 `code`（无路由时路由留空），按钮节点挂 `type='3'` 子节点。前端照常 `v-perm`。注意 `v-perm` 挂在**组件**上会作用到组件根元素，若根是 `el-popover` 之类（引用元素 + teleport）行为不确定，应挂在组件模板内部的根 `div` 上。
    - `v-perm` 只处理按钮显隐，**键盘快捷键 / 程序化入口要自己判**（如 `AiChatWidget` 的 Ctrl+K 额外判了 `hasPerm('global:topbar:ai')`）。
 4. **列表页模板**：`AppSearchPanel` + `useSearch(originalParams, getDataFn, pageSize, isScroll)` + `AppPagination`；表单弹窗用 `useDialog<T>()`；字典用 `useDict(code)`。`useSearch` 翻页使用上次查询快照（`storageParams`），增删改后应 `initDataListHandler` 重置。搜索条件变更用 `filterDataListHandler`（回第 1 页）。
-5. **上传文件必须传对 `type`**（后端按它分目录）。通用场景参考：文章正文 `article`、文章封面 `article-cover`、专栏封面 `article-column-cover`、头像 `avatar`、图标 `icon`、图片 `image`、心情 `mood`、简历 `resume`。
+5. **上传文件必须传对 `type`**（后端按它分目录）。通用场景参考：文章正文 `article`、文章封面 `article-cover`、专栏封面 `article-column-cover`、头像 `avatar`、图标 `icon`、图片 `image`、心情 `mood`、简历 `resume`、音乐音频 `music`、音乐封面 `music-cover`。
 6. **事件总线**（mitt，类型强约束）：新增事件必须在 `src/utils/eventBus/index.ts` 的 `Events` 里补（历史坑：漏过 `task:copy`）。现有：`task:refresh(bool)/task:update/task:copy/user:stats-refresh`。
 7. **字典**：枚举展示一律转中文；需要新枚举项→在 `src/config/dict.ts` 分类树补 + 后端存字典项（字典分类树前端硬编码）。
 8. **类型**：接口类型放 `api/**/type.ts`，与 Form 类型 `+{id,createTime}` 交叉成 Item；全局类型在 `types/global.d.ts`；不要在多个地方重复定义（项目已有 `UserInfoType` 双处定义不一致、`email` 顶层/profile 混用的历史问题）。

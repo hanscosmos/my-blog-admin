@@ -17,11 +17,6 @@
         </div>
       </el-col> -->
     </el-row>
-    <el-row v-if="isSuper" :gutter="24" class="!w-full mt-6">
-      <el-col :span="24">
-        <MarketOverview></MarketOverview>
-      </el-col>
-    </el-row>
     <el-row :gutter="24" class="!w-full mt-6">
       <el-col :span="24">
         <StatKPIBar></StatKPIBar>
@@ -68,10 +63,5 @@ import StatKPIBar from './components/StatKPIBar.vue';
 import UserTaskScoreStat from './components/UserTaskScoreStat.vue';
 import ArticlePublishStat from './components/ArticlePublishStat.vue';
 import HotArticle from './components/HotArticle.vue';
-import MarketOverview from './components/MarketOverview.vue';
-import { usePermissionStore } from '@/store/permission';
-import { storeToRefs } from 'pinia';
-
-const { isSuper } = storeToRefs(usePermissionStore());
 </script>
 <style lang="scss" scoped></style>

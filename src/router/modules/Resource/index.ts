@@ -19,4 +19,13 @@ export const ResourceRouteList: RouteRecordRaw[] = [
       icon: 'pic-one',
     },
   },
+  {
+    path: '/music-manage',
+    name: 'MusicManage',
+    component: () => import('@/views/pages/Resource/Music/index.vue'),
+    meta: {
+      name: '音乐管理',
+      icon: 'music',
+    },
+  },
 ];

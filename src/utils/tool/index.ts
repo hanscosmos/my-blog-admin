@@ -54,6 +54,18 @@ export const dateDiff = (
   return result;
 };
 
+/** 把秒数格式化为 mm:ss 或 H:mm:ss，用于音乐时长与累计收听时长 */
+export const formatAudioTime = (seconds?: number | null) => {
+  const total = Math.max(0, Math.floor(Number(seconds) || 0));
+  const hour = Math.floor(total / 3600);
+  const minute = Math.floor((total % 3600) / 60);
+  const second = total % 60;
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return hour > 0
+    ? `${hour}:${pad(minute)}:${pad(second)}`
+    : `${pad(minute)}:${pad(second)}`;
+};
+
 const TAG_COLOR_PALETTE = [
   '#165dff',
   '#00b42a',

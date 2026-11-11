@@ -3,7 +3,11 @@
     <p v-if="hotError" class="text-xs text-amber-500 mb-3">{{ hotError }}</p>
     <p v-if="errorMsg" class="text-xs text-amber-500 mb-3">{{ errorMsg }}</p>
 
-    <el-row v-loading="panelLoading" element-loading-text="更新中..." :gutter="20">
+    <el-row
+      v-loading="panelLoading"
+      element-loading-text="更新中..."
+      :gutter="20"
+    >
       <el-col :xs="24" :lg="16">
         <div v-if="!hot && !hotError" class="hot-columns">
           <div v-for="n in 2" :key="n" class="hot-skeleton">
@@ -17,9 +21,15 @@
             </el-skeleton>
           </div>
         </div>
-        <div v-else-if="!hot" class="news-empty">热榜加载失败，点击右上角刷新重试</div>
+        <div v-else-if="!hot" class="news-empty">
+          热榜加载失败，点击右上角刷新重试
+        </div>
         <div v-else class="hot-columns">
-          <MarketHotList v-for="source in hot.sources" :key="source.key" :source="source" />
+          <MarketHotList
+            v-for="source in hot.sources"
+            :key="source.key"
+            :source="source"
+          />
         </div>
       </el-col>
       <el-col :xs="24" :lg="8" class="news-flash-col">
@@ -27,12 +37,25 @@
           <p class="flash-title">7×24 快讯</p>
           <div class="flash-list">
             <template v-if="news">
-              <a v-for="flash in news.flashes" :key="flash.id" :href="flash.url || undefined" target="_blank"
-                rel="noopener noreferrer" class="flash-item">
-                <span class="flash-time">{{ formatTime(flash.publishTime) }}</span>
+              <a
+                v-for="flash in news.flashes"
+                :key="flash.id"
+                :href="flash.url || undefined"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flash-item"
+              >
+                <span class="flash-time">{{
+                  formatTime(flash.publishTime)
+                }}</span>
                 <div class="flash-body">
                   <p class="flash-headline">{{ flash.title }}</p>
-                  <p v-if="flash.content && flash.content !== flash.title" class="flash-text">{{ flash.content }}</p>
+                  <p
+                    v-if="flash.content && flash.content !== flash.title"
+                    class="flash-text"
+                  >
+                    {{ flash.content }}
+                  </p>
                 </div>
               </a>
               <div v-if="!news.flashes.length" class="news-empty">暂无快讯</div>
@@ -74,14 +97,14 @@ const updateTime = computed(() => {
   const hotTime = hot.value?.updateTime ?? '';
   return newsTime > hotTime ? newsTime : hotTime;
 });
-const stale = computed(() =>
-  Boolean(news.value?.stale || hot.value?.stale)
-);
+const stale = computed(() => Boolean(news.value?.stale || hot.value?.stale));
 
 const formatTime = (value: string) => {
   const time = dayjs(value);
   if (!time.isValid()) return value;
-  return time.isSame(dayjs(), 'day') ? time.format('HH:mm') : time.format('MM-DD HH:mm');
+  return time.isSame(dayjs(), 'day')
+    ? time.format('HH:mm')
+    : time.format('MM-DD HH:mm');
 };
 
 const fetchNews = async (force = false) => {
@@ -148,7 +171,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
-  height: 440px;
+  height: 100%;
 }
 
 .hot-skeleton {
@@ -172,7 +195,7 @@ onMounted(() => {
 .flash-column {
   display: flex;
   flex-direction: column;
-  height: 440px;
+  height: 700px;
   padding-left: 16px;
   border-left: 1px solid var(--sys-border-color);
 

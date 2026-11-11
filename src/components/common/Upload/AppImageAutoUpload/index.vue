@@ -3,7 +3,7 @@
     <div v-if="!editable" class="file-preview-wrapper w-full flex-1 h-0">
       <img v-if="isImage && fileUrl" :src="fileUrl" alt="" class="wh-full" />
       <div v-else-if="fileUrl" class="file-info xy-center flex-col text-gray-500">
-        <AppIcon name="file" size="32" />
+        <AppIcon :name="fileIcon" size="32" />
         <span class="text-sm mt-2">{{ fileName || '已上传文件' }}</span>
       </div>
       <div v-else class="w-full h-full">未上传文件</div>
@@ -20,7 +20,7 @@
         </template>
         <template v-else>
           <div v-if="fileUrl || defaultUrl" class="xy-center flex-col text-gray-500 w-full h-full">
-            <AppIcon name="file-pdf" size="32" />
+            <AppIcon :name="fileIcon" size="32" />
             <span class="text-sm mt-2 truncate max-w-full px-4">{{
               fileName || desc
               }}</span>
@@ -46,6 +46,8 @@ type PropsType = {
   defaultUrl?: string | null;
   /** 接受的文件类型，如 '.pdf'，默认接受图片 */
   accept?: string;
+  /** 非图片文件已上传后的展示图标，默认 pdf */
+  fileIcon?: string;
   /** 自定义上传前校验函数，返回 true 允许上传 */
   beforeUpload?: (file: File) => boolean;
   /** 自定义上传处理函数，覆盖默认的 uploadFile */
@@ -53,6 +55,7 @@ type PropsType = {
 };
 const props = withDefaults(defineProps<PropsType>(), {
   accept: '',
+  fileIcon: 'file-pdf',
   beforeUpload: undefined,
   onUpload: undefined,
 });

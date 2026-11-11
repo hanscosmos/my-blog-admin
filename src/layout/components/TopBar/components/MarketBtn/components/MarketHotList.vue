@@ -2,9 +2,17 @@
   <div class="hot-list">
     <p class="hot-list-title">{{ source.name }}</p>
     <div class="hot-list-body">
-      <a v-for="item in source.items" :key="`${source.key}-${item.rank}`" :href="item.url || undefined" target="_blank"
-        rel="noopener noreferrer" class="hot-item">
-        <span class="hot-rank" :class="rankClass(item.rank)">{{ item.rank }}</span>
+      <a
+        v-for="(item, index) in source.items"
+        :key="`${source.key}-${index + 1}`"
+        :href="item.url || undefined"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="hot-item"
+      >
+        <span class="hot-rank" :class="rankClass(index + 1)">{{
+          index + 1
+        }}</span>
         <span class="hot-title">{{ item.title }}</span>
         <span v-if="item.tag" class="hot-tag">{{ item.tag }}</span>
         <span v-if="item.hot" class="hot-score">{{ formatHot(item.hot) }}</span>

@@ -1,6 +1,6 @@
 <template>
-  <div class="market-overview section-wrapper p-6">
-    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+  <div class="market-overview">
+    <div class="market-header flex flex-wrap items-center justify-between gap-3">
       <div class="market-tabs flex items-center">
         <button v-for="tab in tabOptions" :key="tab.value" type="button" class="market-tab"
           :class="{ 'is-active': activeTab === tab.value }" @click="activeTab = tab.value">
@@ -30,10 +30,6 @@
           <span v-if="newsPanelRef?.updateTime">更新于 {{ newsPanelRef.updateTime }}</span>
           <span v-if="newsPanelRef?.stale" class="text-amber-500">数据可能延迟</span>
         </template>
-        <button type="button" class="market-icon-action" :title="collapsed ? '展开' : '收起'"
-          @click="collapsed = !collapsed">
-          <AppIcon :name="collapsed ? 'double-down' : 'double-up'" :size="16"></AppIcon>
-        </button>
         <button type="button" class="market-icon-action" title="刷新" :disabled="activeLoading"
           @click="refreshActive">
           <AppIcon name="refresh" :size="16" :class="{ 'animate-spin': activeLoading }"></AppIcon>
@@ -41,55 +37,71 @@
       </div>
     </div>
 
-    <el-collapse-transition>
-      <div v-show="!collapsed" ref="groupsRef">
-        <div v-show="activeTab === 'market'">
-          <p v-if="errorMsg" class="text-xs text-amber-500 mb-3">{{ errorMsg }}</p>
+    <div class="market-body">
+      <div v-show="activeTab === 'market'" ref="groupsRef" class="market-tab-panel">
+        <p v-if="errorMsg" class="text-xs text-amber-500 mb-3">{{ errorMsg }}</p>
 
-          <el-skeleton v-if="!overview && !errorMsg" animated>
-            <template #template>
-              <el-row :gutter="16">
-                <el-col v-for="(count, index) in SKELETON_ITEM_COUNTS" :key="index" :xs="24"
-                  :sm="index === 0 ? 24 : 12" :lg="index === 0 ? 24 : 8" class="mb-4">
-                  <div class="h-full rounded-lg px-4 py-2" style="border: 1px solid var(--sys-border-color)">
-                    <div class="flex items-center justify-between py-1.5 mb-1">
-                      <el-skeleton-item variant="h3" style="width: 35%" />
-                      <el-skeleton-item variant="text" style="width: 22%" />
-                    </div>
-                    <div v-for="n in count" :key="n" class="flex items-center justify-between py-2.5">
-                      <el-skeleton-item variant="text" style="width: 38%" />
-                      <el-skeleton-item variant="text" style="width: 30%" />
-                    </div>
+        <el-skeleton v-if="!overview && !errorMsg" class="market-scroll" animated>
+          <template #template>
+            <el-row :gutter="16">
+              <el-col v-for="(count, index) in SKELETON_ITEM_COUNTS" :key="index" :xs="24"
+                :sm="index === 0 ? 24 : 12" :lg="index === 0 ? 24 : 8" class="mb-4">
+                <div class="h-full rounded-lg px-4 py-2" style="border: 1px solid var(--sys-border-color)">
+                  <div class="flex items-center justify-between py-1.5 mb-1">
+                    <el-skeleton-item variant="h3" style="width: 35%" />
+                    <el-skeleton-item variant="text" style="width: 22%" />
                   </div>
-                </el-col>
-              </el-row>
-            </template>
-          </el-skeleton>
-          <div v-else-if="!overview" class="py-10 text-center text-sm"
-            style="color: var(--sys-text-secondary-color)">
-            行情加载失败，点击右上角刷新重试
-          </div>
-          <el-row v-else element-loading-text="更新中..." element-loading-background="rgba(128, 128, 128, 0.18)"
-            :gutter="16">
-            <el-col v-for="group in displayGroups" :key="group.key" :data-flip-key="group.key" :xs="24"
-              :sm="group.isFavorite ? 24 : 12" :lg="group.isFavorite ? 24 : 8" class="mb-4">
+                  <div v-for="n in count" :key="n" class="flex items-center justify-between py-2.5">
+                    <el-skeleton-item variant="text" style="width: 38%" />
+                    <el-skeleton-item variant="text" style="width: 30%" />
+                  </div>
+                </div>
+              </el-col>
+            </el-row>
+          </template>
+        </el-skeleton>
+        <div v-else-if="!overview" class="market-scroll py-10 text-center text-sm"
+          style="color: var(--sys-text-secondary-color)">
+          行情加载失败，点击右上角刷新重试
+        </div>
+        <template v-else>
+          <!-- 自选行情固定在上方 -->
+          <el-row class="market-favorite-row" :gutter="16">
+            <el-col v-for="group in favoriteGroups" :key="group.key" :data-flip-key="group.key" :span="24">
               <MarketGroupCard :group="group" :is-favorite="isFavorite" :can-trend="canTrend"
                 @move-group="moveGroup" @move-item="handleMoveItem" @toggle-favorite="toggleFavorite"
                 @open-trend="openTrend" />
             </el-col>
           </el-row>
 
-          <p class="text-xs mt-1" style="color: var(--sys-text-secondary-color)">
-            数据仅供参考，美股、美股期货行情可能延迟约 15 分钟，亚太指数行情可能延迟。
-          </p>
-        </div>
+          <!-- 其余板块在下方区域滚动 -->
+          <div class="market-scroll">
+            <el-row :gutter="16">
+              <el-col v-for="group in restGroups" :key="group.key" :data-flip-key="group.key" :xs="24" :sm="12"
+                :lg="8" class="mb-4">
+                <MarketGroupCard :group="group" :is-favorite="isFavorite" :can-trend="canTrend"
+                  @move-group="moveGroup" @move-item="handleMoveItem" @toggle-favorite="toggleFavorite"
+                  @open-trend="openTrend" />
+              </el-col>
+            </el-row>
 
-        <MarketFundPanel v-if="fundMounted" v-show="activeTab === 'fund'" ref="fundPanelRef" />
-        <MarketNewsPanel v-if="newsMounted" v-show="activeTab === 'news'" ref="newsPanelRef" />
+            <p class="text-xs mt-1" style="color: var(--sys-text-secondary-color)">
+              数据仅供参考，美股、美股期货行情可能延迟约 15 分钟，亚太指数行情可能延迟。
+            </p>
+          </div>
+        </template>
       </div>
-    </el-collapse-transition>
 
-    <MarketTrendDialog v-if="trendVisible" :visible="trendVisible" :item="trendItem" @close="closeTrend" />
+      <MarketFundPanel v-if="fundMounted" v-show="activeTab === 'fund'" ref="fundPanelRef" />
+      <div v-show="activeTab === 'news'" class="market-scroll">
+        <MarketNewsPanel v-if="newsMounted" ref="newsPanelRef" />
+      </div>
+    </div>
+
+    <!-- 弹窗外层是固定高度的 flex 容器，弹窗 teleport 出去避免占位挤压内容 -->
+    <Teleport to="body">
+      <MarketTrendDialog v-if="trendVisible" :visible="trendVisible" :item="trendItem" @close="closeTrend" />
+    </Teleport>
   </div>
 </template>
 
@@ -99,7 +111,7 @@ import type {
   MarketItemType,
   MarketOverviewType,
 } from '@/api/market/type';
-import { useDocumentVisibility, useIntervalFn, useStorage } from '@vueuse/core';
+import { useDocumentVisibility, useIntervalFn } from '@vueuse/core';
 import MarketTrendDialog from './MarketTrendDialog.vue';
 import MarketGroupCard from './MarketGroupCard.vue';
 import MarketNewsPanel from './MarketNewsPanel.vue';
@@ -148,7 +160,6 @@ const overview = ref<MarketOverviewType | null>(null);
 const loading = ref(false);
 const errorMsg = ref('');
 const autoRefresh = ref(false);
-const collapsed = useStorage('market-overview-collapsed', false);
 const trendVisible = ref(false);
 const trendItem = ref<MarketItemType | null>(null);
 const groupsRef = ref<HTMLElement | null>(null);
@@ -176,6 +187,10 @@ const {
   moveItem,
   toggleFavorite,
 } = useMarketLayout(() => overview.value?.groups ?? []);
+
+// 自选固定在上方，其余板块进入下方滚动区
+const favoriteGroups = computed(() => displayGroups.value.filter((group) => group.isFavorite));
+const restGroups = computed(() => displayGroups.value.filter((group) => !group.isFavorite));
 
 useMarketFlip({
   container: groupsRef,
@@ -285,6 +300,48 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+// 弹窗内固定高度：头部与自选常驻，只有下方内容滚动
+.market-overview {
+  display: flex;
+  flex-direction: column;
+  height: 72vh;
+  // el-row 的负 gutter 外边距会横向溢出，这里裁掉，避免出现横向滚动条
+  overflow: hidden;
+  // 弹窗无 footer，底部留出呼吸空间
+  padding-bottom: 1.5rem;
+}
+
+.market-header {
+  flex: none;
+  padding-bottom: 1rem;
+}
+
+.market-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.market-tab-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.market-favorite-row {
+  flex: none;
+  margin-bottom: 1rem;
+}
+
+.market-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
 .market-tabs {
   gap: 20px;
 }

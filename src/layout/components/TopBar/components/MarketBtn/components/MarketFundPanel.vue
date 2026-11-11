@@ -5,8 +5,18 @@
     <el-skeleton v-if="!portfolio && !errorMsg" animated>
       <template #template>
         <el-row :gutter="16">
-          <el-col v-for="n in 4" :key="n" :xs="24" :sm="12" :lg="6" class="mb-4">
-            <div class="h-full rounded-lg px-4 py-4" style="border: 1px solid var(--sys-border-color)">
+          <el-col
+            v-for="n in 4"
+            :key="n"
+            :xs="24"
+            :sm="12"
+            :lg="6"
+            class="mb-4"
+          >
+            <div
+              class="h-full rounded-lg px-4 py-4"
+              style="border: 1px solid var(--sys-border-color)"
+            >
               <el-skeleton-item variant="text" style="width: 40%" />
               <div class="mt-3">
                 <el-skeleton-item variant="h1" style="width: 70%" />
@@ -14,8 +24,15 @@
             </div>
           </el-col>
         </el-row>
-        <div class="rounded-lg px-4 py-4" style="border: 1px solid var(--sys-border-color)">
-          <div v-for="n in 5" :key="n" class="flex items-center justify-between py-3">
+        <div
+          class="rounded-lg px-4 py-4"
+          style="border: 1px solid var(--sys-border-color)"
+        >
+          <div
+            v-for="n in 5"
+            :key="n"
+            class="flex items-center justify-between py-3"
+          >
             <el-skeleton-item variant="text" style="width: 35%" />
             <el-skeleton-item variant="text" style="width: 18%" />
             <el-skeleton-item variant="text" style="width: 18%" />
@@ -39,118 +56,188 @@
       <div class="fund-summary">
         <div class="summary-item">
           <span class="summary-label">总市值</span>
-          <span class="summary-value">{{ formatAmount(portfolio.summary.totalMarketValue) }}</span>
+          <span class="summary-value">{{
+            formatAmount(portfolio.summary.totalMarketValue)
+          }}</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">今日盈亏</span>
-          <span class="summary-value" :class="pnlClass(portfolio.summary.totalTodayPnl)">
+          <span
+            class="summary-value"
+            :class="pnlClass(portfolio.summary.totalTodayPnl)"
+          >
             {{ formatSignedAmount(portfolio.summary.totalTodayPnl) }}
           </span>
-          <span class="summary-sub" :class="pnlClass(portfolio.summary.totalTodayPnl)">
+          <span
+            class="summary-sub"
+            :class="pnlClass(portfolio.summary.totalTodayPnl)"
+          >
             {{ formatPercent(portfolio.summary.todayReturnRate) }}
           </span>
         </div>
         <div class="summary-item">
           <span class="summary-label">累计收益</span>
-          <span class="summary-value" :class="pnlClass(portfolio.summary.totalPnl)">
+          <span
+            class="summary-value"
+            :class="pnlClass(portfolio.summary.totalPnl)"
+          >
             {{ formatSignedAmount(portfolio.summary.totalPnl) }}
           </span>
-          <span class="summary-sub" :class="pnlClass(portfolio.summary.totalPnl)">
+          <span
+            class="summary-sub"
+            :class="pnlClass(portfolio.summary.totalPnl)"
+          >
             {{ formatPercent(portfolio.summary.totalReturnRate) }}
           </span>
         </div>
         <div class="summary-item">
           <span class="summary-label">总成本</span>
-          <span class="summary-value">{{ formatAmount(portfolio.summary.totalCost) }}</span>
+          <span class="summary-value">{{
+            formatAmount(portfolio.summary.totalCost)
+          }}</span>
         </div>
         <div class="summary-actions">
-          <el-button type="primary" plain size="small" @click="openAdd">添加持仓</el-button>
+          <el-button type="primary" plain size="small" @click="openAdd"
+            >添加持仓</el-button
+          >
         </div>
       </div>
-
-      <p v-if="portfolio.summary.incomplete" class="text-xs text-amber-500 mb-3">
+      <p
+        v-if="portfolio.summary.incomplete"
+        class="text-xs text-amber-500 mb-3"
+      >
         部分基金缺少行情，汇总数据不完整
       </p>
 
       <div v-if="portfolio.categories.length" class="fund-allocation">
         <div class="allocation-bar">
-          <div v-for="category in portfolio.categories" :key="category.category" class="allocation-segment"
-            :style="{ width: `${category.ratio ?? 0}%`, backgroundColor: categoryColor(category.category) }"
-            :title="`${category.name} ${formatPercent(category.ratio)}`"></div>
+          <div
+            v-for="category in portfolio.categories"
+            :key="category.category"
+            class="allocation-segment"
+            :style="{
+              width: `${category.ratio ?? 0}%`,
+              backgroundColor: categoryColor(category.category),
+            }"
+            :title="`${category.name} ${formatPercent(category.ratio)}`"
+          ></div>
         </div>
         <div class="allocation-legend">
-          <span v-for="category in portfolio.categories" :key="category.category" class="legend-item">
-            <i :style="{ backgroundColor: categoryColor(category.category) }"></i>
+          <span
+            v-for="category in portfolio.categories"
+            :key="category.category"
+            class="legend-item"
+          >
+            <i
+              :style="{ backgroundColor: categoryColor(category.category) }"
+            ></i>
             {{ category.name }} {{ formatPercent(category.ratio) }}
           </span>
         </div>
       </div>
 
-      <div class="fund-groups">
-        <section v-for="group in groupedItems" :key="group.category" class="fund-group">
-          <div class="fund-group-header">
-            <span class="group-title">
-              <i :style="{ backgroundColor: categoryColor(group.category) }"></i>
-              {{ group.name }}
-            </span>
-            <span class="group-meta">
-              {{ group.items.length }} 支 · 市值 {{ formatAmount(group.marketValue) }} · 占比
-              {{ formatPercent(group.ratio) }}
-            </span>
-          </div>
+      <div class="fund-scroll">
+        <div class="fund-groups">
+          <section
+            v-for="group in groupedItems"
+            :key="group.category"
+            class="fund-group"
+          >
+            <div class="fund-group-header">
+              <span class="group-title">
+                <i
+                  :style="{ backgroundColor: categoryColor(group.category) }"
+                ></i>
+                {{ group.name }}
+              </span>
+              <span class="group-meta">
+                {{ group.items.length }} 支 · 市值
+                {{ formatAmount(group.marketValue) }} · 占比
+                {{ formatPercent(group.ratio) }}
+              </span>
+            </div>
 
-          <div v-for="item in group.items" :key="item.id" class="fund-row">
-            <div class="fund-identity">
-              <div class="fund-name">
-                <span>{{ item.fundName }}</span>
-                <AppTag :name="styleLabel(item.style)" :color="styleColor(item.style)" size="small" />
+            <div v-for="item in group.items" :key="item.id" class="fund-row">
+              <div class="fund-identity">
+                <div class="fund-name">
+                  <span>{{ item.fundName }}</span>
+                  <AppTag
+                    :name="styleLabel(item.style)"
+                    :color="styleColor(item.style)"
+                    size="small"
+                  />
+                </div>
+                <div class="fund-meta">
+                  <span>{{ item.fundCode }}</span>
+                  <span v-if="item.fundType">{{ item.fundType }}</span>
+                  <span v-if="item.remark" class="fund-remark">{{
+                    item.remark
+                  }}</span>
+                </div>
               </div>
-              <div class="fund-meta">
-                <span>{{ item.fundCode }}</span>
-                <span v-if="item.fundType">{{ item.fundType }}</span>
-                <span v-if="item.remark" class="fund-remark">{{ item.remark }}</span>
+
+              <div class="fund-quote">
+                <span class="quote-nav">{{ formatNav(item.currentNav) }}</span>
+                <span
+                  class="quote-change"
+                  :class="pnlClass(item.changePercent)"
+                >
+                  {{ formatPercent(item.changePercent) }}
+                </span>
+                <span class="quote-mode">{{ quoteModeText(item) }}</span>
+              </div>
+
+              <div class="fund-position">
+                <span class="position-main">{{
+                  formatAmount(item.marketValue)
+                }}</span>
+                <span class="position-sub">
+                  份额 {{ formatShares(item.shares) }} · 成本
+                  {{ formatNav(item.costNav) }}
+                </span>
+              </div>
+
+              <div class="fund-pnl">
+                <span :class="pnlClass(item.todayPnl)"
+                  >今日 {{ formatSignedAmount(item.todayPnl) }}</span
+                >
+                <span :class="pnlClass(item.totalPnl)">
+                  累计 {{ formatSignedAmount(item.totalPnl) }}（{{
+                    formatPercent(item.totalReturnRate)
+                  }}）
+                </span>
+              </div>
+
+              <div class="fund-ratio">{{ formatPercent(item.ratio) }}</div>
+
+              <div class="fund-actions">
+                <el-button link type="primary" @click="openEdit(item)"
+                  >编辑</el-button
+                >
+                <el-button link type="danger" @click="remove(item)"
+                  >删除</el-button
+                >
               </div>
             </div>
+          </section>
+        </div>
 
-            <div class="fund-quote">
-              <span class="quote-nav">{{ formatNav(item.currentNav) }}</span>
-              <span class="quote-change" :class="pnlClass(item.changePercent)">
-                {{ formatPercent(item.changePercent) }}
-              </span>
-              <span class="quote-mode">{{ quoteModeText(item) }}</span>
-            </div>
-
-            <div class="fund-position">
-              <span class="position-main">{{ formatAmount(item.marketValue) }}</span>
-              <span class="position-sub">
-                份额 {{ formatShares(item.shares) }} · 成本 {{ formatNav(item.costNav) }}
-              </span>
-            </div>
-
-            <div class="fund-pnl">
-              <span :class="pnlClass(item.todayPnl)">今日 {{ formatSignedAmount(item.todayPnl) }}</span>
-              <span :class="pnlClass(item.totalPnl)">
-                累计 {{ formatSignedAmount(item.totalPnl) }}（{{ formatPercent(item.totalReturnRate) }}）
-              </span>
-            </div>
-
-            <div class="fund-ratio">{{ formatPercent(item.ratio) }}</div>
-
-            <div class="fund-actions">
-              <el-button link type="primary" @click="openEdit(item)">编辑</el-button>
-              <el-button link type="danger" @click="remove(item)">删除</el-button>
-            </div>
-          </div>
-        </section>
+        <p class="fund-footer">
+          数据来源：东方财富公开基金数据；盘中为估值，净值以基金公司公布为准。
+        </p>
       </div>
-
-      <p class="fund-footer">
-        数据来源：东方财富公开基金数据；盘中为估值，净值以基金公司公布为准。
-      </p>
     </template>
 
-    <MarketFundHoldingDialog v-if="dialogVisible" :visible="dialogVisible" :item="editingItem"
-      @close="dialogVisible = false" @save="handleSave" />
+    <!-- 面板是固定高度的 flex 容器，弹窗 teleport 出去避免占位挤压内容 -->
+    <Teleport to="body">
+      <MarketFundHoldingDialog
+        v-if="dialogVisible"
+        :visible="dialogVisible"
+        :item="editingItem"
+        @close="dialogVisible = false"
+        @save="handleSave"
+      />
+    </Teleport>
   </div>
 </template>
 
@@ -231,7 +318,10 @@ const STYLE_COLORS: Record<MarketFundStyleType, string> = {
 const groupedItems = computed<GroupType[]>(() => {
   if (!portfolio.value) return [];
 
-  const groupMap = new Map<MarketFundCategoryType, MarketFundHoldingItemType[]>();
+  const groupMap = new Map<
+    MarketFundCategoryType,
+    MarketFundHoldingItemType[]
+  >();
   CATEGORY_ORDER.forEach((category) => groupMap.set(category, []));
   portfolio.value.items.forEach((item) => {
     const list = groupMap.get(item.category) ?? groupMap.get('other');
@@ -264,7 +354,13 @@ const styleColor = (style: MarketFundStyleType) =>
   STYLE_COLORS[style] ?? STYLE_COLORS.unknown;
 
 const pnlClass = (value: number | null) =>
-  value === null ? '' : value > 0 ? 'text-red-500' : value < 0 ? 'text-green-500' : '';
+  value === null
+    ? ''
+    : value > 0
+      ? 'text-red-500'
+      : value < 0
+        ? 'text-green-500'
+        : '';
 
 const formatAmount = (value: number | null) =>
   value === null ? '--' : formatCny(value);
@@ -339,18 +435,34 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
+// 汇总统计固定在上方，只有下方明细滚动
 .market-fund-panel {
-  min-height: 320px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.fund-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .fund-summary {
   display: flex;
+  flex: none;
   flex-wrap: wrap;
   align-items: stretch;
   gap: 12px 32px;
   padding: 16px 20px;
   margin-bottom: 16px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.07), transparent 62%);
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.07),
+    transparent 62%
+  );
   border: 1px solid var(--sys-border-color);
   border-radius: 8px;
 }
@@ -464,8 +576,10 @@ defineExpose({
 
 .fund-row {
   display: grid;
-  grid-template-columns:
-    minmax(220px, 2fr) 130px minmax(150px, 1.2fr) minmax(180px, 1.4fr) 80px 100px;
+  grid-template-columns: minmax(220px, 2fr) 130px minmax(150px, 1.2fr) minmax(
+      180px,
+      1.4fr
+    ) 80px 100px;
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
@@ -580,8 +694,10 @@ defineExpose({
 
 @media (max-width: 1199px) {
   .fund-row {
-    grid-template-columns:
-      minmax(180px, 1.6fr) 110px minmax(140px, 1fr) minmax(160px, 1.2fr) 70px 90px;
+    grid-template-columns: minmax(180px, 1.6fr) 110px minmax(140px, 1fr) minmax(
+        160px,
+        1.2fr
+      ) 70px 90px;
     gap: 8px;
   }
 }
