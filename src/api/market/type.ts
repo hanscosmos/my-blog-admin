@@ -171,8 +171,10 @@ export type MarketFundCategoryStatType = {
   name: string;
   count: number;
   marketValue: number;
-  todayPnl: number;
+  todayPnl: number | null;
   totalPnl: number;
+  realizedPnl: number;
+  totalPnlIncludingRealized: number;
   ratio: number | null;
 };
 

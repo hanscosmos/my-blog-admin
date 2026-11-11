@@ -191,7 +191,23 @@
               <span class="group-meta">
                 {{ group.items.length }} 支 · 市值
                 {{ formatAmount(group.marketValue) }} · 占比
-                {{ formatPercent(group.ratio) }}
+                {{ formatPercent(group.ratio) }} ·
+                <span :class="pnlClass(group.todayPnl)">
+                  今日
+                  {{
+                    group.todayPnl === null
+                      ? '--'
+                      : formatSignedAmount(group.todayPnl)
+                  }}
+                </span>
+                ·
+                <span :class="pnlClass(group.holdingPnl)">
+                  持仓 {{ formatSignedAmount(group.holdingPnl) }}
+                </span>
+                ·
+                <span :class="pnlClass(group.totalPnl)">
+                  累计 {{ formatSignedAmount(group.totalPnl) }}
+                </span>
               </span>
             </div>
 
@@ -333,6 +349,9 @@ type GroupType = {
   items: MarketFundHoldingItemType[];
   marketValue: number;
   ratio: number | null;
+  todayPnl: number | null;
+  holdingPnl: number;
+  totalPnl: number;
 };
 
 const { portfolio, loading, errorMsg, refresh } = useMarketFundPortfolio();
@@ -414,6 +433,9 @@ const groupedItems = computed<GroupType[]>(() => {
       items: groupMap.get(category) ?? [],
       marketValue: stat?.marketValue ?? 0,
       ratio: stat?.ratio ?? null,
+      todayPnl: stat?.todayPnl ?? null,
+      holdingPnl: stat?.totalPnl ?? 0,
+      totalPnl: stat?.totalPnlIncludingRealized ?? 0,
     };
   }).filter((group) => group.items.length > 0);
 });
