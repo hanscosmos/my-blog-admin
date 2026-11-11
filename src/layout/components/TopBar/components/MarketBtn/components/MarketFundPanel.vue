@@ -84,7 +84,7 @@
           </span>
         </div>
         <div class="summary-item">
-          <span class="summary-label">累计收益</span>
+          <span class="summary-label">持仓收益</span>
           <span
             class="summary-value"
             :class="pnlClass(portfolio.summary.totalPnl)"
@@ -99,12 +99,38 @@
           </span>
         </div>
         <div class="summary-item">
-          <span class="summary-label">总成本</span>
+          <span class="summary-label">累计收益</span>
+          <span
+            class="summary-value"
+            :class="pnlClass(portfolio.summary.totalPnlIncludingRealized)"
+          >
+            {{
+              formatSignedAmount(portfolio.summary.totalPnlIncludingRealized)
+            }}
+          </span>
+          <span
+            class="summary-sub"
+            :class="pnlClass(portfolio.summary.totalRealizedPnl)"
+          >
+            含已实现
+            {{ formatSignedAmount(portfolio.summary.totalRealizedPnl) }}
+          </span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">持仓成本</span>
           <span class="summary-value">{{
             formatAmount(portfolio.summary.totalCost)
           }}</span>
         </div>
         <div class="summary-actions">
+          <el-button
+            v-if="clearedItems.length"
+            plain
+            size="small"
+            @click="clearedVisible = true"
+          >
+            已清仓 {{ clearedItems.length }} 支
+          </el-button>
           <el-button type="primary" plain size="small" @click="openAdd"
             >添加持仓</el-button
           >
@@ -174,6 +200,12 @@
                 <div class="fund-name">
                   <span>{{ item.fundName }}</span>
                   <AppTag
+                    v-if="item.status === 'partial'"
+                    name="部分卖出"
+                    color="#f59e0b"
+                    size="small"
+                  />
+                  <AppTag
                     :name="styleLabel(item.style)"
                     :color="styleColor(item.style)"
                     size="small"
@@ -214,9 +246,16 @@
                   formatItemPnl(item)
                 }}</span>
                 <span :class="pnlClass(item.totalPnl)">
-                  累计 {{ formatSignedAmount(item.totalPnl) }}（{{
+                  持仓 {{ formatSignedAmount(item.totalPnl) }}（{{
                     formatPercent(item.totalReturnRate)
                   }}）
+                </span>
+                <span
+                  v-if="item.status === 'partial'"
+                  class="fund-realized"
+                  :class="pnlClass(item.realizedPnl)"
+                >
+                  已实现 {{ formatSignedAmount(item.realizedPnl) }}
                 </span>
               </div>
 
@@ -234,6 +273,13 @@
           </section>
         </div>
 
+        <div v-if="!groupedItems.length" class="fund-empty">
+          <p class="fund-empty-title">当前没有持仓</p>
+          <p v-if="clearedItems.length" class="fund-empty-desc">
+            已清仓基金可点击上方「已清仓」按钮查看
+          </p>
+        </div>
+
         <p class="fund-footer">
           数据来源：东方财富公开基金数据；盘中为估值，净值以基金公司公布为准。
         </p>
@@ -248,6 +294,14 @@
         :item="editingItem"
         @close="dialogVisible = false"
         @save="handleSave"
+      />
+      <MarketFundClearedDialog
+        v-if="clearedVisible"
+        :visible="clearedVisible"
+        :items="clearedItems"
+        @close="clearedVisible = false"
+        @edit="handleClearedEdit"
+        @remove="remove"
       />
     </Teleport>
   </div>
@@ -270,6 +324,7 @@ import {
   formatCny,
   useMarketFundPortfolio,
 } from '../hooks/useMarketFundPortfolio';
+import MarketFundClearedDialog from './MarketFundClearedDialog.vue';
 import MarketFundHoldingDialog from './MarketFundHoldingDialog.vue';
 
 type GroupType = {
@@ -283,7 +338,12 @@ type GroupType = {
 const { portfolio, loading, errorMsg, refresh } = useMarketFundPortfolio();
 
 const dialogVisible = ref(false);
+const clearedVisible = ref(false);
 const editingItem = ref<MarketFundHoldingItemType | null>(null);
+
+const clearedItems = computed(() =>
+  (portfolio.value?.items ?? []).filter((item) => item.status === 'cleared')
+);
 
 const CATEGORY_ORDER: MarketFundCategoryType[] = [
   'bond',
@@ -335,10 +395,12 @@ const groupedItems = computed<GroupType[]>(() => {
     MarketFundHoldingItemType[]
   >();
   CATEGORY_ORDER.forEach((category) => groupMap.set(category, []));
-  portfolio.value.items.forEach((item) => {
-    const list = groupMap.get(item.category) ?? groupMap.get('other');
-    list?.push(item);
-  });
+  portfolio.value.items
+    .filter((item) => item.status !== 'cleared')
+    .forEach((item) => {
+      const list = groupMap.get(item.category) ?? groupMap.get('other');
+      list?.push(item);
+    });
 
   const statMap = new Map(
     portfolio.value.categories.map((item) => [item.category, item])
@@ -437,6 +499,11 @@ const openEdit = (item: MarketFundHoldingItemType) => {
   dialogVisible.value = true;
 };
 
+const handleClearedEdit = (item: MarketFundHoldingItemType) => {
+  clearedVisible.value = false;
+  openEdit(item);
+};
+
 const handleSave = async (form: MarketFundHoldingFormType) => {
   try {
     const res = await saveMarketFundHoldingApi(form);
@@ -455,7 +522,10 @@ const remove = (item: MarketFundHoldingItemType) => {
       const res = await deleteMarketFundHoldingApi({ ids: [item.id] });
       if (res.code !== 0) return;
       ElMessage.success('删除成功');
-      refresh();
+      await refresh();
+      if (clearedVisible.value && !clearedItems.value.length) {
+        clearedVisible.value = false;
+      }
     } catch (err) {
       console.error('删除基金持仓失败:', err);
     }

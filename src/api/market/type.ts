@@ -132,6 +132,8 @@ export type MarketFundSearchItemType = {
   manager: string;
 };
 
+export type MarketFundHoldingStatusType = 'holding' | 'partial' | 'cleared';
+
 export type MarketFundHoldingItemType = {
   id: string;
   fundCode: string;
@@ -139,8 +141,10 @@ export type MarketFundHoldingItemType = {
   fundType: string;
   category: MarketFundCategoryType;
   style: MarketFundStyleType;
+  status: MarketFundHoldingStatusType;
   shares: number;
   costNav: number;
+  realizedPnl: number;
   remark: string;
   sort: number;
   nav: number | null;
@@ -178,6 +182,8 @@ export type MarketFundSummaryType = {
   totalTodayPnl: number;
   totalPnl: number;
   totalReturnRate: number | null;
+  totalRealizedPnl: number;
+  totalPnlIncludingRealized: number;
   todayReturnRate: number | null;
   incomplete: boolean;
 };
@@ -195,6 +201,7 @@ export type MarketFundHoldingFormType = {
   fundCode: string;
   shares: number;
   costNav: number;
+  realizedPnl: number;
   category: MarketFundCategoryType;
   style: MarketFundStyleType;
   remark?: string;

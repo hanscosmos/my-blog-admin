@@ -30,15 +30,21 @@
 
       <el-row :gutter="16">
         <el-col :span="12">
-          <el-form-item label="持有份额" prop="shares">
+          <el-form-item label="当前持有份额" prop="shares">
             <el-input-number v-model="form.shares" :min="0" :precision="4" :controls="false"
-              class="!w-full" placeholder="如 12345.67" />
+              class="!w-full" placeholder="清仓填 0" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="成本价" prop="costNav">
             <el-input-number v-model="form.costNav" :min="0" :precision="4" :controls="false"
-              class="!w-full" placeholder="如 1.2345" />
+              class="!w-full" :placeholder="form.shares ? '如 1.2345' : '清仓可不填'" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="已实现收益">
+            <el-input-number v-model="form.realizedPnl" :precision="2" :controls="false"
+              class="!w-full" placeholder="手动填写，可为负数" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -60,8 +66,12 @@
       </el-row>
 
       <div class="fund-calc">
-        <span>成本金额 {{ formatAmount(costAmount) }}</span>
+        <span>持仓成本 {{ formatAmount(costAmount) }}</span>
         <span v-if="referenceMarketValue !== null">按最新净值估算市值 {{ formatAmount(referenceMarketValue) }}</span>
+        <span v-if="form.realizedPnl" :class="pnlClass(form.realizedPnl)">
+          已实现收益 {{ formatSignedAmount(form.realizedPnl) }}
+        </span>
+        <span>保存状态：{{ statusLabel }}</span>
       </div>
 
       <el-form-item label="备注">
@@ -71,6 +81,7 @@
 
     <p class="fund-tip">
       净值与基金类型由东方财富公开数据自动带出，估值仅供参考；份额和成本价请以基金账户为准。
+      部分卖出或清仓时，持有份额填剩余份额（完全卖出填 0），并手动填写累计已实现收益，可填负数；完全卖出时成本价可不填。
     </p>
   </AppDialog>
 </template>
@@ -113,6 +124,7 @@ const form = reactive({
   navDate: '',
   shares: undefined as number | undefined,
   costNav: undefined as number | undefined,
+  realizedPnl: 0,
   category: 'equity' as MarketFundCategoryType,
   style: 'passive' as MarketFundStyleType,
   remark: '',
@@ -142,12 +154,24 @@ const styleOptions: { label: string; value: MarketFundStyleType }[] = [
 
 const costAmount = computed(() => (form.shares ?? 0) * (form.costNav ?? 0));
 
+const statusLabel = computed(() => {
+  const shares = form.shares ?? 0;
+  if (shares === 0) return '已清仓';
+  if ((form.realizedPnl ?? 0) !== 0) return '部分卖出';
+  return '正常持有';
+});
+
 const referenceMarketValue = computed(() =>
   form.nav !== null && form.shares ? form.nav * form.shares : null
 );
 
 const formatAmount = (value: number | null) =>
   value === null ? '--' : formatCny(value);
+
+const formatSignedAmount = (value: number) => formatCny(value, true);
+
+const pnlClass = (value: number) =>
+  value > 0 ? 'text-red-500' : value < 0 ? 'text-green-500' : '';
 
 const resetForm = () => {
   form.id = undefined;
@@ -160,6 +184,7 @@ const resetForm = () => {
   form.navDate = '';
   form.shares = undefined;
   form.costNav = undefined;
+  form.realizedPnl = 0;
   form.category = 'equity';
   form.style = 'passive';
   form.remark = '';
@@ -178,6 +203,7 @@ const fillFromItem = (item: MarketFundHoldingItemType) => {
   form.navDate = item.navDate;
   form.shares = item.shares;
   form.costNav = item.costNav;
+  form.realizedPnl = item.realizedPnl;
   form.category = item.category;
   form.style = item.style;
   form.remark = item.remark;
@@ -242,19 +268,21 @@ const handleConfirm = () => {
     ElMessage.warning('请选择基金');
     return;
   }
-  if (!form.shares || form.shares <= 0) {
-    ElMessage.warning('请填写持有份额');
+  const shares = form.shares ?? 0;
+  if (shares < 0) {
+    ElMessage.warning('持有份额不能小于 0');
     return;
   }
-  if (!form.costNav || form.costNav <= 0) {
-    ElMessage.warning('请填写持仓成本价');
+  if (shares > 0 && (!form.costNav || form.costNav <= 0)) {
+    ElMessage.warning('持有份额大于 0 时请填写持仓成本价');
     return;
   }
   emit('save', {
     id: form.id,
     fundCode: form.fundCode,
-    shares: form.shares,
-    costNav: form.costNav,
+    shares,
+    costNav: form.costNav ?? 0,
+    realizedPnl: form.realizedPnl ?? 0,
     category: form.category,
     style: form.style,
     remark: form.remark.trim() || undefined,
