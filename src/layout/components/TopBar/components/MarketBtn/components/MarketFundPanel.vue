@@ -48,7 +48,7 @@
     <div v-else-if="!portfolio.items.length" class="fund-empty">
       <AppIcon name="funds" :size="36" class="fund-empty-icon"></AppIcon>
       <p class="fund-empty-title">还没有基金持仓</p>
-      <p class="fund-empty-desc">添加后会按净值自动计算今日盈亏和累计收益</p>
+      <p class="fund-empty-desc">添加后会按估值/净值自动计算当日收益和累计收益</p>
       <el-button type="primary" @click="openAdd">添加第一支基金</el-button>
     </div>
 
@@ -61,18 +61,26 @@
           }}</span>
         </div>
         <div class="summary-item">
-          <span class="summary-label">今日盈亏</span>
+          <span class="summary-label">今日收益</span>
           <span
             class="summary-value"
             :class="pnlClass(portfolio.summary.totalTodayPnl)"
           >
-            {{ formatSignedAmount(portfolio.summary.totalTodayPnl) }}
+            {{
+              hasTodayPnl
+                ? formatSignedAmount(portfolio.summary.totalTodayPnl)
+                : '待更新'
+            }}
           </span>
           <span
             class="summary-sub"
             :class="pnlClass(portfolio.summary.totalTodayPnl)"
           >
-            {{ formatPercent(portfolio.summary.todayReturnRate) }}
+            {{
+              hasTodayPnl
+                ? formatPercent(portfolio.summary.todayReturnRate)
+                : '--'
+            }}
           </span>
         </div>
         <div class="summary-item">
@@ -107,6 +115,10 @@
         class="text-xs text-amber-500 mb-3"
       >
         部分基金缺少行情，汇总数据不完整
+      </p>
+      <p class="fund-pnl-tip">
+        当日收益：海外/QDII 取昨日净值的变化（覆盖海外隔夜行情，通常今晚公布）；
+        其余基金取今日盘中估值或今日已公布净值，对应日期的数据未出时暂不计入。
       </p>
 
       <div v-if="portfolio.categories.length" class="fund-allocation">
@@ -198,9 +210,9 @@
               </div>
 
               <div class="fund-pnl">
-                <span :class="pnlClass(item.todayPnl)"
-                  >今日 {{ formatSignedAmount(item.todayPnl) }}</span
-                >
+                <span :class="pnlClass(item.todayPnl)">{{
+                  formatItemPnl(item)
+                }}</span>
                 <span :class="pnlClass(item.totalPnl)">
                   累计 {{ formatSignedAmount(item.totalPnl) }}（{{
                     formatPercent(item.totalReturnRate)
@@ -353,6 +365,11 @@ const styleLabel = (style: MarketFundStyleType) =>
 const styleColor = (style: MarketFundStyleType) =>
   STYLE_COLORS[style] ?? STYLE_COLORS.unknown;
 
+/** 是否已有基金给出当日收益，否则汇总显示「待更新」 */
+const hasTodayPnl = computed(() =>
+  (portfolio.value?.items ?? []).some((item) => item.todayPnl !== null)
+);
+
 const pnlClass = (value: number | null) =>
   value === null
     ? ''
@@ -379,6 +396,25 @@ const formatShares = (value: number) =>
     minimumFractionDigits: 2,
     maximumFractionDigits: 4,
   });
+
+/**
+ * 单只基金当日收益口径（与后端一致）：
+ * 海外/QDII 取最新公布净值（通常为昨日净值），其余取今日估值或今日已公布净值。
+ */
+const formatItemPnl = (item: MarketFundHoldingItemType) => {
+  if (item.todayPnl === null) return '今日待更新';
+  if (item.category === 'overseas') {
+    const date = item.navDate ? `${item.navDate.slice(5)} ` : '';
+    return `${date}净值 ${formatSignedAmount(item.todayPnl)}`;
+  }
+  if (item.dataMode === 'estimate') {
+    return `今日估算 ${formatSignedAmount(item.todayPnl)}`;
+  }
+  if (item.dataMode === 'nav') {
+    return `今日净值 ${formatSignedAmount(item.todayPnl)}`;
+  }
+  return `最新 ${formatSignedAmount(item.todayPnl)}`;
+};
 
 const quoteModeText = (item: MarketFundHoldingItemType) => {
   if (item.dataMode === 'estimate') {
@@ -493,6 +529,13 @@ defineExpose({
   display: flex;
   align-items: center;
   margin-left: auto;
+}
+
+.fund-pnl-tip {
+  margin: -4px 0 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--sys-text-secondary-color);
 }
 
 .fund-allocation {

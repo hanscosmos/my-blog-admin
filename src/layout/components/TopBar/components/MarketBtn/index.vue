@@ -5,22 +5,29 @@
   </div>
 
   <Teleport v-if="isSuper" to="body">
-    <AppDialog :visible="visible" title="行情中心" width="min(1200px, 94vw)" hide-footer @close="closeHandler">
+    <AppDialog :visible="visible" title="行情中心" width="min(1200px, 94vw)" :fullscreen="isCompactScreen"
+      hide-footer @close="closeHandler">
       <template #header>
         <span class="market-dialog-title">行情中心</span>
       </template>
-      <MarketOverview v-if="visible" />
+      <MarketOverview v-if="visible" :fullscreen="isCompactScreen" />
     </AppDialog>
   </Teleport>
 </template>
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
+import { useMediaQuery } from '@vueuse/core';
 import { usePermissionStore } from '@/store/permission';
 import MarketOverview from './components/MarketOverview.vue';
 
 // 与原首页市场行情保持一致：仅超级管理员可见
 const { isSuper } = storeToRefs(usePermissionStore());
+
+// 笔记本屏幕普遍较矮（如 1440×900、1536×864），普通弹窗高度不够用，直接全屏展示
+const isCompactScreen = useMediaQuery(
+  '(max-width: 1536px), (max-height: 900px)'
+);
 
 const visible = ref(false);
 

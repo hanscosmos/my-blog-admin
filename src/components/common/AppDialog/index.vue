@@ -1,7 +1,7 @@
 <template>
   <div class="app-dialog w-full h-full">
-    <el-dialog :model-value="visible" draggable :title="title" :width="width" title-align="start"
-      :before-close="cancelHandler" @close="cancelHandler">
+    <el-dialog :model-value="visible" :draggable="!fullscreen" :title="title" :width="width" :fullscreen="fullscreen"
+      title-align="start" :before-close="cancelHandler" @close="cancelHandler">
       <template #header>
         <slot name="header"></slot>
       </template>
@@ -23,11 +23,13 @@ type PropsType = {
   visible: boolean;
   width?: string;
   hideFooter?: boolean;
+  fullscreen?: boolean;
 };
 
 withDefaults(defineProps<PropsType>(), {
   width: '40%',
   hideFooter: false,
+  fullscreen: false,
 });
 
 const emit = defineEmits(['confirm', 'close']);
@@ -69,5 +71,28 @@ const confirmHandler = () => {
 
 :deep(.el-dialog) {
   padding: 0;
+}
+
+// 全屏模式下让 body 撑满剩余高度，内容区自行滚动
+:deep(.el-dialog.is-fullscreen) {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+:deep(.el-dialog.is-fullscreen .el-dialog__body) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+:deep(.el-dialog.is-fullscreen .el-dialog__body > div) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
 }
 </style>

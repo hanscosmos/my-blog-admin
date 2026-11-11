@@ -1,5 +1,5 @@
 <template>
-  <div class="market-overview">
+  <div class="market-overview" :class="{ 'is-fullscreen': props.fullscreen }">
     <div class="market-header flex flex-wrap items-center justify-between gap-3">
       <div class="market-tabs flex items-center">
         <button v-for="tab in tabOptions" :key="tab.value" type="button" class="market-tab"
@@ -12,8 +12,7 @@
         <template v-if="activeTab === 'market'">
           <span v-if="overview">更新于 {{ overview.updateTime }}</span>
           <span v-if="overview?.stale" class="text-amber-500">数据可能延迟</span>
-          <span v-if="autoRefresh" class="flex items-center gap-1.5"
-            title="每 60 秒自动刷新一次；页面切到后台时暂停，回到前台后继续">
+          <span v-if="autoRefresh" class="flex items-center gap-1.5" title="每 60 秒自动刷新一次；页面切到后台时暂停，回到前台后继续">
             <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
             自动刷新中 · 60s/次
           </span>
@@ -30,8 +29,7 @@
           <span v-if="newsPanelRef?.updateTime">更新于 {{ newsPanelRef.updateTime }}</span>
           <span v-if="newsPanelRef?.stale" class="text-amber-500">数据可能延迟</span>
         </template>
-        <button type="button" class="market-icon-action" title="刷新" :disabled="activeLoading"
-          @click="refreshActive">
+        <button type="button" class="market-icon-action" title="刷新" :disabled="activeLoading" @click="refreshActive">
           <AppIcon name="refresh" :size="16" :class="{ 'animate-spin': activeLoading }"></AppIcon>
         </button>
       </div>
@@ -44,8 +42,8 @@
         <el-skeleton v-if="!overview && !errorMsg" class="market-scroll" animated>
           <template #template>
             <el-row :gutter="16">
-              <el-col v-for="(count, index) in SKELETON_ITEM_COUNTS" :key="index" :xs="24"
-                :sm="index === 0 ? 24 : 12" :lg="index === 0 ? 24 : 8" class="mb-4">
+              <el-col v-for="(count, index) in SKELETON_ITEM_COUNTS" :key="index" :xs="24" :sm="index === 0 ? 24 : 12"
+                :lg="index === 0 ? 24 : 8" class="mb-4">
                 <div class="h-full rounded-lg px-4 py-2" style="border: 1px solid var(--sys-border-color)">
                   <div class="flex items-center justify-between py-1.5 mb-1">
                     <el-skeleton-item variant="h3" style="width: 35%" />
@@ -68,20 +66,18 @@
           <!-- 自选行情固定在上方 -->
           <el-row class="market-favorite-row" :gutter="16">
             <el-col v-for="group in favoriteGroups" :key="group.key" :data-flip-key="group.key" :span="24">
-              <MarketGroupCard :group="group" :is-favorite="isFavorite" :can-trend="canTrend"
-                @move-group="moveGroup" @move-item="handleMoveItem" @toggle-favorite="toggleFavorite"
-                @open-trend="openTrend" />
+              <MarketGroupCard :group="group" :is-favorite="isFavorite" :can-trend="canTrend" @move-group="moveGroup"
+                @move-item="handleMoveItem" @toggle-favorite="toggleFavorite" @open-trend="openTrend" />
             </el-col>
           </el-row>
 
           <!-- 其余板块在下方区域滚动 -->
           <div class="market-scroll">
             <el-row :gutter="16">
-              <el-col v-for="group in restGroups" :key="group.key" :data-flip-key="group.key" :xs="24" :sm="12"
-                :lg="8" class="mb-4">
-                <MarketGroupCard :group="group" :is-favorite="isFavorite" :can-trend="canTrend"
-                  @move-group="moveGroup" @move-item="handleMoveItem" @toggle-favorite="toggleFavorite"
-                  @open-trend="openTrend" />
+              <el-col v-for="group in restGroups" :key="group.key" :data-flip-key="group.key" :xs="24" :sm="12" :lg="8"
+                class="mb-4">
+                <MarketGroupCard :group="group" :is-favorite="isFavorite" :can-trend="canTrend" @move-group="moveGroup"
+                  @move-item="handleMoveItem" @toggle-favorite="toggleFavorite" @open-trend="openTrend" />
               </el-col>
             </el-row>
 
@@ -121,6 +117,16 @@ import {
   type MarketItemMovePayloadType,
 } from '../hooks/useMarketLayout';
 import { useMarketFlip } from '../hooks/useMarketFlip';
+
+const props = withDefaults(
+  defineProps<{
+    /** 笔记本等小屏设备下由外层弹窗全屏展示 */
+    fullscreen?: boolean;
+  }>(),
+  {
+    fullscreen: false,
+  }
+);
 
 const AUTO_REFRESH_INTERVAL = 60 * 1000;
 const SKELETON_ITEM_COUNTS = [2, 4, 3, 4, 3, 5, 4];
@@ -304,11 +310,19 @@ onMounted(() => {
 .market-overview {
   display: flex;
   flex-direction: column;
-  height: 72vh;
+  height: 100%;
   // el-row 的负 gutter 外边距会横向溢出，这里裁掉，避免出现横向滚动条
   overflow: hidden;
   // 弹窗无 footer，底部留出呼吸空间
   padding-bottom: 1.5rem;
+
+  // 全屏弹窗下铺满可用高度
+  &.is-fullscreen {
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+    padding-bottom: 1rem;
+  }
 }
 
 .market-header {

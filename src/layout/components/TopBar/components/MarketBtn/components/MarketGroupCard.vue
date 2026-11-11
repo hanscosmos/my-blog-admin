@@ -198,7 +198,7 @@ onBeforeUnmount(() => {
 
 .market-group-items.is-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-auto-rows: minmax(54px, auto);
   column-gap: 24px;
   padding-bottom: 2px;
@@ -220,6 +220,10 @@ onBeforeUnmount(() => {
   :deep(.market-item-trend),
   :deep(.market-item-star) {
     flex-shrink: 0;
+  }
+
+  @media (max-width: 1199px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   @media (max-width: 767px) {
