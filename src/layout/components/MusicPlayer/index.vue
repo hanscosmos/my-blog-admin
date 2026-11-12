@@ -199,14 +199,16 @@
                     getSongMeta(song)
                   }}</span>
                 </div>
-                <span class="playlist-count">{{ song.playCount }}次</span>
+                <!-- <span class="playlist-count">{{ song.playCount }}次</span> -->
                 <span class="playlist-duration">{{
                   formatAudioTime(song.duration)
                 }}</span>
               </li>
               <li v-if="!filteredPlaylist.length" class="playlist-empty">
                 {{
-                  playlist.length ? '没有符合条件的歌曲' : '暂无音乐，请先在资源管理中上传'
+                  playlist.length
+                    ? '没有符合条件的歌曲'
+                    : '暂无音乐，请先在资源管理中上传'
                 }}
               </li>
             </ul>
@@ -248,10 +250,7 @@ import {
   playMusicApi,
 } from '@/api/resource/music';
 import type { MusicItemType } from '@/api/resource/music/type';
-import {
-  MUSIC_GENRE_DICT_CODE,
-  MUSIC_LANGUAGE_DICT_CODE,
-} from '@/config/dict';
+import { MUSIC_GENRE_DICT_CODE, MUSIC_LANGUAGE_DICT_CODE } from '@/config/dict';
 import { useDict } from '@/hooks/useDict';
 
 const musicStore = useMusicStore();
@@ -259,8 +258,9 @@ const { playlist, currentSong, isPlaying, volume, mode, collapsed } =
   storeToRefs(musicStore);
 const { dictDataList: languageOptions, getDictDataList: getLanguageList } =
   useDict(MUSIC_LANGUAGE_DICT_CODE);
-const { dictDataList: genreOptions, getDictDataList: getGenreList } =
-  useDict(MUSIC_GENRE_DICT_CODE);
+const { dictDataList: genreOptions, getDictDataList: getGenreList } = useDict(
+  MUSIC_GENRE_DICT_CODE
+);
 
 const audioRef = ref<HTMLAudioElement | null>(null);
 const progressSeconds = ref(0);
@@ -945,10 +945,10 @@ html.dark .player-card {
 
 .playlist-item {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) 44px 40px;
+  grid-template-columns: 36px minmax(0, 1fr) 40px;
   align-items: center;
   gap: 10px;
-  padding: 7px 8px;
+  padding: 8px 2px;
   border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
