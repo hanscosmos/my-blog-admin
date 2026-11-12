@@ -14,11 +14,14 @@ export const originalForm: MusicFormType = {
   cover: '',
   url: '',
   duration: 0,
+  language: '',
+  genre: '',
 };
 
 export const originalSearch: MusicSearchType = {
   name: '',
-  singer: '',
+  language: '',
+  genre: '',
   sortBy: 'manual',
 };
 
@@ -40,4 +43,6 @@ export const getFormByRow = (row: MusicItemType): MusicFormType => ({
   cover: row.cover,
   url: row.url,
   duration: row.duration,
+  language: row.language,
+  genre: row.genre,
 });

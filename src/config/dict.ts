@@ -5,6 +5,11 @@ export type DictCategoryItemType = {
   children?: DictCategoryItemType[];
 };
 
+/** 音乐语种字典 code */
+export const MUSIC_LANGUAGE_DICT_CODE = 'MUSIC_LANGUAGE';
+/** 音乐风格字典 code */
+export const MUSIC_GENRE_DICT_CODE = 'MUSIC_GENRE';
+
 export const dictCategoryList: DictCategoryItemType[] = [
   {
     label: '文章',
@@ -47,6 +52,23 @@ export const dictCategoryList: DictCategoryItemType[] = [
         label: '菜单颜色',
         value: 'menu_color',
         code: 'MENU_COLOR',
+      },
+    ],
+  },
+  {
+    label: '资源',
+    value: 'resource',
+    code: 'RESOURCE',
+    children: [
+      {
+        label: '音乐语种',
+        value: 'music_language',
+        code: MUSIC_LANGUAGE_DICT_CODE,
+      },
+      {
+        label: '音乐风格',
+        value: 'music_genre',
+        code: MUSIC_GENRE_DICT_CODE,
       },
     ],
   },

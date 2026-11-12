@@ -52,7 +52,11 @@
           >
             <AppIcon :name="modeIcon" :size="16" />
           </button>
-          <button class="icon-btn" title="上一首" @click="musicStore.prev()">
+          <button
+            class="icon-btn"
+            title="上一首"
+            @click="musicStore.prev(filteredPlaylist)"
+          >
             <AppIcon name="go-start" :size="18" />
           </button>
           <button
@@ -66,7 +70,11 @@
               color="#fff"
             />
           </button>
-          <button class="icon-btn" title="下一首" @click="musicStore.next()">
+          <button
+            class="icon-btn"
+            title="下一首"
+            @click="musicStore.next(filteredPlaylist)"
+          >
             <AppIcon name="go-end" :size="18" />
           </button>
           <div class="volume-box">
@@ -83,17 +91,97 @@
         <transition name="music-playlist">
           <div v-if="playlistVisible" class="playlist-panel">
             <div class="playlist-header">
-              <span>播放列表（{{ playlist.length }}）</span>
-              <AppIcon
-                name="refresh"
-                :size="14"
-                class="hover-text"
-                @click="musicStore.loadPlaylist(true)"
-              />
+              <el-input
+                v-if="searchVisible"
+                v-model="filterKeyword"
+                class="playlist-search-input"
+                placeholder="搜索歌曲 / 歌手"
+                size="small"
+                clearable
+                autofocus
+                @keyup.esc="toggleSearch"
+              ></el-input>
+              <span v-else>播放列表（{{ playlistCountText }}）</span>
+              <div class="playlist-actions">
+                <button
+                  class="playlist-action-btn"
+                  :class="{ 'is-active': searchVisible }"
+                  title="搜索"
+                  @click="toggleSearch"
+                >
+                  <AppIcon name="search" :size="14" />
+                </button>
+                <el-popover
+                  placement="bottom-end"
+                  :width="260"
+                  trigger="click"
+                  popper-class="music-filter-popover"
+                >
+                  <template #reference>
+                    <button
+                      class="playlist-action-btn"
+                      :class="{ 'is-active': isFilterActive }"
+                      title="筛选语种 / 风格"
+                    >
+                      <AppIcon name="filter" :size="14" />
+                    </button>
+                  </template>
+                  <div class="filter-popover">
+                    <div class="filter-section">
+                      <div class="filter-section-title">语种</div>
+                      <div class="filter-options">
+                        <button
+                          class="filter-option"
+                          :class="{ 'is-active': !filterLanguage }"
+                          @click="filterLanguage = ''"
+                        >
+                          全部
+                        </button>
+                        <button
+                          v-for="item in languageOptions"
+                          :key="item.key"
+                          class="filter-option"
+                          :class="{ 'is-active': filterLanguage === item.key }"
+                          @click="toggleLanguageFilter(item.key)"
+                        >
+                          {{ item.value }}
+                        </button>
+                      </div>
+                    </div>
+                    <div class="filter-section">
+                      <div class="filter-section-title">风格</div>
+                      <div class="filter-options">
+                        <button
+                          class="filter-option"
+                          :class="{ 'is-active': !filterGenre }"
+                          @click="filterGenre = ''"
+                        >
+                          全部
+                        </button>
+                        <button
+                          v-for="item in genreOptions"
+                          :key="item.key"
+                          class="filter-option"
+                          :class="{ 'is-active': filterGenre === item.key }"
+                          @click="toggleGenreFilter(item.key)"
+                        >
+                          {{ item.value }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </el-popover>
+                <AppIcon
+                  name="refresh"
+                  :size="14"
+                  class="hover-text"
+                  @click="musicStore.loadPlaylist(true)"
+                />
+              </div>
             </div>
             <ul class="playlist">
               <li
-                v-for="song in playlist"
+                v-for="song in filteredPlaylist"
                 :key="song.id"
                 class="playlist-item"
                 :class="{ 'is-active': song.id === currentSong?.id }"
@@ -107,8 +195,8 @@
                   <span class="playlist-name" :title="song.name">{{
                     song.name
                   }}</span>
-                  <span class="playlist-singer" :title="song.singer">{{
-                    song.singer || '-'
+                  <span class="playlist-singer" :title="getSongMeta(song)">{{
+                    getSongMeta(song)
                   }}</span>
                 </div>
                 <span class="playlist-count">{{ song.playCount }}次</span>
@@ -116,8 +204,10 @@
                   formatAudioTime(song.duration)
                 }}</span>
               </li>
-              <li v-if="!playlist.length" class="playlist-empty">
-                暂无音乐，请先在资源管理中上传
+              <li v-if="!filteredPlaylist.length" class="playlist-empty">
+                {{
+                  playlist.length ? '没有符合条件的歌曲' : '暂无音乐，请先在资源管理中上传'
+                }}
               </li>
             </ul>
           </div>
@@ -157,16 +247,85 @@ import {
   flushMusicListenSecondsKeepalive,
   playMusicApi,
 } from '@/api/resource/music';
+import type { MusicItemType } from '@/api/resource/music/type';
+import {
+  MUSIC_GENRE_DICT_CODE,
+  MUSIC_LANGUAGE_DICT_CODE,
+} from '@/config/dict';
+import { useDict } from '@/hooks/useDict';
 
 const musicStore = useMusicStore();
 const { playlist, currentSong, isPlaying, volume, mode, collapsed } =
   storeToRefs(musicStore);
+const { dictDataList: languageOptions, getDictDataList: getLanguageList } =
+  useDict(MUSIC_LANGUAGE_DICT_CODE);
+const { dictDataList: genreOptions, getDictDataList: getGenreList } =
+  useDict(MUSIC_GENRE_DICT_CODE);
 
 const audioRef = ref<HTMLAudioElement | null>(null);
 const progressSeconds = ref(0);
 const duration = ref(0);
 const isSeeking = ref(false);
 const playlistVisible = ref(false);
+const filterKeyword = ref('');
+const filterLanguage = ref('');
+const filterGenre = ref('');
+const searchVisible = ref(false);
+
+const filteredPlaylist = computed(() => {
+  const keyword = filterKeyword.value.trim().toLowerCase();
+  return playlist.value.filter((song) => {
+    if (filterLanguage.value && song.language !== filterLanguage.value) {
+      return false;
+    }
+    if (filterGenre.value && song.genre !== filterGenre.value) {
+      return false;
+    }
+    if (!keyword) return true;
+    return (
+      song.name.toLowerCase().includes(keyword) ||
+      song.singer.toLowerCase().includes(keyword)
+    );
+  });
+});
+
+const isFilterActive = computed(
+  () => !!filterLanguage.value || !!filterGenre.value
+);
+
+const isPlaylistFiltered = computed(
+  () => !!filterKeyword.value.trim() || isFilterActive.value
+);
+
+/** 收起搜索框时清空关键字，避免隐藏的筛选条件让人困惑 */
+const toggleSearch = () => {
+  searchVisible.value = !searchVisible.value;
+  if (!searchVisible.value) {
+    filterKeyword.value = '';
+  }
+};
+
+/** 再次点击已选中的语种 / 风格可取消筛选 */
+const toggleLanguageFilter = (key: string) => {
+  filterLanguage.value = filterLanguage.value === key ? '' : key;
+};
+
+const toggleGenreFilter = (key: string) => {
+  filterGenre.value = filterGenre.value === key ? '' : key;
+};
+
+const playlistCountText = computed(() =>
+  isPlaylistFiltered.value
+    ? `${filteredPlaylist.value.length}/${playlist.value.length}`
+    : `${playlist.value.length}`
+);
+
+/** 播放列表中的歌手 / 语种 / 风格摘要 */
+const getSongMeta = (song: MusicItemType) => {
+  const language = getDictLabelByKey(languageOptions.value, song.language);
+  const genre = getDictLabelByKey(genreOptions.value, song.genre);
+  return [song.singer || '-', language, genre].filter(Boolean).join(' · ');
+};
 
 let pendingSeconds = 0;
 let lastTickTime = 0;
@@ -283,12 +442,15 @@ const handlePause = () => {
 const handleEnded = () => {
   flushStat();
   if (!playlist.value.length) return;
-  // 单曲循环或歌单只有一首时直接重播
-  if (mode.value === 'single' || playlist.value.length === 1) {
+  // 筛选后仅剩一首时同样直接重播
+  const activeList = filteredPlaylist.value.length
+    ? filteredPlaylist.value
+    : playlist.value;
+  if (mode.value === 'single' || activeList.length === 1) {
     restartCurrent();
     return;
   }
-  musicStore.next();
+  musicStore.next(activeList);
 };
 
 const handleError = () => {
@@ -338,7 +500,9 @@ const preloadNextSong = () => {
     clearPreload();
     return;
   }
-  const list = playlist.value;
+  const list = filteredPlaylist.value.length
+    ? filteredPlaylist.value
+    : playlist.value;
   if (list.length < 2) {
     clearPreload();
     return;
@@ -362,7 +526,10 @@ const preloadNextSong = () => {
   preloadAudio.load();
 };
 
-watch([() => currentSong.value?.id, isPlaying, mode], preloadNextSong);
+watch(
+  [() => currentSong.value?.id, isPlaying, mode, filteredPlaylist],
+  preloadNextSong
+);
 
 const handleVisibilityChange = () => {
   if (document.visibilityState === 'hidden') {
@@ -427,6 +594,8 @@ onMounted(async () => {
   if (audioRef.value) {
     audioRef.value.volume = volume.value;
   }
+  getLanguageList();
+  getGenreList();
   await musicStore.loadPlaylist(true);
   // 歌单恢复后若已有上次歌曲，主动回填一次音频地址（watch 可能因 id 未变化而不触发）
   if (
@@ -652,10 +821,120 @@ html.dark .player-card {
 .playlist-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   font-size: 14px;
   margin-bottom: 6px;
   color: var(--sys-text-secondary-color);
+
+  > span {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+
+.playlist-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.playlist-search-input {
+  flex: 1;
+  min-width: 0;
+  --el-input-height: 26px;
+
+  :deep(.el-input__wrapper) {
+    padding: 0 10px;
+    background: transparent;
+    border-radius: 999px;
+    box-shadow: 0 0 0 1px
+      color-mix(in srgb, var(--sys-border-color) 55%, transparent) inset;
+    transition: box-shadow 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 0 0 1px
+        color-mix(in srgb, var(--theme-color) 40%, transparent) inset;
+    }
+
+    &.is-focus {
+      box-shadow: 0 0 0 1px
+        color-mix(in srgb, var(--theme-color) 65%, transparent) inset;
+    }
+  }
+
+  :deep(.el-input__inner) {
+    font-size: 12px;
+    color: var(--sys-text-color);
+
+    &::placeholder {
+      color: var(--sys-text-secondary-color);
+    }
+  }
+}
+
+.playlist-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  color: var(--sys-text-secondary-color);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover,
+  &:active,
+  &.is-active {
+    color: var(--theme-color);
+    background: transparent;
+  }
+}
+
+.filter-popover {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .filter-section-title {
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: var(--sys-text-secondary-color);
+  }
+
+  .filter-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .filter-option {
+    padding: 3px 10px;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--sys-text-color);
+    background: var(--sys-bg-color);
+    border: 1px solid var(--sys-border-color);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      color: var(--theme-color);
+      border-color: var(--theme-color);
+    }
+
+    &.is-active {
+      color: #fff;
+      background: var(--theme-color);
+      border-color: var(--theme-color);
+    }
+  }
 }
 
 .playlist {

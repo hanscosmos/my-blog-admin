@@ -14,13 +14,34 @@
               clearable
               @change="filterDataListHandler"
             ></el-input>
-            <el-input
-              v-model="searchParams.singer"
-              placeholder="搜索歌手"
-              class="!w-160px mr-3"
+            <el-select
+              v-model="searchParams.language"
+              placeholder="语种"
+              class="!w-110px mr-3"
               clearable
               @change="filterDataListHandler"
-            ></el-input>
+            >
+              <el-option
+                v-for="item in languageOptions"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key"
+              ></el-option>
+            </el-select>
+            <el-select
+              v-model="searchParams.genre"
+              placeholder="风格"
+              class="!w-110px mr-3"
+              clearable
+              @change="filterDataListHandler"
+            >
+              <el-option
+                v-for="item in genreOptions"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key"
+              ></el-option>
+            </el-select>
             <el-select
               v-model="searchParams.sortBy"
               class="!w-140px"
@@ -76,6 +97,16 @@
             width="130"
             show-overflow-tooltip
           ></el-table-column>
+          <el-table-column label="语种" width="90">
+            <template #default="{ row }">
+              {{ getDictLabelByKey(languageOptions, row.language) || '-' }}
+            </template>
+          </el-table-column>
+          <el-table-column label="风格" width="90">
+            <template #default="{ row }">
+              {{ getDictLabelByKey(genreOptions, row.genre) || '-' }}
+            </template>
+          </el-table-column>
           <el-table-column label="时长" width="90">
             <template #default="{ row }">{{
               formatAudioTime(row.duration)
@@ -161,6 +192,11 @@ import { usePermissionStore } from '@/store/permission';
 import { useMusicStore } from '@/store/music';
 import { deleteMusicApi, getMusicListApi } from '@/api/resource/music';
 import type { MusicItemType, MusicSearchType } from '@/api/resource/music/type';
+import {
+  MUSIC_GENRE_DICT_CODE,
+  MUSIC_LANGUAGE_DICT_CODE,
+} from '@/config/dict';
+import { useDict } from '@/hooks/useDict';
 import type { FormDialogProps } from '@/types/type';
 import MusicFormDialog from './components/MusicFormDialog.vue';
 import MusicSortDialog from './components/MusicSortDialog.vue';
@@ -169,6 +205,10 @@ import { originalForm, originalSearch, sortOptions } from './service';
 const { isSuper } = storeToRefs(usePermissionStore());
 const musicStore = useMusicStore();
 const { currentSong } = storeToRefs(musicStore);
+const { dictDataList: languageOptions, getDictDataList: getLanguageList } =
+  useDict(MUSIC_LANGUAGE_DICT_CODE);
+const { dictDataList: genreOptions, getDictDataList: getGenreList } =
+  useDict(MUSIC_GENRE_DICT_CODE);
 
 const {
   searchParams,
@@ -241,6 +281,8 @@ const deleteHandler = (row: MusicItemType) => {
 onBeforeMount(() => {
   if (isSuper.value) {
     initDataListHandler();
+    getLanguageList();
+    getGenreList();
   }
 });
 </script>

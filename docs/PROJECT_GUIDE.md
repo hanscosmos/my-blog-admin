@@ -92,7 +92,7 @@ my-blog-admin/
 | `store/tab/tabList` | 多标签页列表，persist key `tabList`（sessionStorage） |
 | `store/menu` | 后端菜单树 `menuTreeList`，persist key `menu`（localStorage），登录/菜单增删改后刷新 |
 | `store/permission` | 权限码集合 `permCodes` + `isSuper/roles/menuRoutes`，persist key `permission`（localStorage）；`hasPerm(code\|code[])`、`clearPermission()`（退出登录时调） |
-| `store/music` | 音乐播放器状态：`playlist/currentSong/isPlaying/volume/mode('list'\|'single'\|'shuffle')/collapsed/lastSongId`，persist key `music`（localStorage，仅持久化 `volume/mode/collapsed/lastSongId`）；`loadPlaylist(force)` 拉 `/resource/music/all`（手动顺序），`playSong/toggle/next/prev/setVolume/setMode/stop` |
+| `store/music` | 音乐播放器状态：`playlist/currentSong/isPlaying/volume/mode('list'\|'single'\|'shuffle')/collapsed/lastSongId`，persist key `music`（localStorage，仅持久化 `volume/mode/collapsed/lastSongId`）；`loadPlaylist(force)` 拉 `/resource/music/all`（手动顺序），`playSong/toggle/next(sourceList?)/prev(sourceList?)/setVolume/setMode/stop`；`next/prev` 的 `sourceList` 为筛选后的播放列表，不传时按全量歌单 |
 | `hooks/usePermission` | `loadPermission()` 拉 `permission/self`、`ensurePermission()` 已有则跳过（路由守卫用）、`canAccessRoute(name)` 判断路由是否可访问 |
 | `utils/tool` | 被 `unplugin-auto-import` 扫描且 `vueTemplate:true` → **`.vue` 模板/脚本与 `.ts` 中直接可用免 import**：`fmtTime/dateDiff/getTagColor/toRgba/copyClick/confirmHandler/getCookie/setCookie/randomColor/getColorPair/getImg/getSvg/uploadFile/getDictLabelByKey` 等 |
 | `types/global.d.ts` | 无 export 的**全局类型**（免 import）：`PageType/ResType/ResPageType/ReqPageType/IdType/IdsType/DictType/TableColumnType` |
@@ -257,14 +257,14 @@ my-blog-admin/
 
 | 文件 | 说明 |
 |---|---|
-| `Music/index.vue` | 管理列表。非超管显示 `AppEmptyData`「该功能仅超级管理员可用」，且不发起列表请求。搜索：歌曲名/歌手/排序方式；表列：封面/歌曲名(播放中 tag)/歌手/时长/播放次数/累计时长/创建时间/操作(播放·编辑·删除)。`sortBy` 为 `'manual'` 时才显示「调整顺序」按钮 |
-| `Music/components/MusicFormDialog.vue` | 新增/编辑。音频走 `AppImageAutoUpload type="music" accept=AUDIO_ACCEPT file-icon="music"`，前端校验扩展名与 `MAX_MUSIC_SIZE=50`；上传成功后用 `new Audio()` 读 metadata 自动填 `duration`（可手改）。封面 `type="music-cover"` |
+| `Music/index.vue` | 管理列表。非超管显示 `AppEmptyData`「该功能仅超级管理员可用」，且不发起列表请求。搜索：歌曲名/语种/风格/排序方式（语种/风格用 `useDict` 的 `MUSIC_LANGUAGE`、`MUSIC_GENRE`；歌手筛选已移除，但后端接口仍支持 `singer` 参数）；表列：封面/歌曲名(播放中 tag)/歌手/语种/风格/时长/播放次数/累计时长/创建时间/操作(播放·编辑·删除)。`sortBy` 为 `'manual'` 时才显示「调整顺序」按钮 |
+| `Music/components/MusicFormDialog.vue` | 新增/编辑。音频走 `AppImageAutoUpload type="music" accept=AUDIO_ACCEPT file-icon="music"`，前端校验扩展名与 `MAX_MUSIC_SIZE=50`；上传成功后用 `new Audio()` 读 metadata 自动填 `duration`（可手改），并按「歌手 - 歌名」解析文件名回填 `singer/name`。语种/风格为可选 `el-select`，选项来自字典。封面 `type="music-cover"` |
 | `Music/components/MusicSortDialog.vue` | 手动排序弹窗。拉 `/resource/music/all`，用 `@atlaskit/pragmatic-drag-and-drop` 绑定每一行（`getInitialData` 带 `{type:'music-sort', id}`），`onDragEnter` 时在数组内 move，保存调 `/resource/music/sort {ids}` 重写 `sort` |
 | `Music/service.ts` | `AUDIO_ACCEPT='.mp3,.flac,.wav,.m4a,.aac,.ogg'`、`originalForm/originalSearch`、`sortOptions`、`formRules`、`getFormByRow`（只挑表单字段，避免把统计字段带进表单） |
 
-**字段与接口**：`sys_music` 表字段 `name/singer/cover/url/duration/playCount/listenSeconds/sort/createTime`（**无专辑**）。列表接口 `POST /resource/music/list {pageNumber,pageSize,name?,singer?,sortBy?}`，`sortBy`：`manual`（`sort,createTime` 升序）/`playCount`（播放次数降序）/`listenSeconds`（累计时长降序）。其余：`/music/all`（播放器歌单，始终手动顺序）、`/music/add`、`/music/edit`、`/music/delete {ids}`、`/music/sort {ids}`、`/music/play {id}`、`/music/stat {id,seconds}`。**8 个接口都在后端 `views/music.py` 用 `_get_super_user_id` 单独校验超管，不登记 `PERMISSION_PATH_MAP`**——若登记成权限码，被授权的普通角色就能绕过「仅超管」。
+**字段与接口**：`sys_music` 表字段 `name/singer/cover/url/duration/language/genre/playCount/listenSeconds/sort/createTime`（**无专辑**）。`language/genre` 存字典 key，分别对应字典 `MUSIC_LANGUAGE`（国语/粤语/英语/日语/韩语/纯音乐）与 `MUSIC_GENRE`（流行/摇滚/民谣/电子/说唱/R&B/爵士/古典/古风/ACG/轻音乐/其他），由后端迁移 `resource/0003_music_language_genre` 幂等种入 `sys_dictionary`；可空。列表接口 `POST /resource/music/list {pageNumber,pageSize,name?,singer?,language?,genre?,sortBy?}`（`language/genre` 精确匹配），`sortBy`：`manual`（`sort,createTime` 升序）/`playCount`（播放次数降序）/`listenSeconds`（累计时长降序）。其余：`/music/all`（播放器歌单，始终手动顺序）、`/music/add`、`/music/edit`、`/music/delete {ids}`、`/music/sort {ids}`、`/music/play {id}`、`/music/stat {id,seconds}`。**8 个接口都在后端 `views/music.py` 用 `_get_super_user_id` 单独校验超管，不登记 `PERMISSION_PATH_MAP`**——若登记成权限码，被授权的普通角色就能绕过「仅超管」。
 
-**全局播放器**（`layout/components/MusicPlayer/index.vue`，在 `layout/index.vue` 里 `v-if="isSuper"` 挂载）：右下角固定悬浮，收起态是圆形按钮，展开为玻璃渐变卡片（旋转封面、歌曲信息、进度条、播放/暂停/上一首/下一首、模式循环、音量、播放列表面板），`<audio>` 隐藏。
+**全局播放器**（`layout/components/MusicPlayer/index.vue`，在 `layout/index.vue` 里 `v-if="isSuper"` 挂载）：右下角固定悬浮，收起态是圆形按钮，展开为玻璃渐变卡片（旋转封面、歌曲信息、进度条、播放/暂停/上一首/下一首、模式循环、音量、播放列表面板），`<audio>` 隐藏。播放列表面板的搜索按钮展开关键字输入（歌名/歌手），筛选按钮弹出 `el-popover` 以标签形式展示全部语种/风格并单选；筛选后上一首/下一首、自动切歌与预加载都按筛选结果走（`musicStore.next/prev(sourceList?)`），筛选无结果时回退全量歌单。
 
 - 听歌统计：`timeupdate` 累加相邻两次的 `currentTime` 增量，**只在 `0 < delta <= 2` 且非拖动进度时计入**（跳进度的大增量直接丢弃）；累计满 15 秒或暂停/切歌/页面隐藏/卸载时上报 `/music/stat`。`visibilitychange(hidden)` 与 `pagehide` 用 `fetch(...,{keepalive:true})`（`flushMusicListenSecondsKeepalive`，因为组件卸载后 axios 请求可能被取消）。
 - 播放次数：`play` 事件每加载一首歌上报一次 `/music/play`；失败回滚本地计数。

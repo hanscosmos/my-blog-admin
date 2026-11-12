@@ -80,13 +80,17 @@ export const useMusicStore = defineStore(
       isPlaying.value = !isPlaying.value;
     };
 
-    const next = async () => {
+    /** sourceList 用于播放列表筛选后的切歌；为空时按全量歌单 */
+    const next = async (sourceList?: MusicItemType[]) => {
       if (!playlist.value.length) {
         await loadPlaylist();
       }
-      const total = playlist.value.length;
+      const list = sourceList?.length ? sourceList : playlist.value;
+      const total = list.length;
       if (!total) return;
-      const index = currentIndex.value;
+      const index = currentSong.value
+        ? list.findIndex((item) => item.id === currentSong.value?.id)
+        : -1;
       let nextIndex = 0;
       if (mode.value === 'shuffle' && total > 1) {
         nextIndex = index;
@@ -96,18 +100,22 @@ export const useMusicStore = defineStore(
       } else {
         nextIndex = index < 0 ? 0 : (index + 1) % total;
       }
-      currentSong.value = playlist.value[nextIndex];
+      currentSong.value = list[nextIndex];
       lastSongId.value = currentSong.value.id;
       isPlaying.value = true;
     };
 
-    const prev = async () => {
+    /** sourceList 用于播放列表筛选后的切歌；为空时按全量歌单 */
+    const prev = async (sourceList?: MusicItemType[]) => {
       if (!playlist.value.length) {
         await loadPlaylist();
       }
-      const total = playlist.value.length;
+      const list = sourceList?.length ? sourceList : playlist.value;
+      const total = list.length;
       if (!total) return;
-      const index = currentIndex.value;
+      const index = currentSong.value
+        ? list.findIndex((item) => item.id === currentSong.value?.id)
+        : -1;
       let prevIndex = total - 1;
       if (mode.value === 'shuffle' && total > 1) {
         prevIndex = index;
@@ -117,7 +125,7 @@ export const useMusicStore = defineStore(
       } else {
         prevIndex = index <= 0 ? total - 1 : index - 1;
       }
-      currentSong.value = playlist.value[prevIndex];
+      currentSong.value = list[prevIndex];
       lastSongId.value = currentSong.value.id;
       isPlaying.value = true;
     };

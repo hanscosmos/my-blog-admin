@@ -8,6 +8,10 @@ export type MusicFormType = {
   url: string;
   /** 音频时长（秒） */
   duration: number;
+  /** 语种，存字典 MUSIC_LANGUAGE 的 key */
+  language: string;
+  /** 风格，存字典 MUSIC_GENRE 的 key */
+  genre: string;
 };
 
 export type MusicIdType = {
@@ -16,7 +20,8 @@ export type MusicIdType = {
 
 export type MusicSearchType = {
   name: string;
-  singer: string;
+  language: string;
+  genre: string;
   sortBy: MusicSortByType;
 };
 
