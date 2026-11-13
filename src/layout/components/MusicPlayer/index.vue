@@ -18,11 +18,7 @@
             </div>
           </div>
           <div class="header-actions">
-            <button
-              class="icon-btn"
-              title="播放列表"
-              @click="playlistVisible = !playlistVisible"
-            >
+            <button class="icon-btn" title="播放列表" @click="playlistVisible = !playlistVisible">
               <AppIcon name="music-list" :size="16" />
             </button>
             <button class="icon-btn" title="收起" @click="collapseHandler">
@@ -33,96 +29,44 @@
 
         <div class="progress-row">
           <span class="time">{{ formatAudioTime(progressSeconds) }}</span>
-          <el-slider
-            class="progress-slider"
-            :model-value="progressSeconds"
-            :max="duration || 1"
-            :show-tooltip="false"
-            @input="seekingHandler"
-            @change="seekHandler"
-          />
+          <el-slider class="progress-slider" :model-value="progressSeconds" :max="duration || 1" :show-tooltip="false"
+            @input="seekingHandler" @change="seekHandler" />
           <span class="time">{{ formatAudioTime(duration) }}</span>
         </div>
 
         <div class="control-row">
-          <button
-            class="icon-btn mode-btn"
-            :title="modeTitle"
-            @click="toggleMode"
-          >
+          <button class="icon-btn mode-btn" :title="modeTitle" @click="toggleMode">
             <AppIcon :name="modeIcon" :size="16" />
           </button>
-          <button
-            class="icon-btn"
-            title="上一首"
-            @click="musicStore.prev(filteredPlaylist)"
-          >
+          <button class="icon-btn" title="上一首" @click="musicStore.prev(filteredPlaylist)">
             <AppIcon name="go-start" :size="18" />
           </button>
-          <button
-            class="play-btn"
-            :title="isPlaying ? '暂停' : '播放'"
-            @click="musicStore.toggle()"
-          >
-            <AppIcon
-              :name="isPlaying ? 'pause' : 'play'"
-              :size="20"
-              color="#fff"
-            />
+          <button class="play-btn" :title="isPlaying ? '暂停' : '播放'" @click="musicStore.toggle()">
+            <AppIcon :name="isPlaying ? 'pause' : 'play'" :size="20" color="#fff" />
           </button>
-          <button
-            class="icon-btn"
-            title="下一首"
-            @click="musicStore.next(filteredPlaylist)"
-          >
+          <button class="icon-btn" title="下一首" @click="musicStore.next(filteredPlaylist)">
             <AppIcon name="go-end" :size="18" />
           </button>
           <div class="volume-box">
             <AppIcon :name="volumeIcon" :size="16" />
-            <el-slider
-              class="volume-slider"
-              :model-value="volume * 100"
-              :show-tooltip="false"
-              @input="volumeHandler"
-            />
+            <el-slider class="volume-slider" :model-value="volume * 100" :show-tooltip="false" @input="volumeHandler" />
           </div>
         </div>
 
         <transition name="music-playlist">
           <div v-if="playlistVisible" class="playlist-panel">
             <div class="playlist-header">
-              <el-input
-                v-if="searchVisible"
-                v-model="filterKeyword"
-                class="playlist-search-input"
-                placeholder="搜索歌曲 / 歌手"
-                size="small"
-                clearable
-                autofocus
-                @keyup.esc="toggleSearch"
-              ></el-input>
+              <el-input v-if="searchVisible" v-model="filterKeyword" class="playlist-search-input"
+                placeholder="搜索歌曲 / 歌手" size="small" clearable autofocus @keyup.esc="toggleSearch"></el-input>
               <span v-else>播放列表（{{ playlistCountText }}）</span>
               <div class="playlist-actions">
-                <button
-                  class="playlist-action-btn"
-                  :class="{ 'is-active': searchVisible }"
-                  title="搜索"
-                  @click="toggleSearch"
-                >
+                <button class="playlist-action-btn" :class="{ 'is-active': searchVisible }" title="搜索"
+                  @click="toggleSearch">
                   <AppIcon name="search" :size="14" />
                 </button>
-                <el-popover
-                  placement="bottom-end"
-                  :width="260"
-                  trigger="click"
-                  popper-class="music-filter-popover"
-                >
+                <el-popover placement="bottom-end" :width="260" trigger="click" popper-class="music-filter-popover">
                   <template #reference>
-                    <button
-                      class="playlist-action-btn"
-                      :class="{ 'is-active': isFilterActive }"
-                      title="筛选语种 / 风格"
-                    >
+                    <button class="playlist-action-btn" :class="{ 'is-active': isFilterActive }" title="筛选语种 / 风格">
                       <AppIcon name="filter" :size="14" />
                     </button>
                   </template>
@@ -130,20 +74,12 @@
                     <div class="filter-section">
                       <div class="filter-section-title">语种</div>
                       <div class="filter-options">
-                        <button
-                          class="filter-option"
-                          :class="{ 'is-active': !filterLanguage }"
-                          @click="filterLanguage = ''"
-                        >
+                        <button class="filter-option" :class="{ 'is-active': !filterLanguage }"
+                          @click="filterLanguage = ''">
                           全部
                         </button>
-                        <button
-                          v-for="item in languageOptions"
-                          :key="item.key"
-                          class="filter-option"
-                          :class="{ 'is-active': filterLanguage === item.key }"
-                          @click="toggleLanguageFilter(item.key)"
-                        >
+                        <button v-for="item in languageOptions" :key="item.key" class="filter-option"
+                          :class="{ 'is-active': filterLanguage === item.key }" @click="toggleLanguageFilter(item.key)">
                           {{ item.value }}
                         </button>
                       </div>
@@ -151,42 +87,23 @@
                     <div class="filter-section">
                       <div class="filter-section-title">风格</div>
                       <div class="filter-options">
-                        <button
-                          class="filter-option"
-                          :class="{ 'is-active': !filterGenre }"
-                          @click="filterGenre = ''"
-                        >
+                        <button class="filter-option" :class="{ 'is-active': !filterGenre }" @click="filterGenre = ''">
                           全部
                         </button>
-                        <button
-                          v-for="item in genreOptions"
-                          :key="item.key"
-                          class="filter-option"
-                          :class="{ 'is-active': filterGenre === item.key }"
-                          @click="toggleGenreFilter(item.key)"
-                        >
+                        <button v-for="item in genreOptions" :key="item.key" class="filter-option"
+                          :class="{ 'is-active': filterGenre === item.key }" @click="toggleGenreFilter(item.key)">
                           {{ item.value }}
                         </button>
                       </div>
                     </div>
                   </div>
                 </el-popover>
-                <AppIcon
-                  name="refresh"
-                  :size="14"
-                  class="hover-text"
-                  @click="musicStore.loadPlaylist(true)"
-                />
+                <AppIcon name="refresh" :size="14" class="hover-text" @click="musicStore.loadPlaylist(true)" />
               </div>
             </div>
-            <ul class="playlist">
-              <li
-                v-for="song in filteredPlaylist"
-                :key="song.id"
-                class="playlist-item"
-                :class="{ 'is-active': song.id === currentSong?.id }"
-                @click="musicStore.playSong(song)"
-              >
+            <ul ref="playlistRef" class="playlist" :style="playlistStyle">
+              <li v-for="song in filteredPlaylist" :key="song.id" class="playlist-item"
+                :class="{ 'is-active': song.id === currentSong?.id }" @click="musicStore.playSong(song)">
                 <div class="playlist-cover">
                   <img v-if="song.cover" :src="song.cover" alt="" />
                   <AppIcon v-else name="music" :size="15" />
@@ -194,15 +111,15 @@
                 <div class="playlist-info">
                   <span class="playlist-name" :title="song.name">{{
                     song.name
-                  }}</span>
+                    }}</span>
                   <span class="playlist-singer" :title="getSongMeta(song)">{{
                     getSongMeta(song)
-                  }}</span>
+                    }}</span>
                 </div>
                 <!-- <span class="playlist-count">{{ song.playCount }}次</span> -->
                 <span class="playlist-duration">{{
                   formatAudioTime(song.duration)
-                }}</span>
+                  }}</span>
               </li>
               <li v-if="!filteredPlaylist.length" class="playlist-empty">
                 {{
@@ -217,26 +134,13 @@
       </div>
     </transition>
 
-    <button
-      v-if="collapsed"
-      class="collapsed-btn"
-      :class="{ 'is-playing': isPlaying }"
-      title="打开音乐播放器"
-      @click="collapsed = false"
-    >
+    <button v-if="collapsed" class="collapsed-btn" :class="{ 'is-playing': isPlaying }" title="打开音乐播放器"
+      @click="collapsed = false">
       <AppIcon name="music" :size="22" color="#fff" />
     </button>
 
-    <audio
-      ref="audioRef"
-      preload="metadata"
-      @timeupdate="handleTimeUpdate"
-      @play="handlePlay"
-      @pause="handlePause"
-      @ended="handleEnded"
-      @error="handleError"
-      @loadedmetadata="handleLoadedMetadata"
-    ></audio>
+    <audio ref="audioRef" preload="metadata" @timeupdate="handleTimeUpdate" @play="handlePlay" @pause="handlePause"
+      @ended="handleEnded" @error="handleError" @loadedmetadata="handleLoadedMetadata"></audio>
   </div>
 </template>
 
@@ -295,6 +199,40 @@ const isFilterActive = computed(
 
 const isPlaylistFiltered = computed(
   () => !!filterKeyword.value.trim() || isFilterActive.value
+);
+
+/** 与样式中 .playlist 的 max-height 保持一致 */
+const PLAYLIST_MAX_HEIGHT = 322;
+
+const playlistRef = ref<HTMLElement | null>(null);
+const playlistBaseHeight = ref(0);
+const playlistStyle = computed(() =>
+  playlistBaseHeight.value
+    ? { minHeight: `${playlistBaseHeight.value}px` }
+    : undefined
+);
+
+/**
+ * 记录未筛选时列表的完整高度，作为筛选期间的最小高度，
+ * 避免搜索无结果或结果很少时列表区域突然塌陷
+ */
+const measurePlaylistHeight = async () => {
+  if (!playlistRef.value || isPlaylistFiltered.value) return;
+  playlistBaseHeight.value = 0;
+  await nextTick();
+  const el = playlistRef.value;
+  if (!el || isPlaylistFiltered.value) return;
+  playlistBaseHeight.value = Math.min(el.scrollHeight, PLAYLIST_MAX_HEIGHT);
+};
+
+watch(
+  [playlistVisible, () => playlist.value.length],
+  () => {
+    if (playlistVisible.value) {
+      measurePlaylistHeight();
+    }
+  },
+  { flush: 'post', immediate: true }
 );
 
 /** 收起搜索框时清空关键字，避免隐藏的筛选条件让人困惑 */
@@ -654,11 +592,9 @@ onBeforeUnmount(() => {
 
 /* 深色模式保留原来的深色渐变，浅色模式改用浅底保证文字对比度 */
 html.dark .player-card {
-  background: linear-gradient(
-    145deg,
-    var(--theme-card-bg),
-    var(--sys-box-bg-color)
-  );
+  background: linear-gradient(145deg,
+      var(--theme-card-bg),
+      var(--sys-box-bg-color));
 }
 
 .player-header {
@@ -780,11 +716,9 @@ html.dark .player-card {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(
-      135deg,
-      var(--theme-card-bg),
-      var(--theme-color)
-    );
+    background: linear-gradient(135deg,
+        var(--theme-card-bg),
+        var(--theme-color));
     color: #fff;
     cursor: pointer;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
@@ -826,7 +760,7 @@ html.dark .player-card {
   margin-bottom: 6px;
   color: var(--sys-text-secondary-color);
 
-  > span {
+  >span {
     flex: 1;
     min-width: 0;
     overflow: hidden;
@@ -851,18 +785,15 @@ html.dark .player-card {
     padding: 0 10px;
     background: transparent;
     border-radius: 999px;
-    box-shadow: 0 0 0 1px
-      color-mix(in srgb, var(--sys-border-color) 55%, transparent) inset;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--sys-border-color) 55%, transparent) inset;
     transition: box-shadow 0.2s ease;
 
     &:hover {
-      box-shadow: 0 0 0 1px
-        color-mix(in srgb, var(--theme-color) 40%, transparent) inset;
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--theme-color) 40%, transparent) inset;
     }
 
     &.is-focus {
-      box-shadow: 0 0 0 1px
-        color-mix(in srgb, var(--theme-color) 65%, transparent) inset;
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--theme-color) 65%, transparent) inset;
     }
   }
 
@@ -938,6 +869,8 @@ html.dark .player-card {
 }
 
 .playlist {
+  display: flex;
+  flex-direction: column;
   max-height: 322px;
   margin-top: 4px;
   overflow: auto;
@@ -945,10 +878,11 @@ html.dark .player-card {
 
 .playlist-item {
   display: grid;
+  flex-shrink: 0;
   grid-template-columns: 36px minmax(0, 1fr) 40px;
   align-items: center;
   gap: 10px;
-  padding: 8px 2px;
+  padding: 8px 6px;
   border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
@@ -1016,6 +950,10 @@ html.dark .player-card {
 }
 
 .playlist-empty {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
   padding: 16px 0;
   font-size: 12px;
   color: var(--sys-text-secondary-color);

@@ -52,6 +52,8 @@ export type MarketTrendType = {
   preClose?: number | null;
   points?: MarketTrendMinutePointType[];
   items?: MarketTrendKlineItemType[];
+  /** 上游获取失败时回退的最近一次成功数据 */
+  stale?: boolean;
 };
 
 export type MarketNewsCategoryKeyType = 'finance' | 'world';

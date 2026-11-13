@@ -2,9 +2,10 @@
   <AppDialog :visible="visible" width="720px" :title="`${item?.name || ''} 趋势`" hide-footer @close="closeHandler">
     <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
       <el-segmented v-model="period" :options="periodOptions" />
-      <span class="text-xs" style="color: var(--sys-text-secondary-color)">
-        {{ dataRangeText }}
-      </span>
+      <div class="flex flex-wrap items-center gap-3 text-xs" style="color: var(--sys-text-secondary-color)">
+        <span v-if="trendData?.stale" class="text-amber-500">数据可能延迟</span>
+        <span>{{ dataRangeText }}</span>
+      </div>
     </div>
     <div v-loading="loading" element-loading-text="加载中..." element-loading-background="rgba(128, 128, 128, 0.15)"
       class="h-360px">
