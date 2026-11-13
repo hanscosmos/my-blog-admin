@@ -8,6 +8,15 @@ import type {
 /** 音频上传允许的格式 */
 export const AUDIO_ACCEPT = '.mp3,.flac,.wav,.m4a,.aac,.ogg';
 
+/** 歌词文件允许的格式 */
+export const LYRIC_ACCEPT = '.lrc,.txt';
+
+/** 歌词最大长度，需与后端 MAX_LYRIC_LENGTH 保持一致 */
+export const MAX_LYRIC_LENGTH = 20000;
+
+/** 歌词文件大小上限（KB） */
+export const MAX_LYRIC_FILE_SIZE = 200;
+
 export const originalForm: MusicFormType = {
   name: '',
   singer: '',
@@ -16,6 +25,7 @@ export const originalForm: MusicFormType = {
   duration: 0,
   language: '',
   genre: '',
+  lyric: '',
 };
 
 export const originalSearch: MusicSearchType = {
@@ -45,4 +55,5 @@ export const getFormByRow = (row: MusicItemType): MusicFormType => ({
   duration: row.duration,
   language: row.language,
   genre: row.genre,
+  lyric: row.lyric || '',
 });

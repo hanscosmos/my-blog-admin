@@ -2,6 +2,7 @@ import request from '@/utils/request';
 import { storeToRefs } from 'pinia';
 import { useUserInfoStore } from '@/store/user';
 import type {
+  MusicExtractType,
   MusicFormType,
   MusicIdType,
   MusicItemType,
@@ -33,6 +34,12 @@ export const playMusicApi = (data: MusicIdType) =>
 
 export const addMusicListenSecondsApi = (data: MusicStatType) =>
   request.post<boolean>('/resource/music/stat', data);
+
+/** 根据已上传的音频地址重新解析内嵌封面 / 歌词 / 歌名 / 歌手 */
+export const extractMusicApi = (data: MusicIdType) =>
+  request.post<MusicExtractType>('/resource/music/extract', data, {
+    timeout: 120000,
+  });
 
 /**
  * 页面关闭/隐藏时用 keepalive 兜底上报收听时长。
@@ -67,5 +74,6 @@ export default {
   sortMusicApi,
   playMusicApi,
   addMusicListenSecondsApi,
+  extractMusicApi,
   flushMusicListenSecondsKeepalive,
 };

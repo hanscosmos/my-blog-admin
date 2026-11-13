@@ -12,10 +12,22 @@ export type MusicFormType = {
   language: string;
   /** 风格，存字典 MUSIC_GENRE 的 key */
   genre: string;
+  /** 歌词文本（LRC 或纯文本），可为空 */
+  lyric: string;
 };
 
 export type MusicIdType = {
   id: string;
+};
+
+/** 根据已有音频地址解析内嵌信息的结果 */
+export type MusicExtractType = {
+  /** 本次实际补充的字段 */
+  updated: ('name' | 'singer' | 'lyric' | 'cover')[];
+  name: string;
+  singer: string;
+  lyric: string;
+  cover: string;
 };
 
 export type MusicSearchType = {

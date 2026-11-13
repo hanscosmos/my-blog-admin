@@ -106,6 +106,17 @@ onMounted(() => {
     fileName.value = props.defaultUrl.split('/').pop() || '';
   }
 });
+
+/** 支持父组件异步回填地址（如从音频标签中自动提取封面后回填） */
+watch(
+  () => props.defaultUrl,
+  (url) => {
+    const nextUrl = url || null;
+    if (nextUrl === fileUrl.value) return;
+    fileUrl.value = nextUrl;
+    fileName.value = nextUrl ? nextUrl.split('/').pop() || '' : '';
+  }
+);
 </script>
 
 <style scoped lang="scss">

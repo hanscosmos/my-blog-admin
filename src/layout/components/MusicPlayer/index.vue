@@ -18,7 +18,12 @@
             </div>
           </div>
           <div class="header-actions">
-            <button class="icon-btn" title="播放列表" @click="playlistVisible = !playlistVisible">
+            <button class="icon-btn" :class="{ 'is-active': lyricVisible }"
+              :title="lyricVisible ? '收起歌词' : '显示歌词'" @click="toggleLyric">
+              <AppIcon name="notes" :size="16" />
+            </button>
+            <button class="icon-btn" :class="{ 'is-active': playlistVisible }" title="播放列表"
+              @click="togglePlaylist">
               <AppIcon name="music-list" :size="16" />
             </button>
             <button class="icon-btn" title="收起" @click="collapseHandler">
@@ -52,6 +57,24 @@
             <el-slider class="volume-slider" :model-value="volume * 100" :show-tooltip="false" @input="volumeHandler" />
           </div>
         </div>
+
+        <transition name="music-playlist">
+          <div v-if="lyricVisible" class="lyric-panel">
+            <div v-if="!currentSong" class="lyric-empty">暂无播放</div>
+            <div v-else-if="!parsedLyric.lines.length" class="lyric-empty">
+              该歌曲暂未上传歌词
+            </div>
+            <ul v-else ref="lyricListRef" class="lyric-list" @wheel="pauseLyricFollow"
+              @touchmove="pauseLyricFollow">
+              <li v-for="(line, index) in parsedLyric.lines" :key="`${line.time}-${index}`"
+                class="lyric-line"
+                :class="{ 'is-active': isActiveLyric(line), 'is-clickable': parsedLyric.synced }"
+                @click="seekToLyric(line)">
+                {{ line.text }}
+              </li>
+            </ul>
+          </div>
+        </transition>
 
         <transition name="music-playlist">
           <div v-if="playlistVisible" class="playlist-panel">
@@ -156,6 +179,11 @@ import {
 import type { MusicItemType } from '@/api/resource/music/type';
 import { MUSIC_GENRE_DICT_CODE, MUSIC_LANGUAGE_DICT_CODE } from '@/config/dict';
 import { useDict } from '@/hooks/useDict';
+import {
+  findLyricIndex,
+  parseLyric,
+  type LyricLineType,
+} from './lyric';
 
 const musicStore = useMusicStore();
 const { playlist, currentSong, isPlaying, volume, mode, collapsed } =
@@ -175,6 +203,26 @@ const filterKeyword = ref('');
 const filterLanguage = ref('');
 const filterGenre = ref('');
 const searchVisible = ref(false);
+
+const lyricVisible = ref(false);
+const lyricListRef = ref<HTMLElement | null>(null);
+/** 用户手动滚动歌词后暂停自动跟随 */
+const followLyric = ref(true);
+let followTimer: ReturnType<typeof setTimeout> | null = null;
+
+const parsedLyric = computed(() => parseLyric(currentSong.value?.lyric));
+const activeLyricIndex = computed(() =>
+  parsedLyric.value.synced
+    ? findLyricIndex(parsedLyric.value.lines, progressSeconds.value)
+    : -1
+);
+const activeLyricTime = computed(() => {
+  const index = activeLyricIndex.value;
+  return index >= 0 ? parsedLyric.value.lines[index].time : -1;
+});
+/** 同一时间戳的多行（原文 / 翻译）一起高亮 */
+const isActiveLyric = (line: LyricLineType) =>
+  parsedLyric.value.synced && line.time === activeLyricTime.value;
 
 const filteredPlaylist = computed(() => {
   const keyword = filterKeyword.value.trim().toLowerCase();
@@ -287,8 +335,84 @@ const volumeIcon = computed(() => {
 
 const collapseHandler = () => {
   playlistVisible.value = false;
+  lyricVisible.value = false;
   collapsed.value = true;
 };
+
+/** 播放列表与歌词面板互斥，避免卡片过高 */
+const togglePlaylist = () => {
+  playlistVisible.value = !playlistVisible.value;
+  if (playlistVisible.value) {
+    lyricVisible.value = false;
+  }
+};
+
+const toggleLyric = () => {
+  lyricVisible.value = !lyricVisible.value;
+  if (lyricVisible.value) {
+    playlistVisible.value = false;
+  }
+};
+
+/** 把当前歌词行滚动到列表中间 */
+const scrollActiveLyric = () => {
+  const container = lyricListRef.value;
+  const index = activeLyricIndex.value;
+  if (!lyricVisible.value || !followLyric.value || !container || index < 0) {
+    return;
+  }
+  const line = container.children[index] as HTMLElement | undefined;
+  if (!line) return;
+  // 用相对视口的位置计算，避免 li 的 offsetParent 不是滚动容器
+  const offset =
+    line.getBoundingClientRect().top -
+    container.getBoundingClientRect().top -
+    (container.clientHeight - line.offsetHeight) / 2;
+  container.scrollTo({
+    top: container.scrollTop + offset,
+    behavior: isPlaying.value ? 'smooth' : 'auto',
+  });
+};
+
+/** 手动滚动后 5 秒内不自动跟随 */
+const pauseLyricFollow = () => {
+  followLyric.value = false;
+  if (followTimer) clearTimeout(followTimer);
+  followTimer = setTimeout(() => {
+    followLyric.value = true;
+  }, 5000);
+};
+
+const seekToLyric = (line: LyricLineType) => {
+  const audio = audioRef.value;
+  if (!parsedLyric.value.synced || !audio || line.time < 0) return;
+  audio.currentTime = line.time;
+  progressSeconds.value = line.time;
+  lastTickTime = line.time;
+  followLyric.value = true;
+};
+
+watch([activeLyricIndex, lyricVisible, followLyric], () => {
+  if (!lyricVisible.value) return;
+  nextTick(scrollActiveLyric);
+});
+
+watch(
+  () => currentSong.value?.id,
+  () => {
+    followLyric.value = true;
+    if (followTimer) {
+      clearTimeout(followTimer);
+      followTimer = null;
+    }
+    nextTick(() => {
+      if (lyricListRef.value) {
+        lyricListRef.value.scrollTop = 0;
+      }
+      scrollActiveLyric();
+    });
+  }
+);
 
 /** 把已累计的收听秒数上报；keepalive 用于页面隐藏/关闭 */
 const flushStat = (songId = currentSong.value?.id, keepalive = false) => {
@@ -561,6 +685,10 @@ onBeforeUnmount(() => {
     clearInterval(flushTimer);
     flushTimer = null;
   }
+  if (followTimer) {
+    clearTimeout(followTimer);
+    followTimer = null;
+  }
   document.removeEventListener('visibilitychange', handleVisibilityChange);
   window.removeEventListener('pagehide', handlePageHide);
   const audio = audioRef.value;
@@ -582,12 +710,19 @@ onBeforeUnmount(() => {
 }
 
 .player-card {
-  width: 340px;
+  /* 固定宽度，切换歌词 / 播放列表时不改变卡片尺寸 */
+  width: 400px;
   padding: 14px 16px 12px;
   border: 1px solid var(--sys-border-color);
   border-radius: 14px;
   background: linear-gradient(145deg, var(--theme-bg), var(--sys-box-bg-color));
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22);
+}
+
+@media (max-width: 640px) {
+  .player-card {
+    width: 340px;
+  }
 }
 
 /* 深色模式保留原来的深色渐变，浅色模式改用浅底保证文字对比度 */
@@ -673,7 +808,8 @@ html.dark .player-card {
   cursor: pointer;
   transition: all 0.2s ease;
 
-  &:hover {
+  &:hover,
+  &.is-active {
     color: var(--theme-color);
     background: var(--sys-bg-color);
   }
@@ -744,6 +880,62 @@ html.dark .player-card {
   .volume-slider {
     flex: 1;
   }
+}
+
+.lyric-panel {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--sys-border-color);
+}
+
+.lyric-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 322px;
+  padding: 4px 2px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.lyric-line {
+  flex-shrink: 0;
+  padding: 7px 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--sys-text-secondary-color);
+  text-align: center;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-radius: 4px;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+
+  &.is-clickable {
+    cursor: pointer;
+
+    &:hover {
+      color: var(--theme-color);
+      background: var(--sys-bg-color);
+    }
+  }
+
+  &.is-active {
+    font-weight: 600;
+    color: var(--theme-color);
+    transform: scale(1.04);
+  }
+}
+
+.lyric-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  font-size: 12px;
+  color: var(--sys-text-secondary-color);
+  text-align: center;
 }
 
 .playlist-panel {

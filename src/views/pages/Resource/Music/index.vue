@@ -127,12 +127,23 @@
               {{ fmtTime(row.createTime, 'YYYY-MM-DD HH:mm') }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="160" fixed="right">
+          <el-table-column label="操作" width="220" fixed="right">
             <template #default="{ row }">
               <div class="flex items-center">
                 <app-button type="text" class="mr-3" @click="playHandler(row)">
                   <AppIcon name="play" class="mr-1"></AppIcon>
                   <span>播放</span>
+                </app-button>
+                <app-button
+                  v-if="!row.lyric || !row.cover"
+                  type="text"
+                  class="mr-3"
+                  title="根据已上传的音频地址解析内嵌封面和歌词"
+                  @click="extractHandler(row)"
+                >
+                  <span>{{
+                    extractingId === row.id ? '解析中' : '解析'
+                  }}</span>
                 </app-button>
                 <app-button
                   type="text"
@@ -190,7 +201,11 @@ import { ElMessage } from 'element-plus';
 import { useSearch } from '@/hooks/useSearch';
 import { usePermissionStore } from '@/store/permission';
 import { useMusicStore } from '@/store/music';
-import { deleteMusicApi, getMusicListApi } from '@/api/resource/music';
+import {
+  deleteMusicApi,
+  extractMusicApi,
+  getMusicListApi,
+} from '@/api/resource/music';
 import type { MusicItemType, MusicSearchType } from '@/api/resource/music/type';
 import {
   MUSIC_GENRE_DICT_CODE,
@@ -241,6 +256,15 @@ const formDialogProps = reactive<FormDialogProps<MusicItemType>>({
 });
 
 const sortDialogVisible = ref(false);
+/** 正在解析内嵌信息的歌曲 id */
+const extractingId = ref('');
+
+const extractFieldLabels: Record<string, string> = {
+  name: '歌名',
+  singer: '歌手',
+  lyric: '歌词',
+  cover: '封面',
+};
 
 const openDialog = (optType: string, row?: MusicItemType) => {
   formDialogProps.optType = optType;
@@ -265,6 +289,27 @@ const sortSuccessHandler = async () => {
 
 const playHandler = async (row: MusicItemType) => {
   await musicStore.playSong(row);
+};
+
+/** 根据已上传的音频地址解析内嵌信息（仅补充空字段） */
+const extractHandler = async (row: MusicItemType) => {
+  if (extractingId.value) return;
+  extractingId.value = row.id;
+  try {
+    const { data, msg } = await extractMusicApi({ id: row.id });
+    if (data?.updated?.length) {
+      const names = data.updated
+        .map((key) => extractFieldLabels[key])
+        .join('、');
+      ElMessage.success(`已补充${names}`);
+      await getDataListHandler();
+      await musicStore.loadPlaylist(true);
+    } else if (data) {
+      ElMessage.info(msg || '未发现可补充的内嵌信息');
+    }
+  } finally {
+    extractingId.value = '';
+  }
 };
 
 const deleteHandler = (row: MusicItemType) => {
