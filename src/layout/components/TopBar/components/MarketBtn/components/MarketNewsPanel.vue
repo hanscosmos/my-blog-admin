@@ -7,8 +7,9 @@
       v-loading="panelLoading"
       element-loading-text="更新中..."
       :gutter="20"
+      class="news-row"
     >
-      <el-col :xs="24" :lg="16">
+      <el-col :xs="24" :lg="16" class="news-hot-col">
         <div v-if="!hot && !hotError" class="hot-columns">
           <div v-for="n in 2" :key="n" class="hot-skeleton">
             <el-skeleton animated>
@@ -156,8 +157,23 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+// 面板占满可用高度，热榜两列与快讯各自独立滚动
 .market-news {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   min-height: 420px;
+}
+
+.news-row {
+  flex: 1;
+  min-height: 0;
+}
+
+.news-hot-col,
+.news-flash-col {
+  height: 100%;
+  min-height: 0;
 }
 
 .news-empty {
@@ -170,8 +186,10 @@ onMounted(() => {
 .hot-columns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
   gap: 16px;
   height: 100%;
+  min-height: 0;
 }
 
 .hot-skeleton {
@@ -180,8 +198,24 @@ onMounted(() => {
 }
 
 @media (max-width: 1199px) {
+  .market-news {
+    height: auto;
+    min-height: 0;
+  }
+
+  .news-row {
+    flex: none;
+    min-height: auto;
+  }
+
+  .news-hot-col,
+  .news-flash-col {
+    height: auto;
+  }
+
   .hot-columns {
     grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: auto;
     height: auto;
   }
 }
@@ -195,6 +229,8 @@ onMounted(() => {
 .flash-column {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  min-height: 0;
   padding-left: 16px;
   border-left: 1px solid var(--sys-border-color);
 
@@ -215,6 +251,7 @@ onMounted(() => {
 
 .flash-list {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding-right: 4px;
 }

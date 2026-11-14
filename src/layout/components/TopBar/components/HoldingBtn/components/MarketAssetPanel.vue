@@ -324,6 +324,9 @@ defineExpose({
 }
 
 .asset-summary {
+  --asset-value-color: #e0a800;
+  --asset-value-gradient: linear-gradient(180deg, #ffda4a 0%, #dfa000 100%);
+
   display: flex;
   flex: none;
   flex-wrap: wrap;
@@ -341,6 +344,11 @@ defineExpose({
   border-radius: 8px;
 }
 
+:global(html.dark) .asset-summary {
+  --asset-value-color: #ffdd55;
+  --asset-value-gradient: linear-gradient(180deg, #ffeb8a 0%, #ffc400 100%);
+}
+
 .asset-total {
   display: flex;
   flex-direction: column;
@@ -352,6 +360,11 @@ defineExpose({
   font-size: 28px;
   font-weight: 600;
   line-height: 1.1;
+  color: var(--asset-value-color);
+  background: var(--asset-value-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .asset-total-sub {
@@ -391,6 +404,11 @@ defineExpose({
   font-size: 15px;
   font-weight: 600;
   line-height: 1.2;
+  color: var(--asset-value-color);
+  background: var(--asset-value-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .category-ratio {

@@ -6,28 +6,46 @@
           <div class="cover" :class="{ 'is-playing': isPlaying }">
             <img v-if="currentSong?.cover" :src="currentSong.cover" alt="" />
             <div v-else class="cover-placeholder">
-              <AppIcon name="music" :size="20" color="#fff" />
+              <AppIcon name="music" :size="24" color="#fff" />
             </div>
           </div>
           <div class="song-info">
             <div class="song-name" :title="currentSong?.name">
               {{ currentSong?.name || '暂无播放' }}
             </div>
-            <div class="song-singer" :title="currentSong?.singer">
-              {{ currentSong?.singer || '选择一首歌开始' }}
+            <div class="song-meta-row">
+              <div ref="singerBoxRef" class="song-singer" :title="currentSong ? singerText : ''">
+                <div class="song-singer-track" :class="{ 'is-scrolling': singerOverflow }">
+                  <span ref="singerTextRef" class="song-singer-text">{{ singerText }}</span>
+                  <span v-if="singerOverflow" class="song-singer-text" aria-hidden="true">{{ singerText }}</span>
+                </div>
+              </div>
+              <div v-if="currentSong" class="song-stats">
+                <span class="stat-chip" title="播放次数">
+                  <AppIcon name="play-one" :size="12" />
+                  {{ currentSong.playCount }}次
+                </span>
+                <span class="stat-chip" title="播放前累计收听时长">
+                  <AppIcon name="time" :size="12" />
+                  {{ formatListenDuration(prePlayListenSeconds) }}
+                </span>
+                <span v-if="genreLabel" class="stat-chip" title="风格">
+                  <AppIcon name="tag-one" :size="12" />
+                  {{ genreLabel }}
+                </span>
+              </div>
             </div>
           </div>
           <div class="header-actions">
-            <button class="icon-btn" :class="{ 'is-active': lyricVisible }"
-              :title="lyricVisible ? '收起歌词' : '显示歌词'" @click="toggleLyric">
-              <AppIcon name="notes" :size="16" />
+            <button class="icon-btn" :class="{ 'is-active': lyricVisible }" :title="lyricVisible ? '收起歌词' : '显示歌词'"
+              @click="toggleLyric">
+              <AppIcon name="notes" :size="12" />
             </button>
-            <button class="icon-btn" :class="{ 'is-active': playlistVisible }" title="播放列表"
-              @click="togglePlaylist">
-              <AppIcon name="music-list" :size="16" />
+            <button class="icon-btn" :class="{ 'is-active': playlistVisible }" title="播放列表" @click="togglePlaylist">
+              <AppIcon name="music-list" :size="12" />
             </button>
             <button class="icon-btn" title="收起" @click="collapseHandler">
-              <AppIcon name="down" :size="16" />
+              <AppIcon name="down" :size="12" />
             </button>
           </div>
         </div>
@@ -65,10 +83,8 @@
               <div v-else-if="!parsedLyric.lines.length" class="lyric-empty">
                 该歌曲暂未上传歌词
               </div>
-              <ul v-else ref="lyricListRef" class="lyric-list" @wheel="pauseLyricFollow"
-                @touchmove="pauseLyricFollow">
-                <li v-for="(line, index) in parsedLyric.lines" :key="`${line.time}-${index}`"
-                  class="lyric-line"
+              <ul v-else ref="lyricListRef" class="lyric-list" @wheel="pauseLyricFollow" @touchmove="pauseLyricFollow">
+                <li v-for="(line, index) in parsedLyric.lines" :key="`${line.time}-${index}`" class="lyric-line"
                   :class="{ 'is-active': isActiveLyric(line), 'is-clickable': parsedLyric.synced }"
                   @click="seekToLyric(line)">
                   {{ line.text }}
@@ -112,7 +128,8 @@
                       <div class="filter-section">
                         <div class="filter-section-title">风格</div>
                         <div class="filter-options">
-                          <button class="filter-option" :class="{ 'is-active': !filterGenre }" @click="filterGenre = ''">
+                          <button class="filter-option" :class="{ 'is-active': !filterGenre }"
+                            @click="filterGenre = ''">
                             全部
                           </button>
                           <button v-for="item in genreOptions" :key="item.key" class="filter-option"
@@ -136,15 +153,15 @@
                   <div class="playlist-info">
                     <span class="playlist-name" :title="song.name">{{
                       song.name
-                      }}</span>
+                    }}</span>
                     <span class="playlist-singer" :title="getSongMeta(song)">{{
                       getSongMeta(song)
-                      }}</span>
+                    }}</span>
                   </div>
                   <!-- <span class="playlist-count">{{ song.playCount }}次</span> -->
                   <span class="playlist-duration">{{
                     formatAudioTime(song.duration)
-                    }}</span>
+                  }}</span>
                 </li>
                 <li v-if="!filteredPlaylist.length" class="playlist-empty">
                   {{
@@ -275,11 +292,77 @@ const playlistCountText = computed(() =>
     : `${playlist.value.length}`
 );
 
+/** 多作者以「 / 」分隔展示，兼容中英文的顿号、逗号、分号 */
+const formatSingerName = (singer?: string) =>
+  (singer || '')
+    .split(/[、，,；;]/)
+    .map((name) => name.trim())
+    .filter(Boolean)
+    .join(' / ');
+
 /** 播放列表中的歌手 / 语种 / 风格摘要 */
 const getSongMeta = (song: MusicItemType) => {
   const language = getDictLabelByKey(languageOptions.value, song.language);
   const genre = getDictLabelByKey(genreOptions.value, song.genre);
-  return [song.singer || '-', language, genre].filter(Boolean).join(' · ');
+  return [formatSingerName(song.singer) || '-', language, genre]
+    .filter(Boolean)
+    .join(' · ');
+};
+
+/** 本次播放开始前该歌曲的累计收听时长（秒），播放过程中保持不变 */
+const prePlayListenSeconds = ref(0);
+
+watch(
+  () => currentSong.value?.id,
+  () => {
+    prePlayListenSeconds.value = currentSong.value?.listenSeconds || 0;
+  },
+  { immediate: true }
+);
+
+const genreLabel = computed(() =>
+  getDictLabelByKey(genreOptions.value, currentSong.value?.genre || '')
+);
+
+/** 歌手文本，超出容器宽度时循环滚动展示 */
+const singerText = computed(
+  () => formatSingerName(currentSong.value?.singer) || '选择一首歌开始'
+);
+const singerBoxRef = ref<HTMLElement | null>(null);
+const singerTextRef = ref<HTMLElement | null>(null);
+const singerOverflow = ref(false);
+let singerObserver: ResizeObserver | null = null;
+
+const measureSingerOverflow = async () => {
+  // 先移除副本再测量，避免副本宽度影响判断
+  singerOverflow.value = false;
+  await nextTick();
+  const box = singerBoxRef.value;
+  const text = singerTextRef.value;
+  if (!box || !text) return;
+  singerOverflow.value = text.offsetWidth > box.clientWidth + 1;
+};
+
+watch(singerText, measureSingerOverflow, { flush: 'post' });
+
+/** 卡片展开 / 宽度变化（含统计胶囊宽度变化）时重新测量 */
+watch(singerBoxRef, (el) => {
+  singerObserver?.disconnect();
+  singerObserver = null;
+  if (!el) return;
+  singerObserver = new ResizeObserver(() => measureSingerOverflow());
+  singerObserver.observe(el);
+  measureSingerOverflow();
+});
+
+/** 累计收听时长的友好展示：X小时X分 / X分钟 / X秒 */
+const formatListenDuration = (seconds: number) => {
+  const total = Math.max(0, Math.floor(seconds));
+  if (total < 60) return `${total}秒`;
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  if (hours > 0) return minutes ? `${hours}小时${minutes}分` : `${hours}小时`;
+  return `${minutes}分钟`;
 };
 
 let pendingSeconds = 0;
@@ -648,6 +731,8 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   clearPreload();
+  singerObserver?.disconnect();
+  singerObserver = null;
   flushStat(currentSong.value?.id, true);
   musicStore.stop();
   if (flushTimer) {
@@ -705,6 +790,7 @@ html.dark .player-card {
 }
 
 .player-header {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -712,8 +798,8 @@ html.dark .player-card {
 
 .cover {
   flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid var(--sys-border-color);
@@ -747,6 +833,8 @@ html.dark .player-card {
 }
 
 .song-name {
+  /* 给右上角绝对定位的操作按钮留出空间，长歌名不会压到按钮 */
+  padding-right: 88px;
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
@@ -754,19 +842,69 @@ html.dark .player-card {
   text-overflow: ellipsis;
 }
 
+/* 歌手与统计信息同一行 */
+.song-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 8px;
+}
+
+/* 歌手文本限制最大宽度，超长时在容器内循环滚动 */
 .song-singer {
-  margin-top: 3px;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 60px;
+  overflow: hidden;
   font-size: 12px;
   color: var(--sys-text-secondary-color);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
+.song-singer-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+  white-space: nowrap;
+
+  &.is-scrolling {
+    animation: music-singer-marquee 10s linear infinite;
+  }
+}
+
+.song-singer-text {
+  white-space: nowrap;
+}
+
+/* 播放统计：播放次数 / 累计收听时长 / 风格，始终不换行 */
+.song-stats {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  font-size: 11px;
+  color: var(--sys-text-secondary-color);
+  background: color-mix(in srgb, var(--theme-color) 12%, transparent);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* 操作按钮绝对定位到卡片右上角，不参与头部布局 */
 .header-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 
   /**
    * 顶部操作按钮做成纯图标：
@@ -774,8 +912,8 @@ html.dark .player-card {
    * 避免像独立工具栏一样从卡片里“浮”出来
    */
   .icon-btn {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     color: var(--sys-text-secondary-color);
     opacity: 0.7;
     transition:
@@ -1237,6 +1375,17 @@ html.dark .player-card {
 .music-playlist-leave-to {
   opacity: 0;
   transform: translateY(-4px);
+}
+
+/* 歌手文本循环滚动：平移一份文本 + 24px 间距，实现无缝衔接 */
+@keyframes music-singer-marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-50% - 12px));
+  }
 }
 
 @keyframes music-spin {
