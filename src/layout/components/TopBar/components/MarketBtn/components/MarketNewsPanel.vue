@@ -195,7 +195,6 @@ onMounted(() => {
 .flash-column {
   display: flex;
   flex-direction: column;
-  height: 700px;
   padding-left: 16px;
   border-left: 1px solid var(--sys-border-color);
 

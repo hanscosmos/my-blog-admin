@@ -12,6 +12,9 @@
       <MarketBtn></MarketBtn>
       <div class="mx-2"></div>
 
+      <HoldingBtn></HoldingBtn>
+      <div class="mx-2"></div>
+
       <ArticleBtn class="mr-6"></ArticleBtn>
       <UserInfo></UserInfo>
       <AiChatWidget class="ml-6" />
@@ -25,6 +28,7 @@ import UserInfo from './components/UserInfo/index.vue';
 import TodoListBtn from './components/TodoListBtn/index.vue';
 import MessageBtn from './components/MessageBtn/index.vue';
 import MarketBtn from './components/MarketBtn/index.vue';
+import HoldingBtn from './components/HoldingBtn/index.vue';
 import AiChatWidget from '@/ai/components/AiChatWidget.vue';
 </script>
 <style lang="scss" scoped>

@@ -211,3 +211,79 @@ export type MarketFundHoldingFormType = {
   remark?: string;
   sort?: number;
 };
+
+export type MarketCashKindType = 'money_fund' | 'deposit';
+
+export type MarketCashInterestType = 'demand' | 'fixed';
+
+export type MarketCashStatusType = 'active' | 'matured';
+
+export type MarketCashDataModeType = 'quote' | 'manual';
+
+export type MarketCashItemType = {
+  id: string;
+  kind: MarketCashKindType;
+  name: string;
+  fundCode: string;
+  balance: number;
+  principal: number;
+  annualRate: number | null;
+  yesterdayPnl: number | null;
+  totalPnl: number;
+  totalReturnRate: number | null;
+  startDate: string;
+  endDate: string;
+  interestType: MarketCashInterestType | null;
+  status: MarketCashStatusType;
+  days: number | null;
+  maturityInterest: number | null;
+  remark: string;
+  sort: number;
+  quoteDate: string;
+  /** 万份收益 */
+  dailyIncome: number | null;
+  /** 七日年化 */
+  sevenDayRate: number | null;
+  dataMode: MarketCashDataModeType;
+  /** 昨日收益是否为手动填写（false 表示由行情预估） */
+  yesterdayPnlManual: boolean;
+  /** 年化是否为手动填写（false 表示使用行情七日年化） */
+  annualRateManual: boolean;
+};
+
+export type MarketCashSummaryType = {
+  totalBalance: number;
+  totalPrincipal: number;
+  totalYesterdayPnl: number;
+  totalPnl: number;
+  totalReturnRate: number | null;
+  weightedAnnualRate: number | null;
+  incomplete: boolean;
+};
+
+export type MarketCashPortfolioType = {
+  updateTime: string;
+  stale: boolean;
+  summary: MarketCashSummaryType;
+  items: MarketCashItemType[];
+};
+
+export type MarketCashHoldingFormType = {
+  id?: string;
+  kind: MarketCashKindType;
+  name: string;
+  fundCode?: string;
+  /** 货币基金当前余额 */
+  balance?: number;
+  /** 货币基金累计收益，用于推导本金 */
+  totalPnl?: number;
+  /** 存款本金 */
+  principal?: number;
+  annualRate?: number;
+  yesterdayPnl?: number;
+  startDate?: string;
+  endDate?: string;
+  interestType?: MarketCashInterestType;
+  remark?: string;
+  sort?: number;
+};

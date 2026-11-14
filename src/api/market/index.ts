@@ -1,4 +1,6 @@
 import type {
+  MarketCashHoldingFormType,
+  MarketCashPortfolioType,
   MarketFundHoldingFormType,
   MarketFundPortfolioType,
   MarketFundSearchItemType,
@@ -36,3 +38,12 @@ export const saveMarketFundHoldingApi = (data: MarketFundHoldingFormType) =>
 
 export const deleteMarketFundHoldingApi = (data: { ids: string[] }) =>
   request.post<boolean>('/sys/market/fund/holding/delete', data);
+
+export const getMarketCashPortfolioApi = (force = false) =>
+  request.post<MarketCashPortfolioType>('/sys/market/cash/portfolio', { force });
+
+export const saveMarketCashHoldingApi = (data: MarketCashHoldingFormType) =>
+  request.post<boolean>('/sys/market/cash/holding/save', data);
+
+export const deleteMarketCashHoldingApi = (data: { ids: string[] }) =>
+  request.post<boolean>('/sys/market/cash/holding/delete', data);
