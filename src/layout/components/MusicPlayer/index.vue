@@ -58,102 +58,105 @@
           </div>
         </div>
 
-        <transition name="music-playlist">
-          <div v-if="lyricVisible" class="lyric-panel">
-            <div v-if="!currentSong" class="lyric-empty">暂无播放</div>
-            <div v-else-if="!parsedLyric.lines.length" class="lyric-empty">
-              该歌曲暂未上传歌词
-            </div>
-            <ul v-else ref="lyricListRef" class="lyric-list" @wheel="pauseLyricFollow"
-              @touchmove="pauseLyricFollow">
-              <li v-for="(line, index) in parsedLyric.lines" :key="`${line.time}-${index}`"
-                class="lyric-line"
-                :class="{ 'is-active': isActiveLyric(line), 'is-clickable': parsedLyric.synced }"
-                @click="seekToLyric(line)">
-                {{ line.text }}
-              </li>
-            </ul>
-          </div>
-        </transition>
-
-        <transition name="music-playlist">
-          <div v-if="playlistVisible" class="playlist-panel">
-            <div class="playlist-header">
-              <el-input v-if="searchVisible" v-model="filterKeyword" class="playlist-search-input"
-                placeholder="搜索歌曲 / 歌手" size="small" clearable autofocus @keyup.esc="toggleSearch"></el-input>
-              <span v-else>播放列表（{{ playlistCountText }}）</span>
-              <div class="playlist-actions">
-                <button class="playlist-action-btn" :class="{ 'is-active': searchVisible }" title="搜索"
-                  @click="toggleSearch">
-                  <AppIcon name="search" :size="14" />
-                </button>
-                <el-popover placement="bottom-end" :width="260" trigger="click" popper-class="music-filter-popover">
-                  <template #reference>
-                    <button class="playlist-action-btn" :class="{ 'is-active': isFilterActive }" title="筛选语种 / 风格">
-                      <AppIcon name="filter" :size="14" />
-                    </button>
-                  </template>
-                  <div class="filter-popover">
-                    <div class="filter-section">
-                      <div class="filter-section-title">语种</div>
-                      <div class="filter-options">
-                        <button class="filter-option" :class="{ 'is-active': !filterLanguage }"
-                          @click="filterLanguage = ''">
-                          全部
-                        </button>
-                        <button v-for="item in languageOptions" :key="item.key" class="filter-option"
-                          :class="{ 'is-active': filterLanguage === item.key }" @click="toggleLanguageFilter(item.key)">
-                          {{ item.value }}
-                        </button>
-                      </div>
-                    </div>
-                    <div class="filter-section">
-                      <div class="filter-section-title">风格</div>
-                      <div class="filter-options">
-                        <button class="filter-option" :class="{ 'is-active': !filterGenre }" @click="filterGenre = ''">
-                          全部
-                        </button>
-                        <button v-for="item in genreOptions" :key="item.key" class="filter-option"
-                          :class="{ 'is-active': filterGenre === item.key }" @click="toggleGenreFilter(item.key)">
-                          {{ item.value }}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </el-popover>
-                <AppIcon name="refresh" :size="14" class="hover-text" @click="musicStore.loadPlaylist(true)" />
+        <div class="panel-viewport" :class="{ 'is-open': lyricVisible || playlistVisible }">
+          <transition name="music-playlist">
+            <div v-if="lyricVisible" class="lyric-panel">
+              <div v-if="!currentSong" class="lyric-empty">暂无播放</div>
+              <div v-else-if="!parsedLyric.lines.length" class="lyric-empty">
+                该歌曲暂未上传歌词
               </div>
+              <ul v-else ref="lyricListRef" class="lyric-list" @wheel="pauseLyricFollow"
+                @touchmove="pauseLyricFollow">
+                <li v-for="(line, index) in parsedLyric.lines" :key="`${line.time}-${index}`"
+                  class="lyric-line"
+                  :class="{ 'is-active': isActiveLyric(line), 'is-clickable': parsedLyric.synced }"
+                  @click="seekToLyric(line)">
+                  {{ line.text }}
+                </li>
+              </ul>
             </div>
-            <ul ref="playlistRef" class="playlist" :style="playlistStyle">
-              <li v-for="song in filteredPlaylist" :key="song.id" class="playlist-item"
-                :class="{ 'is-active': song.id === currentSong?.id }" @click="musicStore.playSong(song)">
-                <div class="playlist-cover">
-                  <img v-if="song.cover" :src="song.cover" alt="" />
-                  <AppIcon v-else name="music" :size="15" />
+          </transition>
+
+          <transition name="music-playlist">
+            <div v-if="playlistVisible" class="playlist-panel">
+              <div class="playlist-header">
+                <el-input v-if="searchVisible" v-model="filterKeyword" class="playlist-search-input"
+                  placeholder="搜索歌曲 / 歌手" size="small" clearable autofocus @keyup.esc="toggleSearch"></el-input>
+                <span v-else>播放列表（{{ playlistCountText }}）</span>
+                <div class="playlist-actions">
+                  <button class="playlist-action-btn" :class="{ 'is-active': searchVisible }" title="搜索"
+                    @click="toggleSearch">
+                    <AppIcon name="search" :size="14" />
+                  </button>
+                  <el-popover placement="bottom-end" :width="260" trigger="click" popper-class="music-filter-popover">
+                    <template #reference>
+                      <button class="playlist-action-btn" :class="{ 'is-active': isFilterActive }" title="筛选语种 / 风格">
+                        <AppIcon name="filter" :size="14" />
+                      </button>
+                    </template>
+                    <div class="filter-popover">
+                      <div class="filter-section">
+                        <div class="filter-section-title">语种</div>
+                        <div class="filter-options">
+                          <button class="filter-option" :class="{ 'is-active': !filterLanguage }"
+                            @click="filterLanguage = ''">
+                            全部
+                          </button>
+                          <button v-for="item in languageOptions" :key="item.key" class="filter-option"
+                            :class="{ 'is-active': filterLanguage === item.key }"
+                            @click="toggleLanguageFilter(item.key)">
+                            {{ item.value }}
+                          </button>
+                        </div>
+                      </div>
+                      <div class="filter-section">
+                        <div class="filter-section-title">风格</div>
+                        <div class="filter-options">
+                          <button class="filter-option" :class="{ 'is-active': !filterGenre }" @click="filterGenre = ''">
+                            全部
+                          </button>
+                          <button v-for="item in genreOptions" :key="item.key" class="filter-option"
+                            :class="{ 'is-active': filterGenre === item.key }" @click="toggleGenreFilter(item.key)">
+                            {{ item.value }}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </el-popover>
+                  <AppIcon name="refresh" :size="14" class="hover-text" @click="musicStore.loadPlaylist(true)" />
                 </div>
-                <div class="playlist-info">
-                  <span class="playlist-name" :title="song.name">{{
-                    song.name
+              </div>
+              <ul class="playlist">
+                <li v-for="song in filteredPlaylist" :key="song.id" class="playlist-item"
+                  :class="{ 'is-active': song.id === currentSong?.id }" @click="musicStore.playSong(song)">
+                  <div class="playlist-cover">
+                    <img v-if="song.cover" :src="song.cover" alt="" />
+                    <AppIcon v-else name="music" :size="15" />
+                  </div>
+                  <div class="playlist-info">
+                    <span class="playlist-name" :title="song.name">{{
+                      song.name
+                      }}</span>
+                    <span class="playlist-singer" :title="getSongMeta(song)">{{
+                      getSongMeta(song)
+                      }}</span>
+                  </div>
+                  <!-- <span class="playlist-count">{{ song.playCount }}次</span> -->
+                  <span class="playlist-duration">{{
+                    formatAudioTime(song.duration)
                     }}</span>
-                  <span class="playlist-singer" :title="getSongMeta(song)">{{
-                    getSongMeta(song)
-                    }}</span>
-                </div>
-                <!-- <span class="playlist-count">{{ song.playCount }}次</span> -->
-                <span class="playlist-duration">{{
-                  formatAudioTime(song.duration)
-                  }}</span>
-              </li>
-              <li v-if="!filteredPlaylist.length" class="playlist-empty">
-                {{
-                  playlist.length
-                    ? '没有符合条件的歌曲'
-                    : '暂无音乐，请先在资源管理中上传'
-                }}
-              </li>
-            </ul>
-          </div>
-        </transition>
+                </li>
+                <li v-if="!filteredPlaylist.length" class="playlist-empty">
+                  {{
+                    playlist.length
+                      ? '没有符合条件的歌曲'
+                      : '暂无音乐，请先在资源管理中上传'
+                  }}
+                </li>
+              </ul>
+            </div>
+          </transition>
+        </div>
       </div>
     </transition>
 
@@ -247,40 +250,6 @@ const isFilterActive = computed(
 
 const isPlaylistFiltered = computed(
   () => !!filterKeyword.value.trim() || isFilterActive.value
-);
-
-/** 与样式中 .playlist 的 max-height 保持一致 */
-const PLAYLIST_MAX_HEIGHT = 322;
-
-const playlistRef = ref<HTMLElement | null>(null);
-const playlistBaseHeight = ref(0);
-const playlistStyle = computed(() =>
-  playlistBaseHeight.value
-    ? { minHeight: `${playlistBaseHeight.value}px` }
-    : undefined
-);
-
-/**
- * 记录未筛选时列表的完整高度，作为筛选期间的最小高度，
- * 避免搜索无结果或结果很少时列表区域突然塌陷
- */
-const measurePlaylistHeight = async () => {
-  if (!playlistRef.value || isPlaylistFiltered.value) return;
-  playlistBaseHeight.value = 0;
-  await nextTick();
-  const el = playlistRef.value;
-  if (!el || isPlaylistFiltered.value) return;
-  playlistBaseHeight.value = Math.min(el.scrollHeight, PLAYLIST_MAX_HEIGHT);
-};
-
-watch(
-  [playlistVisible, () => playlist.value.length],
-  () => {
-    if (playlistVisible.value) {
-      measurePlaylistHeight();
-    }
-  },
-  { flush: 'post', immediate: true }
 );
 
 /** 收起搜索框时清空关键字，避免隐藏的筛选条件让人困惑 */
@@ -712,6 +681,9 @@ onBeforeUnmount(() => {
 .player-card {
   /* 固定宽度，切换歌词 / 播放列表时不改变卡片尺寸 */
   width: 400px;
+  /* 歌词 / 播放列表面板共用的固定高度与间距，保证两者切换时卡片高度不变 */
+  --music-panel-height: 360px;
+  --music-panel-gap: 10px;
   padding: 14px 16px 12px;
   border: 1px solid var(--sys-border-color);
   border-radius: 14px;
@@ -794,7 +766,34 @@ html.dark .player-card {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
+
+  /**
+   * 顶部操作按钮做成纯图标：
+   * 去掉圆形按钮和任何悬停 / 激活底色，只靠图标颜色表达状态，
+   * 避免像独立工具栏一样从卡片里“浮”出来
+   */
+  .icon-btn {
+    width: 24px;
+    height: 24px;
+    color: var(--sys-text-secondary-color);
+    opacity: 0.7;
+    transition:
+      color 0.2s ease,
+      opacity 0.2s ease;
+
+    &:hover {
+      color: var(--sys-text-color);
+      background: transparent;
+      opacity: 1;
+    }
+
+    &.is-active {
+      color: var(--theme-color);
+      background: transparent;
+      opacity: 1;
+    }
+  }
 }
 
 .icon-btn {
@@ -882,16 +881,44 @@ html.dark .player-card {
   }
 }
 
+/**
+ * 歌词 / 播放列表面板的槽位：
+ * 两个面板共用同一个网格单元格并保持相同高度，交叉淡入淡出期间
+ * 不会因同时存在于文档流中把卡片撑高，切换时也就没有高度跳变；
+ * 外层高度随面板展开 / 收起做过渡，避免卡片整体跳变
+ */
+.panel-viewport {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  height: 0;
+  overflow: hidden;
+  transition: height 0.2s ease;
+
+  &.is-open {
+    height: calc(var(--music-panel-height) + var(--music-panel-gap));
+  }
+
+  >.lyric-panel,
+  >.playlist-panel {
+    grid-area: 1 / 1;
+    box-sizing: border-box;
+    height: var(--music-panel-height);
+    margin-top: var(--music-panel-gap);
+    padding-top: 8px;
+    border-top: 1px dashed var(--sys-border-color);
+  }
+}
+
 .lyric-panel {
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px dashed var(--sys-border-color);
+  display: flex;
+  flex-direction: column;
 }
 
 .lyric-list {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  max-height: 322px;
+  min-height: 0;
   padding: 4px 2px;
   overflow-x: hidden;
   overflow-y: auto;
@@ -930,18 +957,17 @@ html.dark .player-card {
 
 .lyric-empty {
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
-  height: 120px;
   font-size: 12px;
   color: var(--sys-text-secondary-color);
   text-align: center;
 }
 
 .playlist-panel {
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px dashed var(--sys-border-color);
+  display: flex;
+  flex-direction: column;
 }
 
 .playlist-header {
@@ -1062,8 +1088,9 @@ html.dark .player-card {
 
 .playlist {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  max-height: 322px;
+  min-height: 0;
   margin-top: 4px;
   overflow: auto;
 }
@@ -1199,6 +1226,11 @@ html.dark .player-card {
 .music-playlist-enter-active,
 .music-playlist-leave-active {
   transition: all 0.2s ease;
+}
+
+/* 正在淡出的面板不再响应点击，避免切换瞬间误触旧视图 */
+.music-playlist-leave-active {
+  pointer-events: none;
 }
 
 .music-playlist-enter-from,
