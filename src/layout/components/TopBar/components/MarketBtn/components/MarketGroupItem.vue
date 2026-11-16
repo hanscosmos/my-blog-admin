@@ -9,14 +9,14 @@
     <div class="market-item-main flex flex-col">
       <span class="market-item-name flex items-center gap-1 text-sm">
         <span class="market-item-name-text">{{ item.name }}</span>
-        <button type="button" class="market-item-star" :class="{ 'is-active': favorite }"
+        <button type="button" class="market-item-star" :class="{ 'is-active': favorite }" data-export-ignore
           :title="favorite ? '移出自选' : '加入自选'" @click.stop="handleToggleFavorite">
           <AppIcon name="star" :size="12" :theme="favorite ? 'filled' : 'outline'"></AppIcon>
         </button>
-        <span ref="dragHandleRef" class="market-item-handle" title="拖动排序" @click.stop>
+        <span ref="dragHandleRef" class="market-item-handle" title="拖动排序" data-export-ignore @click.stop>
           <AppIcon name="drag" :size="12"></AppIcon>
         </span>
-        <AppIcon v-if="canTrend" name="trend" :size="12" class="market-item-trend"></AppIcon>
+        <AppIcon v-if="canTrend" name="trend" :size="12" class="market-item-trend" data-export-ignore></AppIcon>
       </span>
       <span v-if="item.symbol" class="market-item-symbol text-xs" style="color: var(--sys-text-secondary-color)">
         {{ item.symbol }}

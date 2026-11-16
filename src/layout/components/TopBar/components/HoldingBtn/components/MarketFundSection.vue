@@ -18,7 +18,7 @@
           }}
         </span>
       </div>
-      <div class="section-actions">
+      <div class="section-actions" data-export-ignore>
         <el-button
           v-if="clearedItems.length"
           plain
@@ -165,7 +165,7 @@
 
             <div class="fund-ratio">{{ formatPercent(item.ratio) }}</div>
 
-            <div class="fund-actions">
+            <div class="fund-actions" data-export-ignore>
               <el-button link type="primary" @click="openEdit(item)"
                 >编辑</el-button
               >

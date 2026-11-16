@@ -25,6 +25,10 @@
           <span v-if="newsPanelRef?.updateTime">更新于 {{ newsPanelRef.updateTime }}</span>
           <span v-if="newsPanelRef?.stale" class="text-amber-500">数据可能延迟</span>
         </template>
+        <button v-if="activeTab === 'market'" type="button" class="market-icon-action" title="导出图片"
+          :disabled="exporting || !overview || loading" @click="exportImage">
+          <AppIcon name="download" :size="16" :class="{ 'animate-pulse': exporting }"></AppIcon>
+        </button>
         <button type="button" class="market-icon-action" title="刷新" :disabled="activeLoading" @click="refreshActive">
           <AppIcon name="refresh" :size="16" :class="{ 'animate-spin': activeLoading }"></AppIcon>
         </button>
@@ -102,6 +106,8 @@ import type {
   MarketItemType,
   MarketOverviewType,
 } from '@/api/market/type';
+import { exportElementAsImage } from '@/utils/exportImage';
+import { ElMessage } from 'element-plus';
 import { useDocumentVisibility, useIntervalFn } from '@vueuse/core';
 import MarketTrendDialog from './MarketTrendDialog.vue';
 import MarketGroupCard from './MarketGroupCard.vue';
@@ -158,6 +164,7 @@ const overview = ref<MarketOverviewType | null>(null);
 const loading = ref(false);
 const errorMsg = ref('');
 const autoRefresh = ref(false);
+const exporting = ref(false);
 const trendVisible = ref(false);
 const trendItem = ref<MarketItemType | null>(null);
 const groupsRef = ref<HTMLElement | null>(null);
@@ -251,6 +258,29 @@ const refreshActive = () => {
     refresh();
   } else {
     newsPanelRef.value?.refresh();
+  }
+};
+
+const exportImage = async () => {
+  if (!groupsRef.value || exporting.value) return;
+  exporting.value = true;
+  try {
+    await exportElementAsImage(groupsRef.value, {
+      title: '行情中心',
+      subtitle: [
+        overview.value?.updateTime ? `更新于 ${overview.value.updateTime}` : '',
+        overview.value?.stale ? '数据可能延迟' : '',
+      ]
+        .filter(Boolean)
+        .join(' · '),
+      filename: '行情中心',
+    });
+    ElMessage.success('图片已导出');
+  } catch (err) {
+    console.error('导出行情图片失败:', err);
+    ElMessage.error('导出失败，请稍后重试');
+  } finally {
+    exporting.value = false;
   }
 };
 

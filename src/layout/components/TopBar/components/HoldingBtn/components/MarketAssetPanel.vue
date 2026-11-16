@@ -1,5 +1,5 @@
 <template>
-  <div class="market-asset-panel">
+  <div ref="rootRef" class="market-asset-panel">
     <el-skeleton v-if="initialLoading" animated>
       <template #template>
         <div
@@ -137,6 +137,7 @@ import {
   CASH_MONEY_FUND_COLOR,
   fundCategoryColor,
 } from '../hooks/useMarketFundMeta';
+import { exportElementAsImage } from '@/utils/exportImage';
 import MarketCashSection from './MarketCashSection.vue';
 import MarketFundSection from './MarketFundSection.vue';
 
@@ -147,6 +148,8 @@ type SegmentType = {
   color: string;
   ratio: number | null;
 };
+
+const rootRef = ref<HTMLElement | null>(null);
 
 const {
   portfolio: fundPortfolio,
@@ -293,23 +296,41 @@ const formatPercent = (value: number | null) =>
 const formatRatio = (value: number | null) =>
   value === null ? '--' : `${value.toFixed(2)}%`;
 
+const updateTime = computed(() => {
+  const times = [
+    fundPortfolio.value?.updateTime,
+    cashPortfolio.value?.updateTime,
+  ].filter(Boolean) as string[];
+  times.sort();
+  return times.length ? times[times.length - 1] : '';
+});
+
+const stale = computed(() =>
+  Boolean(fundPortfolio.value?.stale || cashPortfolio.value?.stale)
+);
+
+const exportImage = () =>
+  exportElementAsImage(rootRef.value, {
+    title: '我的持仓',
+    subtitle: [
+      updateTime.value ? `更新于 ${updateTime.value}` : '',
+      stale.value ? '数据可能延迟' : '',
+    ]
+      .filter(Boolean)
+      .join(' · '),
+    filename: '我的持仓',
+  });
+
 defineExpose({
-  updateTime: computed(() => {
-    const times = [
-      fundPortfolio.value?.updateTime,
-      cashPortfolio.value?.updateTime,
-    ].filter(Boolean) as string[];
-    times.sort();
-    return times.length ? times[times.length - 1] : '';
-  }),
-  stale: computed(() =>
-    Boolean(fundPortfolio.value?.stale || cashPortfolio.value?.stale)
-  ),
+  updateTime,
+  stale,
+  ready: computed(() => Boolean(fundPortfolio.value || cashPortfolio.value)),
   loading: computed(() => fundLoading.value || cashLoading.value),
   refresh: () => {
     fundRefresh();
     cashRefresh();
   },
+  exportImage,
 });
 </script>
 

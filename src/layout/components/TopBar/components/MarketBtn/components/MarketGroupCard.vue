@@ -9,7 +9,7 @@
       <span class="flex items-center gap-1.5 text-sm font-bold">
         <AppIcon v-if="group.isFavorite" name="star" theme="filled" :size="14" class="favorite-star"></AppIcon>
         <span class="market-group-title">{{ group.name }}</span>
-        <AppIcon v-if="!group.isFavorite" name="drag" :size="12" class="group-drag-handle"></AppIcon>
+        <AppIcon v-if="!group.isFavorite" name="drag" :size="12" class="group-drag-handle" data-export-ignore></AppIcon>
       </span>
       <span v-if="group.isFavorite" class="favorite-summary">
         <span class="text-xs favorite-count">{{ group.statusText }}</span>

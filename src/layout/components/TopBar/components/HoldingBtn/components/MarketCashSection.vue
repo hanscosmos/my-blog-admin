@@ -16,7 +16,7 @@
           {{ formatRate(portfolio.summary.weightedAnnualRate) }}
         </span>
       </div>
-      <div class="section-actions">
+      <div class="section-actions" data-export-ignore>
         <el-button type="primary" plain size="small" @click="openAdd"
           >添加</el-button
         >
@@ -140,7 +140,7 @@
               }}</span>
             </div>
 
-            <div class="cash-actions">
+            <div class="cash-actions" data-export-ignore>
               <el-button link type="primary" @click="openEdit(item)"
                 >编辑</el-button
               >

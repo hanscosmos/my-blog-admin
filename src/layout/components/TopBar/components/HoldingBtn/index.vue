@@ -30,6 +30,19 @@
             <button
               type="button"
               class="holding-icon-action"
+              title="导出图片"
+              :disabled="exporting || panelRef?.loading || !panelRef?.ready"
+              @click="exportImage"
+            >
+              <AppIcon
+                name="download"
+                :size="16"
+                :class="{ 'animate-pulse': exporting }"
+              ></AppIcon>
+            </button>
+            <button
+              type="button"
+              class="holding-icon-action"
               title="刷新"
               :disabled="panelRef?.loading"
               @click="refresh"
@@ -50,6 +63,7 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
+import { ElMessage } from 'element-plus';
 import { usePermissionStore } from '@/store/permission';
 import MarketAssetPanel from './components/MarketAssetPanel.vue';
 
@@ -57,12 +71,15 @@ import MarketAssetPanel from './components/MarketAssetPanel.vue';
 const { isSuper } = storeToRefs(usePermissionStore());
 
 const visible = ref(false);
+const exporting = ref(false);
 
 type AssetPanelExposeType = {
   updateTime: string;
   stale: boolean;
+  ready: boolean;
   loading: boolean;
   refresh: () => void;
+  exportImage: () => Promise<void>;
 };
 
 const panelRef = ref<AssetPanelExposeType | null>(null);
@@ -73,6 +90,20 @@ const closeHandler = () => {
 
 const refresh = () => {
   panelRef.value?.refresh();
+};
+
+const exportImage = async () => {
+  if (!panelRef.value || exporting.value) return;
+  exporting.value = true;
+  try {
+    await panelRef.value.exportImage();
+    ElMessage.success('图片已导出');
+  } catch (err) {
+    console.error('导出持仓图片失败:', err);
+    ElMessage.error('导出失败，请稍后重试');
+  } finally {
+    exporting.value = false;
+  }
 };
 </script>
 
