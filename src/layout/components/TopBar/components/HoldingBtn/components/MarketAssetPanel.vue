@@ -138,6 +138,7 @@ import {
   fundCategoryColor,
 } from '../hooks/useMarketFundMeta';
 import { exportElementAsImage } from '@/utils/exportImage';
+import { useAmountVisibility } from '../hooks/useAmountVisibility';
 import MarketCashSection from './MarketCashSection.vue';
 import MarketFundSection from './MarketFundSection.vue';
 
@@ -150,6 +151,8 @@ type SegmentType = {
 };
 
 const rootRef = ref<HTMLElement | null>(null);
+
+const { maskAmount } = useAmountVisibility();
 
 const {
   portfolio: fundPortfolio,
@@ -285,10 +288,10 @@ const pnlClass = (value: number | null) =>
         : '';
 
 const formatAmount = (value: number | null) =>
-  value === null ? '--' : formatCny(value);
+  value === null ? '--' : maskAmount(formatCny(value));
 
 const formatSignedAmount = (value: number | null) =>
-  value === null ? '--' : formatCny(value, true);
+  value === null ? '--' : maskAmount(formatCny(value, true));
 
 const formatPercent = (value: number | null) =>
   value === null ? '--' : `${value > 0 ? '+' : ''}${value.toFixed(2)}%`;

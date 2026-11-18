@@ -30,6 +30,17 @@
             <button
               type="button"
               class="holding-icon-action"
+              :title="amountHidden ? '显示金额' : '隐藏金额'"
+              @click="toggleAmountHidden"
+            >
+              <AppIcon
+                :name="amountHidden ? 'preview-close' : 'preview-open'"
+                :size="16"
+              ></AppIcon>
+            </button>
+            <button
+              type="button"
+              class="holding-icon-action"
               title="导出图片"
               :disabled="exporting || panelRef?.loading || !panelRef?.ready"
               @click="exportImage"
@@ -65,6 +76,7 @@
 import { storeToRefs } from 'pinia';
 import { ElMessage } from 'element-plus';
 import { usePermissionStore } from '@/store/permission';
+import { useAmountVisibility } from './hooks/useAmountVisibility';
 import MarketAssetPanel from './components/MarketAssetPanel.vue';
 
 // 与市场行情一致：仅超级管理员可见
@@ -72,6 +84,8 @@ const { isSuper } = storeToRefs(usePermissionStore());
 
 const visible = ref(false);
 const exporting = ref(false);
+
+const { amountHidden, toggleAmountHidden } = useAmountVisibility();
 
 type AssetPanelExposeType = {
   updateTime: string;

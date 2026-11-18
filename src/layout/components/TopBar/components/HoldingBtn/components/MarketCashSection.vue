@@ -97,6 +97,13 @@
                     · 到期 {{ item.endDate }}
                   </template>
                 </span>
+                <span
+                  v-if="item.amountUpdateTime"
+                  :title="`${item.kind === 'money_fund' ? '余额' : '本金'}更新于 ${item.amountUpdateTime}`"
+                >
+                  {{ item.kind === 'money_fund' ? '余额' : '本金' }}更新
+                  {{ item.amountUpdateTime.slice(0, 10) }}
+                </span>
                 <span v-if="item.remark" class="cash-remark">{{
                   item.remark
                 }}</span>
@@ -187,6 +194,7 @@ import {
   CASH_DEPOSIT_COLOR,
   CASH_MONEY_FUND_COLOR,
 } from '../hooks/useMarketFundMeta';
+import { useAmountVisibility } from '../hooks/useAmountVisibility';
 import MarketCashHoldingDialog from './MarketCashHoldingDialog.vue';
 
 type PropsType = {
@@ -212,6 +220,8 @@ type GroupType = {
 
 const dialogVisible = ref(false);
 const editingItem = ref<MarketCashItemType | null>(null);
+
+const { maskAmount } = useAmountVisibility();
 
 const groups = computed<GroupType[]>(() => {
   const items = props.portfolio?.items ?? [];
@@ -252,10 +262,10 @@ const pnlClass = (value: number | null) =>
         : '';
 
 const formatAmount = (value: number | null) =>
-  value === null ? '--' : formatCny(value);
+  value === null ? '--' : maskAmount(formatCny(value));
 
 const formatSignedAmount = (value: number | null) =>
-  value === null ? '--' : formatCny(value, true);
+  value === null ? '--' : maskAmount(formatCny(value, true));
 
 const formatPercent = (value: number | null) =>
   value === null ? '--' : `${value > 0 ? '+' : ''}${value.toFixed(2)}%`;

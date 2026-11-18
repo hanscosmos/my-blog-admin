@@ -118,6 +118,12 @@
               <div class="fund-meta">
                 <span>{{ item.fundCode }}</span>
                 <span v-if="item.fundType">{{ item.fundType }}</span>
+                <span
+                  v-if="item.sharesUpdateTime"
+                  :title="`份额更新于 ${item.sharesUpdateTime}`"
+                >
+                  份额更新 {{ item.sharesUpdateTime.slice(0, 10) }}
+                </span>
                 <span v-if="item.remark" class="fund-remark">{{
                   item.remark
                 }}</span>
@@ -231,6 +237,7 @@ import {
   fundStyleColor,
   fundStyleLabel,
 } from '../hooks/useMarketFundMeta';
+import { useAmountVisibility } from '../hooks/useAmountVisibility';
 import MarketFundClearedDialog from './MarketFundClearedDialog.vue';
 import MarketFundHoldingDialog from './MarketFundHoldingDialog.vue';
 
@@ -260,6 +267,8 @@ type GroupType = {
 const dialogVisible = ref(false);
 const clearedVisible = ref(false);
 const editingItem = ref<MarketFundHoldingItemType | null>(null);
+
+const { maskAmount } = useAmountVisibility();
 
 const clearedItems = computed(() =>
   (props.portfolio?.items ?? []).filter((item) => item.status === 'cleared')
@@ -314,10 +323,10 @@ const pnlClass = (value: number | null) =>
         : '';
 
 const formatAmount = (value: number | null) =>
-  value === null ? '--' : formatCny(value);
+  value === null ? '--' : maskAmount(formatCny(value));
 
 const formatSignedAmount = (value: number | null) =>
-  value === null ? '--' : formatCny(value, true);
+  value === null ? '--' : maskAmount(formatCny(value, true));
 
 const formatPercent = (value: number | null) =>
   value === null ? '--' : `${value > 0 ? '+' : ''}${value.toFixed(2)}%`;

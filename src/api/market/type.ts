@@ -149,6 +149,8 @@ export type MarketFundHoldingItemType = {
   shares: number;
   costNav: number;
   realizedPnl: number;
+  /** 份额最近一次手动更新时间，空字符串表示未记录 */
+  sharesUpdateTime: string;
   remark: string;
   sort: number;
   nav: number | null;
@@ -229,6 +231,8 @@ export type MarketCashItemType = {
   fundCode: string;
   balance: number;
   principal: number;
+  /** 余额（货币基金）/本金（存款）最近一次手动更新时间，空字符串表示未记录 */
+  amountUpdateTime: string;
   annualRate: number | null;
   yesterdayPnl: number | null;
   totalPnl: number;

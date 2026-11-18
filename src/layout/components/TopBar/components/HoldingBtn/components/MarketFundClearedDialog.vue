@@ -21,6 +21,12 @@
           <div class="cleared-meta">
             <span>{{ item.fundCode }}</span>
             <span v-if="item.fundType">{{ item.fundType }}</span>
+            <span
+              v-if="item.sharesUpdateTime"
+              :title="`份额更新于 ${item.sharesUpdateTime}`"
+            >
+              份额更新 {{ item.sharesUpdateTime.slice(0, 10) }}
+            </span>
             <span v-if="item.remark" class="cleared-remark">{{
               item.remark
             }}</span>
@@ -54,6 +60,7 @@
 <script setup lang="ts">
 import type { MarketFundHoldingItemType } from '@/api/market/type';
 import { formatCny } from '../hooks/useMarketFundPortfolio';
+import { useAmountVisibility } from '../hooks/useAmountVisibility';
 
 type PropsType = {
   visible: boolean;
@@ -68,6 +75,8 @@ const emit = defineEmits<{
   (e: 'remove', item: MarketFundHoldingItemType): void;
 }>();
 
+const { maskAmount } = useAmountVisibility();
+
 const pnlClass = (value: number | null) =>
   value === null
     ? ''
@@ -78,7 +87,7 @@ const pnlClass = (value: number | null) =>
         : '';
 
 const formatSignedAmount = (value: number | null) =>
-  value === null ? '--' : formatCny(value, true);
+  value === null ? '--' : maskAmount(formatCny(value, true));
 </script>
 
 <style lang="scss" scoped>
