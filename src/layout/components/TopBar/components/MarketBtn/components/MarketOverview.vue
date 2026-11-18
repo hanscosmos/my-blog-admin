@@ -25,11 +25,16 @@
           <span v-if="newsPanelRef?.updateTime">更新于 {{ newsPanelRef.updateTime }}</span>
           <span v-if="newsPanelRef?.stale" class="text-amber-500">数据可能延迟</span>
         </template>
+        <button v-if="activeTab === 'market'" type="button" class="market-icon-action" title="小工具"
+          @click="toolsVisible = true">
+          <AppIcon name="tool" :size="16"></AppIcon>
+        </button>
         <button v-if="activeTab === 'market'" type="button" class="market-icon-action" title="导出图片"
           :disabled="exporting || !overview || loading" @click="exportImage">
           <AppIcon name="download" :size="16" :class="{ 'animate-pulse': exporting }"></AppIcon>
         </button>
-        <button type="button" class="market-icon-action" title="刷新" :disabled="activeLoading" @click="refreshActive">
+        <button type="button" class="market-icon-action" title="刷新" :disabled="activeLoading"
+          @click="refreshActive">
           <AppIcon name="refresh" :size="16" :class="{ 'animate-spin': activeLoading }"></AppIcon>
         </button>
       </div>
@@ -97,6 +102,10 @@
     <Teleport to="body">
       <MarketTrendDialog v-if="trendVisible" :visible="trendVisible" :item="trendItem" @close="closeTrend" />
     </Teleport>
+
+    <el-drawer v-model="toolsVisible" title="小工具" :size="520" :lock-scroll="false" append-to-body>
+      <MarketToolsPanel />
+    </el-drawer>
   </div>
 </template>
 
@@ -112,6 +121,7 @@ import { useDocumentVisibility, useIntervalFn } from '@vueuse/core';
 import MarketTrendDialog from './MarketTrendDialog.vue';
 import MarketGroupCard from './MarketGroupCard.vue';
 import MarketNewsPanel from './MarketNewsPanel.vue';
+import MarketToolsPanel from './MarketToolsPanel.vue';
 import {
   useMarketLayout,
   type MarketItemMovePayloadType,
@@ -160,6 +170,7 @@ const TREND_KEYS = new Set([
 
 const activeTab = ref<MarketTabType>('market');
 const newsMounted = ref(false);
+const toolsVisible = ref(false);
 const overview = ref<MarketOverviewType | null>(null);
 const loading = ref(false);
 const errorMsg = ref('');

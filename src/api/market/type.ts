@@ -4,6 +4,8 @@ export type MarketItemType = {
   key: string;
   name: string;
   symbol?: string;
+  /** 价格单位，如 美元/盎司、元/克 */
+  unit?: string;
   price: number | null;
   change: number | null;
   changePercent: number | null;

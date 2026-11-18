@@ -23,7 +23,10 @@
       </span>
     </div>
     <div class="market-item-value flex flex-col items-end">
-      <span class="text-sm font-beauty">{{ formatPrice(item) }}</span>
+      <span class="text-sm">
+        <span class="font-beauty">{{ formatPrice(item) }}</span><span v-if="showUnit(item)"
+          class="market-item-unit">{{ item.unit }}</span>
+      </span>
       <span v-if="item.change !== null || item.changePercent !== null" class="text-xs"
         :class="changeClass(item.change)">
         {{ formatChange(item.change, item.precision) }}
@@ -100,6 +103,9 @@ const formatPrice = (item: MarketItemType) => {
     maximumFractionDigits: item.precision,
   });
 };
+
+const showUnit = (item: MarketItemType) =>
+  Boolean(item.unit) && item.price !== null && item.price !== undefined;
 
 const formatChange = (value: number | null, precision = 2) => {
   if (value === null || value === undefined) return '--';
@@ -191,6 +197,12 @@ onBeforeUnmount(() => {
   &.is-drop-target {
     box-shadow: inset 0 0 0 1px var(--el-color-primary);
   }
+}
+
+.market-item-unit {
+  margin-left: 3px;
+  font-size: 10px;
+  color: var(--sys-text-secondary-color);
 }
 
 .market-item-clickable {
