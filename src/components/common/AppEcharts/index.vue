@@ -12,17 +12,34 @@ type EChartsOption = echarts.EChartsOption;
 type PropsType = {
   option: EChartsOption;
   isResponsive?: boolean;
+  /** auto：跟随明暗主题；none：透明背景（用于卡片内嵌图表） */
+  background?: 'auto' | 'none';
 };
 
 const props = withDefaults(defineProps<PropsType>(), {
   isResponsive: true,
+  background: 'auto',
 });
+
+type ChartClickParamsType = {
+  name?: string;
+  key?: string;
+};
+
+const emit = defineEmits<{
+  (e: 'chart-click', params: ChartClickParamsType): void;
+}>();
 
 const { mode } = storeToRefs(useSystemStore());
 const mergedOption = computed(() => {
   return {
     ...props.option,
-    backgroundColor: mode.value === 'dark' ? '#35363f' : '#ffffff',
+    backgroundColor:
+      props.background === 'none'
+        ? 'transparent'
+        : mode.value === 'dark'
+          ? '#35363f'
+          : '#ffffff',
     textStyle: {
       color: mode.value === 'dark' ? '#ffffff' : '#333333',
     },
@@ -45,11 +62,18 @@ const setOption = () => {
     myChart.setOption(mergedOption.value);
   }
 };
+const bindEvents = () => {
+  myChart?.on('click', (params) => {
+    const data = params.data as { key?: string } | undefined;
+    emit('chart-click', { name: params.name, key: data?.key });
+  });
+};
 const repaint = () => {
   if (myChart) {
     myChart.dispose();
   }
   myChart = echarts.init(echartsRef.value);
+  bindEvents();
   myChart.setOption(mergedOption.value);
 };
 
@@ -57,6 +81,7 @@ onMounted(() => {
   // 渲染图表
   if (echartsRef.value) {
     myChart = echarts.init(echartsRef.value);
+    bindEvents();
     myChart.setOption(props.option);
   }
 });

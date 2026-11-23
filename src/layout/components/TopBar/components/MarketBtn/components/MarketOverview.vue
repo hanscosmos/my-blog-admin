@@ -139,7 +139,7 @@ const props = withDefaults(
 );
 
 const AUTO_REFRESH_INTERVAL = 60 * 1000;
-const SKELETON_ITEM_COUNTS = [2, 4, 3, 4, 3, 5, 4];
+const SKELETON_ITEM_COUNTS = [2, 4, 3, 4, 3, 5, 4, 4];
 
 type MarketTabType = 'market' | 'news';
 
@@ -161,6 +161,10 @@ const TREND_KEYS = new Set([
   'usNDX',
   'usDJI',
   'usIXIC',
+  'us2y',
+  'us5y',
+  'us10y',
+  'us30y',
   'usd_index',
   'hf_XAU',
   'hf_XAG',

@@ -4,7 +4,9 @@
     class="hover-text flex flex-col items-center cursor-pointer"
     @click="visible = true"
   >
-    <AppIcon name="funds" :size="16"></AppIcon>
+    <el-badge :is-dot="needRemind" :offset="[2, 2]">
+      <AppIcon name="funds" :size="16"></AppIcon>
+    </el-badge>
     <span class="text-xs mt-1">我的持仓</span>
   </div>
 
@@ -77,6 +79,7 @@ import { storeToRefs } from 'pinia';
 import { ElMessage } from 'element-plus';
 import { usePermissionStore } from '@/store/permission';
 import { useAmountVisibility } from './hooks/useAmountVisibility';
+import { useHoldingReminder } from './hooks/useHoldingReminder';
 import MarketAssetPanel from './components/MarketAssetPanel.vue';
 
 // 与市场行情一致：仅超级管理员可见
@@ -86,6 +89,20 @@ const visible = ref(false);
 const exporting = ref(false);
 
 const { amountHidden, toggleAmountHidden } = useAmountVisibility();
+
+const {
+  needRemind,
+  start: startReminder,
+  stop: stopReminder,
+  refresh: refreshReminder,
+} = useHoldingReminder(() => {
+  visible.value = true;
+});
+
+onMounted(() => {
+  if (isSuper.value) startReminder();
+});
+onUnmounted(stopReminder);
 
 type AssetPanelExposeType = {
   updateTime: string;
@@ -100,6 +117,8 @@ const panelRef = ref<AssetPanelExposeType | null>(null);
 
 const closeHandler = () => {
   visible.value = false;
+  // 关闭弹窗时可能刚更新过持仓，刷新一次红点状态
+  if (isSuper.value) refreshReminder();
 };
 
 const refresh = () => {

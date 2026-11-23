@@ -34,11 +34,16 @@
 
     <template v-else>
       <div class="asset-summary">
-        <div class="asset-total">
+        <div
+          class="asset-total asset-total-clickable"
+          title="查看总资产分析"
+          @click="openTrend({ type: 'total' })"
+        >
           <span class="summary-label">总资产</span>
           <span class="asset-total-value">{{ formatAmount(totalAssets) }}</span>
           <span class="asset-total-sub">
             投入本金 {{ formatAmount(totalPrincipal) }}
+            <span class="trend-link" data-export-ignore>查看分析</span>
           </span>
         </div>
 
@@ -46,7 +51,9 @@
           <div
             v-for="segment in segments"
             :key="segment.key"
-            class="asset-category"
+            class="asset-category asset-category-clickable"
+            :title="`查看「${segment.name}」分析`"
+            @click="openTrendFromSegment(segment)"
           >
             <span class="category-name">
               <i :style="{ backgroundColor: segment.color }"></i>
@@ -83,6 +90,17 @@
             </span>
           </div>
         </div>
+
+        <button
+          type="button"
+          class="asset-analysis-btn"
+          data-export-ignore
+          title="打开持仓分析"
+          @click="openAnalysis"
+        >
+          <AppIcon name="chart-pie" :size="14" />
+          <span>统计分析</span>
+        </button>
       </div>
 
       <div v-if="segments.length" class="asset-allocation">
@@ -110,12 +128,14 @@
           :loading="cashLoading"
           :error-msg="cashErrorMsg"
           @refresh="cashRefresh"
+          @trend="openTrend"
         />
         <MarketFundSection
           :portfolio="fundPortfolio"
           :loading="fundLoading"
           :error-msg="fundErrorMsg"
           @refresh="fundRefresh"
+          @trend="openTrend"
         />
         <p class="asset-footer">
           总资产 = 基金市值 + 现金/存款余额；当日收益中，基金取盘中估值或已公布净值，
@@ -123,6 +143,22 @@
         </p>
       </div>
     </template>
+
+    <MarketHoldingAnalysisDrawer
+      v-model:visible="analysisVisible"
+      v-model:tab="analysisTab"
+      :scope="trendScope"
+      :segments="segments"
+      :total-text="formatAmount(totalAssets)"
+      :hidden="amountHidden"
+      :snapshots="snapshots"
+      :loading="historyLoading"
+      :recording="historyRecording"
+      :error-msg="historyErrorMsg"
+      @update:scope="trendScope = $event"
+      @retry="fetchHistory"
+      @record="recordSnapshot"
+    />
   </div>
 </template>
 
@@ -139,8 +175,14 @@ import {
 } from '../hooks/useMarketFundMeta';
 import { exportElementAsImage } from '@/utils/exportImage';
 import { useAmountVisibility } from '../hooks/useAmountVisibility';
+import { useMarketHoldingHistory } from '../hooks/useMarketHoldingHistory';
+import type {
+  HoldingAnalysisTabType,
+  HoldingTrendScopeType,
+} from '../type';
 import MarketCashSection from './MarketCashSection.vue';
 import MarketFundSection from './MarketFundSection.vue';
+import MarketHoldingAnalysisDrawer from './MarketHoldingAnalysisDrawer.vue';
 
 type SegmentType = {
   key: string;
@@ -152,7 +194,20 @@ type SegmentType = {
 
 const rootRef = ref<HTMLElement | null>(null);
 
-const { maskAmount } = useAmountVisibility();
+const { amountHidden, maskAmount } = useAmountVisibility();
+
+const analysisVisible = ref(false);
+const analysisTab = ref<HoldingAnalysisTabType>('allocation');
+const trendScope = ref<HoldingTrendScopeType>({ type: 'total' });
+
+const {
+  snapshots,
+  loading: historyLoading,
+  recording: historyRecording,
+  errorMsg: historyErrorMsg,
+  fetchHistory,
+  recordSnapshot,
+} = useMarketHoldingHistory();
 
 const {
   portfolio: fundPortfolio,
@@ -278,6 +333,27 @@ const segments = computed<SegmentType[]>(() => {
   }));
 });
 
+const openTrend = (scope: HoldingTrendScopeType) => {
+  trendScope.value = scope;
+  analysisTab.value = 'trend';
+  analysisVisible.value = true;
+  fetchHistory();
+};
+
+/** 汇总区「统计分析」入口：默认看资产配置 */
+const openAnalysis = () => {
+  analysisTab.value = 'allocation';
+  analysisVisible.value = true;
+  fetchHistory();
+};
+
+const openTrendFromSegment = (segment: SegmentType) =>
+  openTrend({
+    type: 'group',
+    group: segment.key.startsWith('fund_') ? segment.key.slice(5) : segment.key,
+    name: segment.name,
+  });
+
 const pnlClass = (value: number | null) =>
   value === null
     ? ''
@@ -332,6 +408,7 @@ defineExpose({
   refresh: () => {
     fundRefresh();
     cashRefresh();
+    if (analysisVisible.value) fetchHistory();
   },
   exportImage,
 });
@@ -394,6 +471,55 @@ defineExpose({
 .asset-total-sub {
   font-size: 12px;
   color: var(--sys-text-secondary-color);
+}
+
+.asset-total-clickable {
+  padding: 6px 8px;
+  margin: -6px -8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+
+  &:hover {
+    background-color: var(--theme-hover);
+  }
+}
+
+.trend-link {
+  margin-left: 6px;
+  color: var(--theme-color);
+}
+
+.asset-category-clickable {
+  padding: 4px 6px;
+  margin: -4px -6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+
+  &:hover {
+    background-color: var(--theme-hover);
+  }
+}
+
+.asset-analysis-btn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--theme-color);
+  background: var(--theme-hover);
+  border: 1px solid var(--sys-border-color);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+
+  &:hover {
+    border-color: var(--theme-color);
+  }
 }
 
 .asset-categories {

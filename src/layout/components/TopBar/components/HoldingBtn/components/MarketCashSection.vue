@@ -60,13 +60,30 @@
               <i :style="{ backgroundColor: group.color }"></i>
               {{ group.name }}
             </span>
-            <span class="group-meta">
-              {{ group.items.length }} 项 · 余额
-              {{ formatAmount(group.balance) }} · 累计
-              <span :class="pnlClass(group.totalPnl)">{{
-                formatSignedAmount(group.totalPnl)
-              }}</span>
-            </span>
+            <div class="group-side">
+              <span class="group-meta">
+                {{ group.items.length }} 项 · 余额
+                {{ formatAmount(group.balance) }} · 累计
+                <span :class="pnlClass(group.totalPnl)">{{
+                  formatSignedAmount(group.totalPnl)
+                }}</span>
+              </span>
+              <el-button
+                link
+                type="primary"
+                size="small"
+                data-export-ignore
+                @click="
+                  emit('trend', {
+                    type: 'group',
+                    group: `cash_${group.kind}`,
+                    name: group.name,
+                  })
+                "
+              >
+                趋势
+              </el-button>
+            </div>
           </div>
 
           <div v-for="item in group.items" :key="item.id" class="cash-row">
@@ -148,6 +165,18 @@
             </div>
 
             <div class="cash-actions" data-export-ignore>
+              <el-button
+                link
+                type="primary"
+                @click="
+                  emit('trend', {
+                    type: 'item',
+                    key: `cash:${item.id}`,
+                    name: item.name,
+                  })
+                "
+                >趋势</el-button
+              >
               <el-button link type="primary" @click="openEdit(item)"
                 >编辑</el-button
               >
@@ -195,6 +224,7 @@ import {
   CASH_MONEY_FUND_COLOR,
 } from '../hooks/useMarketFundMeta';
 import { useAmountVisibility } from '../hooks/useAmountVisibility';
+import type { HoldingTrendScopeType } from '../type';
 import MarketCashHoldingDialog from './MarketCashHoldingDialog.vue';
 
 type PropsType = {
@@ -207,6 +237,7 @@ const props = defineProps<PropsType>();
 
 const emit = defineEmits<{
   (e: 'refresh'): void;
+  (e: 'trend', scope: HoldingTrendScopeType): void;
 }>();
 
 type GroupType = {
@@ -404,12 +435,18 @@ const remove = (item: MarketCashItemType) => {
   color: var(--sys-text-secondary-color);
 }
 
+.group-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .cash-row {
   display: grid;
   grid-template-columns: minmax(220px, 2fr) minmax(140px, 1.2fr) 110px minmax(
       180px,
       1.4fr
-    ) 100px 100px;
+    ) 100px 122px;
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
@@ -485,6 +522,12 @@ const remove = (item: MarketCashItemType) => {
   display: flex;
   justify-content: flex-end;
   gap: 4px;
+  white-space: nowrap;
+
+  // Element Plus 给相邻按钮默认加了 12px margin，窄列下会把按钮挤到左侧列上
+  :deep(.el-button + .el-button) {
+    margin-left: 0;
+  }
 }
 
 .cash-footer {
@@ -522,7 +565,7 @@ const remove = (item: MarketCashItemType) => {
     grid-template-columns: minmax(180px, 1.6fr) minmax(120px, 1fr) 90px minmax(
         160px,
         1.2fr
-      ) 80px 90px;
+      ) 80px 112px;
     gap: 8px;
   }
 }

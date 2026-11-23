@@ -274,6 +274,41 @@ export type MarketCashPortfolioType = {
   items: MarketCashItemType[];
 };
 
+export type MarketHoldingSnapshotItemType = {
+  key: string;
+  type: 'fund' | 'money_fund' | 'deposit';
+  name: string;
+  code: string;
+  /** 基金类别（bond/equity/...）或现金分组（cash_money_fund/cash_deposit） */
+  group: string;
+  groupName: string;
+  /** 市值 / 余额 */
+  value: number;
+  /** 成本 / 本金 */
+  principal: number;
+  /** 累计收益，基金含已实现收益 */
+  pnl: number;
+  realizedPnl: number | null;
+  status: string;
+};
+
+export type MarketHoldingSnapshotType = {
+  date: string;
+  totalValue: number;
+  totalPrincipal: number;
+  totalPnl: number;
+  fundValue: number;
+  cashValue: number;
+  complete: boolean;
+  items: MarketHoldingSnapshotItemType[];
+};
+
+export type MarketHoldingRemindType = {
+  isSaturday: boolean;
+  needRemind: boolean;
+  lastSnapshotDate: string;
+};
+
 export type MarketCashHoldingFormType = {
   id?: string;
   kind: MarketCashKindType;

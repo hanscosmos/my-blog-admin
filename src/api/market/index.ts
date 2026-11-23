@@ -4,6 +4,8 @@ import type {
   MarketFundHoldingFormType,
   MarketFundPortfolioType,
   MarketFundSearchItemType,
+  MarketHoldingRemindType,
+  MarketHoldingSnapshotType,
   MarketHotType,
   MarketNewsType,
   MarketOverviewType,
@@ -47,3 +49,12 @@ export const saveMarketCashHoldingApi = (data: MarketCashHoldingFormType) =>
 
 export const deleteMarketCashHoldingApi = (data: { ids: string[] }) =>
   request.post<boolean>('/sys/market/cash/holding/delete', data);
+
+export const getMarketHoldingHistoryApi = () =>
+  request.post<MarketHoldingSnapshotType[]>('/sys/market/holding/history');
+
+export const getMarketHoldingRemindApi = () =>
+  request.post<MarketHoldingRemindType>('/sys/market/holding/remind');
+
+export const recordMarketHoldingSnapshotApi = () =>
+  request.post<boolean>('/sys/market/holding/snapshot/record');
