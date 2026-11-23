@@ -11,3 +11,12 @@ export const getSelfStatApi = () =>
     draft: StatSelfType;
     task: StatSelfType;
   }>('/sys/self/stat');
+
+export const getWeatherApi = (data?: {
+  latitude?: number;
+  longitude?: number;
+  force?: boolean;
+}) => request.post<WeatherInfoType>('/sys/overview/weather', data ?? {});
+
+export const getHardwareApi = (data?: { force?: boolean }) =>
+  request.post<HardwareInfoType>('/sys/overview/hardware', data ?? {});

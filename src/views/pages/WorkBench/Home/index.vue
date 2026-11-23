@@ -1,21 +1,25 @@
 <template>
   <div class="p-6 pr-0 wh-full flex flex-col overflow-auto">
     <el-row class="!w-full" :gutter="24">
-      <el-col :span="24">
+      <el-col :span="16">
         <div class="section-wrapper h-200px">
           <HomeOverview></HomeOverview>
         </div>
       </el-col>
-      <!-- <el-col :span="9">
-        <div class="h-240px flex">
-          <div class="section-wrapper flex-1 w-0 mr-5">
-            <StatCard :type="StatEnum.Article"></StatCard>
+      <el-col :span="8">
+        <div class="section-wrapper h-200px flex flex-col !p-0 overflow-hidden">
+          <div class="h-88px flex-shrink-0">
+            <WeatherPanel></WeatherPanel>
           </div>
-          <div class="section-wrapper flex-1 w-0">
-            <StatCard :type="StatEnum.User"></StatCard>
+          <div
+            class="h-px flex-shrink-0"
+            style="background-color: var(--sys-border-color)"
+          ></div>
+          <div class="flex-1 min-h-0">
+            <HardwarePanel></HardwarePanel>
           </div>
         </div>
-      </el-col> -->
+      </el-col>
     </el-row>
     <el-row :gutter="24" class="!w-full mt-6">
       <el-col :span="24">
@@ -63,5 +67,7 @@ import StatKPIBar from './components/StatKPIBar.vue';
 import UserTaskScoreStat from './components/UserTaskScoreStat.vue';
 import ArticlePublishStat from './components/ArticlePublishStat.vue';
 import HotArticle from './components/HotArticle.vue';
+import WeatherPanel from './components/WeatherPanel.vue';
+import HardwarePanel from './components/HardwarePanel.vue';
 </script>
 <style lang="scss" scoped></style>
