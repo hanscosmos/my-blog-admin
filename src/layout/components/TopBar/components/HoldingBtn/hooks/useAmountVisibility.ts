@@ -1,7 +1,16 @@
 import { useLocalStorage } from '@vueuse/core';
 
-/** 金额隐藏时的占位文本 */
-export const AMOUNT_MASK = '*****';
+/** 按金额整数部分的位数生成占位文本：123456.78 → ****** */
+export const createAmountMask = (value: number) => {
+  const digits = String(Math.trunc(Math.abs(value))).length;
+  return '*'.repeat(Math.max(digits, 1));
+};
+
+/** 从已格式化的金额文本中提取整数部分位数并生成占位文本 */
+const maskFormattedAmount = (text: string) => {
+  const integerPart = text.split('.')[0].replace(/\D/g, '');
+  return '*'.repeat(Math.max(integerPart.length, 1));
+};
 
 const STORAGE_KEY = 'holding-amount-hidden';
 
@@ -13,8 +22,9 @@ export function useAmountVisibility() {
     amountHidden.value = !amountHidden.value;
   };
 
-  /** 隐藏状态下把已格式化的金额替换为占位文本 */
-  const maskAmount = (text: string) => (amountHidden.value ? AMOUNT_MASK : text);
+  /** 隐藏状态下把已格式化的金额替换为等位数占位文本 */
+  const maskAmount = (text: string) =>
+    amountHidden.value ? maskFormattedAmount(text) : text;
 
   return {
     amountHidden,

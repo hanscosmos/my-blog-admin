@@ -2,26 +2,43 @@
   <div class="allocation-chart">
     <div class="allocation-chart-main">
       <AppEcharts
-        v-if="segments.length"
+        v-if="displaySegments.length"
         :option="chartOption"
         background="none"
         @chart-click="handleChartClick"
       />
-      <div v-if="segments.length" class="allocation-center">
-        <span class="allocation-center-label">总资产</span>
-        <span class="allocation-center-value">{{ totalText }}</span>
+      <div v-if="displaySegments.length" class="allocation-center">
+        <span class="allocation-center-label">{{ centerLabel }}</span>
+        <span class="allocation-center-value">{{ centerValue }}</span>
       </div>
     </div>
     <div class="allocation-legend">
+      <div v-if="drilldownSegment" class="allocation-legend-head">
+        <button type="button" class="allocation-link" @click="exitDrilldown">
+          ← 返回总览
+        </button>
+        <button
+          type="button"
+          class="allocation-link"
+          @click="emit('select', drilldownSegment.key)"
+        >
+          查看趋势
+        </button>
+      </div>
       <button
-        v-for="segment in segments"
+        v-for="segment in displaySegments"
         :key="segment.key"
         type="button"
         class="allocation-legend-item"
-        :title="`查看「${segment.name}」趋势`"
-        @click="emit('select', segment.key)"
+        :class="{ 'is-static': Boolean(drilldownSegment) }"
+        :disabled="Boolean(drilldownSegment)"
+        :title="legendTitle(segment)"
+        @click="handleLegendClick(segment.key)"
       >
-        <span class="legend-dot" :style="{ backgroundColor: segment.color }"></span>
+        <span
+          class="legend-dot"
+          :style="{ backgroundColor: segment.color }"
+        ></span>
         <span class="legend-name">{{ segment.name }}</span>
         <span class="legend-ratio">{{ formatRatio(segment.ratio) }}</span>
         <span class="legend-value">{{ formatValue(segment.value) }}</span>
@@ -36,7 +53,8 @@ import type { EChartsOption } from 'echarts';
 import { useSystemStore } from '@/store/system';
 import { storeToRefs } from 'pinia';
 import { formatCny } from '../hooks/useMarketFundPortfolio';
-import { AMOUNT_MASK } from '../hooks/useAmountVisibility';
+import { createAmountMask } from '../hooks/useAmountVisibility';
+import type { AllocationBreakdownType } from '../type';
 
 type SegmentType = {
   key: string;
@@ -50,6 +68,8 @@ const props = defineProps<{
   segments: SegmentType[];
   totalText: string;
   hidden: boolean;
+  /** 各类别下钻后的单只基金 / 单笔现金明细 */
+  breakdown?: AllocationBreakdownType;
 }>();
 
 const emit = defineEmits<{
@@ -84,12 +104,103 @@ const sliceColor = (hex: string) =>
     { offset: 1, color: mixColor(hex, 0, 0.18) },
   ]);
 
+/** 以类别主色为基准生成同色系深浅色阶，用于下钻后的每只基金 */
+const shadeColor = (hex: string, index: number, count: number) => {
+  if (count <= 1) return hex;
+  const ratio = 0.55 - (index / (count - 1)) * 0.9;
+  return ratio >= 0 ? mixColor(hex, 255, ratio) : mixColor(hex, 0, -ratio);
+};
+
+const drilldownKey = ref<string | null>(null);
+
+const drilldownSegment = computed(
+  () => props.segments.find((item) => item.key === drilldownKey.value) ?? null
+);
+
+const hasBreakdown = (key: string) => (props.breakdown?.[key]?.length ?? 0) > 0;
+
+const displaySegments = computed<SegmentType[]>(() => {
+  const segment = drilldownSegment.value;
+  if (!segment) return props.segments;
+  const items = props.breakdown?.[segment.key] ?? [];
+  return items.map((item, index) => ({
+    ...item,
+    color: shadeColor(segment.color, index, items.length),
+  }));
+});
+
+const centerLabel = computed(() => drilldownSegment.value?.name ?? '总资产');
+
+const centerValue = computed(() => {
+  if (!drilldownSegment.value) return props.totalText;
+  // 与下钻圆环保持一致，取明细金额之和
+  const total = displaySegments.value.reduce(
+    (sum, item) => sum + item.value,
+    0
+  );
+  return formatValue(total);
+});
+
+const exitDrilldown = () => {
+  drilldownKey.value = null;
+};
+
+const selectSegment = (key: string) => {
+  if (hasBreakdown(key)) {
+    drilldownKey.value = key;
+    return;
+  }
+  emit('select', key);
+};
+
+const handleChartClick = (params: { key?: string }) => {
+  if (drilldownSegment.value || !params.key) return;
+  selectSegment(params.key);
+};
+
+const handleLegendClick = (key: string) => {
+  if (drilldownSegment.value) return;
+  selectSegment(key);
+};
+
+watch(
+  () => [props.segments, props.breakdown],
+  () => {
+    if (!drilldownKey.value) return;
+    const exists = props.segments.some(
+      (item) => item.key === drilldownKey.value
+    );
+    if (!exists || !hasBreakdown(drilldownKey.value)) {
+      drilldownKey.value = null;
+    }
+  }
+);
+
+const formatRatio = (value: number | null) =>
+  value === null ? '--' : `${value.toFixed(1)}%`;
+
+const formatValue = (value: number) =>
+  props.hidden ? createAmountMask(value) : formatCny(value);
+
+const legendTitle = (segment: SegmentType) => {
+  if (drilldownSegment.value) {
+    return `${segment.name} 占「${drilldownSegment.value.name}」${formatRatio(
+      segment.ratio
+    )}`;
+  }
+  return hasBreakdown(segment.key)
+    ? `点击下钻查看「${segment.name}」明细`
+    : `查看「${segment.name}」趋势`;
+};
+
 const chartOption = computed<EChartsOption>(() => ({
   animation: false,
   tooltip: {
     trigger: 'item',
     formatter: (params: any) => {
-      const segment = props.segments.find((item) => item.key === params.data?.key);
+      const segment = displaySegments.value.find(
+        (item) => item.key === params.data?.key
+      );
       const dot = `<span style="display:inline-block;width:8px;height:8px;margin-right:6px;border-radius:2px;background:${
         segment?.color ?? '#999'
       }"></span>`;
@@ -112,7 +223,7 @@ const chartOption = computed<EChartsOption>(() => ({
       },
       label: { show: false },
       emphasis: { scale: true, scaleSize: 4, label: { show: false } },
-      data: props.segments.map((segment) => ({
+      data: displaySegments.value.map((segment) => ({
         key: segment.key,
         name: segment.name,
         value: segment.value,
@@ -121,16 +232,6 @@ const chartOption = computed<EChartsOption>(() => ({
     },
   ],
 }));
-
-const handleChartClick = (params: { key?: string }) => {
-  if (params.key) emit('select', params.key);
-};
-
-const formatRatio = (value: number | null) =>
-  value === null ? '--' : `${value.toFixed(1)}%`;
-
-const formatValue = (value: number) =>
-  props.hidden ? AMOUNT_MASK : formatCny(value);
 </script>
 
 <style lang="scss" scoped>
@@ -184,6 +285,27 @@ const formatValue = (value: number) =>
   min-width: 0;
 }
 
+.allocation-legend-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px 6px;
+}
+
+.allocation-link {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--theme-color);
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .allocation-legend-item {
   display: flex;
   align-items: center;
@@ -200,9 +322,13 @@ const formatValue = (value: number) =>
   cursor: pointer;
   transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: var(--theme-hover);
     border-color: var(--sys-border-color);
+  }
+
+  &.is-static {
+    cursor: default;
   }
 
   .legend-dot {

@@ -91,7 +91,7 @@ import {
   fundCategoryColor,
 } from '../hooks/useMarketFundMeta';
 import { formatCny } from '../hooks/useMarketFundPortfolio';
-import { AMOUNT_MASK } from '../hooks/useAmountVisibility';
+import { createAmountMask } from '../hooks/useAmountVisibility';
 
 type MetricType = 'amount' | 'pnl' | 'rate';
 type RangeType = '3m' | '6m' | '1y' | 'all';
@@ -259,7 +259,7 @@ const hasScopeData = computed(() =>
 const formatMetricValue = (value: number | null | undefined) => {
   if (value === null || value === undefined || Number.isNaN(value)) return '--';
   if (metric.value === 'rate') return `${value.toFixed(2)}%`;
-  if (props.hidden) return AMOUNT_MASK;
+  if (props.hidden) return createAmountMask(value);
   return formatCny(value, metric.value === 'pnl');
 };
 

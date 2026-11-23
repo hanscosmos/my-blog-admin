@@ -10,10 +10,11 @@
       <el-tab-pane label="资产配置" name="allocation">
         <div v-if="segments.length" class="analysis-pane">
           <p class="analysis-hint">
-            点击扇区或图例，切到对应类别的趋势分析
+            点击扇区或图例可下钻查看类别内的单只基金，返回后可切换其他类别
           </p>
           <MarketAllocationChart
             :segments="segments"
+            :breakdown="breakdown"
             :total-text="totalText"
             :hidden="hidden"
             @select="selectGroup"
@@ -45,6 +46,7 @@
 
 <script setup lang="ts">
 import type {
+  AllocationBreakdownType,
   HoldingAnalysisTabType,
   HoldingTrendScopeType,
 } from '../type';
@@ -65,6 +67,7 @@ const props = defineProps<{
   tab: HoldingAnalysisTabType;
   scope: HoldingTrendScopeType;
   segments: SegmentType[];
+  breakdown: AllocationBreakdownType;
   totalText: string;
   hidden: boolean;
   snapshots: MarketHoldingSnapshotType[];

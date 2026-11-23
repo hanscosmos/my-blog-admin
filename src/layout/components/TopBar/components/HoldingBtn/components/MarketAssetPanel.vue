@@ -149,6 +149,7 @@
       v-model:tab="analysisTab"
       :scope="trendScope"
       :segments="segments"
+      :breakdown="allocationBreakdown"
       :total-text="formatAmount(totalAssets)"
       :hidden="amountHidden"
       :snapshots="snapshots"
@@ -177,6 +178,7 @@ import { exportElementAsImage } from '@/utils/exportImage';
 import { useAmountVisibility } from '../hooks/useAmountVisibility';
 import { useMarketHoldingHistory } from '../hooks/useMarketHoldingHistory';
 import type {
+  AllocationBreakdownType,
   HoldingAnalysisTabType,
   HoldingTrendScopeType,
 } from '../type';
@@ -331,6 +333,66 @@ const segments = computed<SegmentType[]>(() => {
     ...item,
     ratio: segmentTotal > 0 ? (item.value / segmentTotal) * 100 : null,
   }));
+});
+
+type AllocationSourceItemType = {
+  key: string;
+  name: string;
+  value: number;
+};
+
+/** 计算类别内每只基金 / 每笔现金的占比，供圆环图下钻展示 */
+const buildAllocationItems = (items: AllocationSourceItemType[]) => {
+  const total = items.reduce((sum, item) => sum + item.value, 0);
+  return items
+    .filter((item) => item.value > 0)
+    .sort((a, b) => b.value - a.value)
+    .map((item) => ({
+      ...item,
+      ratio: total > 0 ? (item.value / total) * 100 : null,
+    }));
+};
+
+const allocationBreakdown = computed<AllocationBreakdownType>(() => {
+  const cashItems = cashPortfolio.value?.items ?? [];
+  const breakdown: AllocationBreakdownType = {
+    cash_money_fund: buildAllocationItems(
+      cashItems
+        .filter((item) => item.kind === 'money_fund')
+        .map((item) => ({
+          key: `cash_${item.id}`,
+          name: item.name,
+          value: item.balance,
+        }))
+    ),
+    cash_deposit: buildAllocationItems(
+      cashItems
+        .filter((item) => item.kind === 'deposit')
+        .map((item) => ({
+          key: `cash_${item.id}`,
+          name: item.name,
+          value: item.balance,
+        }))
+    ),
+  };
+
+  const fundGroups = new Map<string, AllocationSourceItemType[]>();
+  (fundPortfolio.value?.items ?? []).forEach((item) => {
+    if (item.status === 'cleared' || item.marketValue === null) return;
+    const key = `fund_${item.category}`;
+    const group = fundGroups.get(key) ?? [];
+    group.push({
+      key: `fund_${item.id}`,
+      name: item.fundName,
+      value: item.marketValue,
+    });
+    fundGroups.set(key, group);
+  });
+  fundGroups.forEach((items, key) => {
+    breakdown[key] = buildAllocationItems(items);
+  });
+
+  return breakdown;
 });
 
 const openTrend = (scope: HoldingTrendScopeType) => {
