@@ -30,15 +30,21 @@ export function useMarketHoldingHistory() {
     }
   };
 
-  const recordSnapshot = async () => {
-    if (recording.value) return;
+  /**
+   * 记录统计快照：keys 为空（默认）时更新全部持仓；
+   * 传入大类 / 小类 key 时只更新对应品种。
+   */
+  const recordSnapshot = async (keys: string[] = []) => {
+    if (recording.value) return false;
     recording.value = true;
     try {
-      await recordMarketHoldingSnapshotApi();
+      await recordMarketHoldingSnapshotApi(keys);
       await fetchHistory();
+      return true;
     } catch (err) {
       console.error('记录持仓快照失败:', err);
       ElMessage.error('记录持仓快照失败，请稍后重试');
+      return false;
     } finally {
       recording.value = false;
     }

@@ -5,15 +5,15 @@
     @click="visible = true"
   >
     <el-badge :is-dot="needRemind" :offset="[2, 2]">
-      <AppIcon name="funds" :size="16"></AppIcon>
+      <AppIcon name="wallet" :size="16"></AppIcon>
     </el-badge>
-    <span class="text-xs mt-1">我的持仓</span>
+    <span class="text-xs mt-1">我的资产</span>
   </div>
 
   <Teleport v-if="isSuper" to="body">
     <AppDialog
       :visible="visible"
-      title="我的持仓"
+      title="我的资产"
       width="min(1200px, 94vw)"
       fullscreen
       hide-footer
@@ -21,7 +21,7 @@
     >
       <template #header>
         <div class="holding-dialog-header">
-          <span class="holding-dialog-title">我的持仓</span>
+          <span class="holding-dialog-title">我的资产</span>
           <div class="holding-dialog-meta">
             <span v-if="panelRef?.updateTime">
               更新于 {{ panelRef.updateTime }}
@@ -29,6 +29,14 @@
             <span v-if="panelRef?.stale" class="text-amber-500">
               数据可能延迟
             </span>
+            <button
+              type="button"
+              class="holding-icon-action"
+              title="小工具"
+              @click="toolsVisible = true"
+            >
+              <AppIcon name="tool" :size="16"></AppIcon>
+            </button>
             <button
               type="button"
               class="holding-icon-action"
@@ -69,8 +77,18 @@
           </div>
         </div>
       </template>
-      <MarketAssetPanel v-if="visible" ref="panelRef" />
+      <AssetPanel v-if="visible" ref="panelRef" />
     </AppDialog>
+
+    <el-drawer
+      v-model="toolsVisible"
+      title="小工具"
+      :size="520"
+      :lock-scroll="false"
+      append-to-body
+    >
+      <MarketToolsPanel />
+    </el-drawer>
   </Teleport>
 </template>
 
@@ -80,13 +98,15 @@ import { ElMessage } from 'element-plus';
 import { usePermissionStore } from '@/store/permission';
 import { useAmountVisibility } from './hooks/useAmountVisibility';
 import { useHoldingReminder } from './hooks/useHoldingReminder';
-import MarketAssetPanel from './components/MarketAssetPanel.vue';
+import AssetPanel from './AssetPanel.vue';
+import MarketToolsPanel from '../MarketBtn/components/MarketToolsPanel.vue';
 
 // 与市场行情一致：仅超级管理员可见
 const { isSuper } = storeToRefs(usePermissionStore());
 
 const visible = ref(false);
 const exporting = ref(false);
+const toolsVisible = ref(false);
 
 const { amountHidden, toggleAmountHidden } = useAmountVisibility();
 
@@ -117,6 +137,7 @@ const panelRef = ref<AssetPanelExposeType | null>(null);
 
 const closeHandler = () => {
   visible.value = false;
+  toolsVisible.value = false;
   // 关闭弹窗时可能刚更新过持仓，刷新一次红点状态
   if (isSuper.value) refreshReminder();
 };

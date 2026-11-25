@@ -103,6 +103,18 @@
                 type="primary"
                 size="small"
                 data-export-ignore
+                :loading="updatingKey === group.category"
+                @click="
+                  emit('update-snapshot', [group.category], group.name)
+                "
+              >
+                更新
+              </el-button>
+              <el-button
+                link
+                type="primary"
+                size="small"
+                data-export-ignore
                 @click="
                   emit('trend', {
                     type: 'group',
@@ -192,6 +204,19 @@
               <el-button
                 link
                 type="primary"
+                :loading="updatingKey === `fund:${item.fundCode}`"
+                @click="
+                  emit(
+                    'update-snapshot',
+                    [`fund:${item.fundCode}`],
+                    item.fundName
+                  )
+                "
+                >更新</el-button
+              >
+              <el-button
+                link
+                type="primary"
                 @click="
                   emit('trend', {
                     type: 'item',
@@ -275,6 +300,8 @@ type PropsType = {
   portfolio: MarketFundPortfolioType | null;
   loading: boolean;
   errorMsg: string;
+  /** 正在更新快照的品种 key，用于按钮 loading */
+  updatingKey: string;
 };
 
 const props = defineProps<PropsType>();
@@ -282,6 +309,7 @@ const props = defineProps<PropsType>();
 const emit = defineEmits<{
   (e: 'refresh'): void;
   (e: 'trend', scope: HoldingTrendScopeType): void;
+  (e: 'update-snapshot', keys: string[], label: string): void;
 }>();
 
 type GroupType = {
@@ -537,6 +565,11 @@ const remove = (item: MarketFundHoldingItemType) => {
   display: flex;
   align-items: center;
   gap: 10px;
+
+  // 与操作列一致：清零相邻按钮默认外边距，避免「更新」「趋势」之间间距过大
+  :deep(.el-button + .el-button) {
+    margin-left: 0;
+  }
 }
 
 .fund-row {
@@ -544,7 +577,7 @@ const remove = (item: MarketFundHoldingItemType) => {
   grid-template-columns: minmax(220px, 2fr) 130px minmax(150px, 1.2fr) minmax(
       180px,
       1.4fr
-    ) 80px 122px;
+    ) 80px 160px;
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
@@ -668,7 +701,7 @@ const remove = (item: MarketFundHoldingItemType) => {
     grid-template-columns: minmax(180px, 1.6fr) 110px minmax(140px, 1fr) minmax(
         160px,
         1.2fr
-      ) 70px 112px;
+      ) 70px 150px;
     gap: 8px;
   }
 }

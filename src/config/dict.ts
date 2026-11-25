@@ -9,6 +9,8 @@ export type DictCategoryItemType = {
 export const MUSIC_LANGUAGE_DICT_CODE = 'MUSIC_LANGUAGE';
 /** 音乐风格字典 code */
 export const MUSIC_GENRE_DICT_CODE = 'MUSIC_GENRE';
+/** 实物资产类别字典 code（字典 key 为类别标识，value 为显示名称） */
+export const PHYSICAL_ASSET_CATEGORY_DICT_CODE = 'PHYSICAL_ASSET_CATEGORY';
 
 export const dictCategoryList: DictCategoryItemType[] = [
   {
@@ -86,6 +88,11 @@ export const dictCategoryList: DictCategoryItemType[] = [
         label: '日志类型',
         value: 'update_log_release_type',
         code: 'UPDATE_LOG_RELEASE_TYPE',
+      },
+      {
+        label: '实物资产类别',
+        value: 'physical_asset_category',
+        code: PHYSICAL_ASSET_CATEGORY_DICT_CODE,
       },
     ],
   },

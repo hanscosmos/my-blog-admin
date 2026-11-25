@@ -73,6 +73,22 @@
                 type="primary"
                 size="small"
                 data-export-ignore
+                :loading="updatingKey === `cash_${group.kind}`"
+                @click="
+                  emit(
+                    'update-snapshot',
+                    [`cash_${group.kind}`],
+                    group.name
+                  )
+                "
+              >
+                更新
+              </el-button>
+              <el-button
+                link
+                type="primary"
+                size="small"
+                data-export-ignore
                 @click="
                   emit('trend', {
                     type: 'group',
@@ -168,6 +184,15 @@
               <el-button
                 link
                 type="primary"
+                :loading="updatingKey === `cash:${item.id}`"
+                @click="
+                  emit('update-snapshot', [`cash:${item.id}`], item.name)
+                "
+                >更新</el-button
+              >
+              <el-button
+                link
+                type="primary"
                 @click="
                   emit('trend', {
                     type: 'item',
@@ -231,6 +256,8 @@ type PropsType = {
   portfolio: MarketCashPortfolioType | null;
   loading: boolean;
   errorMsg: string;
+  /** 正在更新快照的品种 key，用于按钮 loading */
+  updatingKey: string;
 };
 
 const props = defineProps<PropsType>();
@@ -238,6 +265,7 @@ const props = defineProps<PropsType>();
 const emit = defineEmits<{
   (e: 'refresh'): void;
   (e: 'trend', scope: HoldingTrendScopeType): void;
+  (e: 'update-snapshot', keys: string[], label: string): void;
 }>();
 
 type GroupType = {
@@ -439,6 +467,11 @@ const remove = (item: MarketCashItemType) => {
   display: flex;
   align-items: center;
   gap: 10px;
+
+  // 与操作列一致：清零相邻按钮默认外边距，避免「更新」「趋势」之间间距过大
+  :deep(.el-button + .el-button) {
+    margin-left: 0;
+  }
 }
 
 .cash-row {
@@ -446,7 +479,7 @@ const remove = (item: MarketCashItemType) => {
   grid-template-columns: minmax(220px, 2fr) minmax(140px, 1.2fr) 110px minmax(
       180px,
       1.4fr
-    ) 100px 122px;
+    ) 100px 160px;
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
@@ -565,7 +598,7 @@ const remove = (item: MarketCashItemType) => {
     grid-template-columns: minmax(180px, 1.6fr) minmax(120px, 1fr) 90px minmax(
         160px,
         1.2fr
-      ) 80px 112px;
+      ) 80px 150px;
     gap: 8px;
   }
 }

@@ -9,6 +9,8 @@ import type {
   MarketHotType,
   MarketNewsType,
   MarketOverviewType,
+  MarketPhysicalHoldingFormType,
+  MarketPhysicalPortfolioType,
   MarketTrendPeriodType,
   MarketTrendType,
 } from './type';
@@ -50,11 +52,23 @@ export const saveMarketCashHoldingApi = (data: MarketCashHoldingFormType) =>
 export const deleteMarketCashHoldingApi = (data: { ids: string[] }) =>
   request.post<boolean>('/sys/market/cash/holding/delete', data);
 
+export const getMarketPhysicalPortfolioApi = (force = false) =>
+  request.post<MarketPhysicalPortfolioType>('/sys/market/physical/portfolio', {
+    force,
+  });
+
+export const saveMarketPhysicalHoldingApi = (
+  data: MarketPhysicalHoldingFormType
+) => request.post<boolean>('/sys/market/physical/save', data);
+
+export const deleteMarketPhysicalHoldingApi = (data: { ids: string[] }) =>
+  request.post<boolean>('/sys/market/physical/delete', data);
+
 export const getMarketHoldingHistoryApi = () =>
   request.post<MarketHoldingSnapshotType[]>('/sys/market/holding/history');
 
 export const getMarketHoldingRemindApi = () =>
   request.post<MarketHoldingRemindType>('/sys/market/holding/remind');
 
-export const recordMarketHoldingSnapshotApi = () =>
-  request.post<boolean>('/sys/market/holding/snapshot/record');
+export const recordMarketHoldingSnapshotApi = (keys: string[] = []) =>
+  request.post<boolean>('/sys/market/holding/snapshot/record', { keys });

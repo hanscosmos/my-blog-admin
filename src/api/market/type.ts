@@ -309,6 +309,75 @@ export type MarketHoldingRemindType = {
   lastSnapshotDate: string;
 };
 
+export type MarketPhysicalCategoryOptionType = {
+  key: string;
+  name: string;
+  /** 是否为预设类别，自定义类别来自系统字典 */
+  preset: boolean;
+};
+
+export type MarketPhysicalItemType = {
+  id: string;
+  category: string;
+  categoryName: string;
+  name: string;
+  /** 当前估值 */
+  currentValue: number;
+  /** 购入成本 */
+  costValue: number;
+  /** 累计盈亏 = 当前估值 - 购入成本 */
+  pnl: number;
+  returnRate: number | null;
+  cover: string;
+  images: string[];
+  purchaseDate: string;
+  valuationDate: string;
+  remark: string;
+  sort: number;
+  updateTime: string;
+};
+
+export type MarketPhysicalCategoryStatType = {
+  key: string;
+  name: string;
+  count: number;
+  value: number;
+  cost: number;
+  pnl: number;
+  returnRate: number | null;
+  ratio: number | null;
+};
+
+export type MarketPhysicalSummaryType = {
+  count: number;
+  totalValue: number;
+  totalCost: number;
+  totalPnl: number;
+  totalReturnRate: number | null;
+};
+
+export type MarketPhysicalPortfolioType = {
+  updateTime: string;
+  summary: MarketPhysicalSummaryType;
+  categories: MarketPhysicalCategoryStatType[];
+  categoryOptions: MarketPhysicalCategoryOptionType[];
+  items: MarketPhysicalItemType[];
+};
+
+export type MarketPhysicalHoldingFormType = {
+  id?: string;
+  category: string;
+  name: string;
+  currentValue: number;
+  costValue: number;
+  cover?: string;
+  images?: string[];
+  purchaseDate?: string;
+  valuationDate?: string;
+  remark?: string;
+  sort?: number;
+};
+
 export type MarketCashHoldingFormType = {
   id?: string;
   kind: MarketCashKindType;

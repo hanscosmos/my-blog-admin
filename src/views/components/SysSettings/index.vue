@@ -1,7 +1,10 @@
 <template>
   <div class="system-settings">
-    <div v-perm="'global:setting:open'" class="trigger-btn wrapper-solid-item xy-center rounded-full w-10 h-10"
-      @click="openDrawer">
+    <div
+      v-perm="'global:setting:open'"
+      class="trigger-btn wrapper-solid-item xy-center rounded-full w-10 h-10"
+      @click="openDrawer"
+    >
       <AppIcon name="setting-one" color="#fff" :size="18"></AppIcon>
     </div>
     <el-drawer v-model="visible" :size="400" title="系统设置">
@@ -9,23 +12,39 @@
         <div class="settings-store setting-item mb-4">
           <div class="settings-title mb-4 font-title">系统缓存</div>
           <div class="setting-content font-beauty">
-            <el-switch v-model="isOpenStore" inline-prompt size="large" active-text="开启" inactive-text="关闭" />
+            <el-switch
+              v-model="isOpenStore"
+              inline-prompt
+              size="large"
+              active-text="开启"
+              inactive-text="关闭"
+            />
           </div>
         </div>
         <div class="settings-tab setting-item mb-4">
           <div class="settings-title mb-4 font-title">系统标签页</div>
           <div class="setting-content font-beauty">
-            <el-switch v-model="tabVisible" inline-prompt size="large" active-text="显示" inactive-text="隐藏"
-              @change="toggleTabVisible" />
+            <el-switch
+              v-model="tabVisible"
+              inline-prompt
+              size="large"
+              active-text="显示"
+              inactive-text="隐藏"
+              @change="toggleTabVisible"
+            />
           </div>
         </div>
         <div class="settings-mode setting-item mb-4">
           <div class="settings-title mb-4 font-title">系统模式</div>
           <div class="setting-content font-beauty">
             <ul class="settings-mode-list flex gap-4">
-              <li v-for="item in modeList" class="wrapper-item hover-wrapper text-sm xy-center flex-1 p-4"
-                :class="{ 'active-item': mode === item.value }" :key="item.value"
-                @click="changeMode(item.value as SysModeType)">
+              <li
+                v-for="item in modeList"
+                class="wrapper-item hover-wrapper text-sm xy-center flex-1 p-4"
+                :class="{ 'active-item': mode === item.value }"
+                :key="item.value"
+                @click="changeMode(item.value as SysModeType)"
+              >
                 <div class="settings-item-text">{{ item.label }}</div>
               </li>
             </ul>
@@ -36,9 +55,13 @@
           <div class="settings-title font-title text-xl mb-4">系统主题</div>
           <div class="setting-content font-beauty">
             <ul class="settings-theme-list flex gap-4">
-              <li v-for="item in themeList" class="wrapper-item hover-wrapper xy-center p-4 text-sm"
-                :class="{ 'active-item': theme === item.value }" :key="item.value"
-                @click="changeTheme(item.value as SysThemeType)">
+              <li
+                v-for="item in themeList"
+                class="wrapper-item hover-wrapper xy-center p-4 text-sm"
+                :class="{ 'active-item': theme === item.value }"
+                :key="item.value"
+                @click="changeTheme(item.value as SysThemeType)"
+              >
                 <div class="settings-item-text">{{ item.label }}</div>
               </li>
             </ul>
@@ -86,8 +109,8 @@ onMounted(() => {
 <style lang="scss" scoped>
 .system-settings {
   position: absolute;
-  bottom: 0.6rem;
-  left: 0.6rem;
+  bottom: 1rem;
+  left: 1rem;
 
   .trigger-btn {
     cursor: pointer;

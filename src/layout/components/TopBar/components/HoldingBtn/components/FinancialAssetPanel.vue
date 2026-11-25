@@ -91,16 +91,31 @@
           </div>
         </div>
 
-        <button
-          type="button"
-          class="asset-analysis-btn"
-          data-export-ignore
-          title="打开持仓分析"
-          @click="openAnalysis"
-        >
-          <AppIcon name="chart-pie" :size="14" />
-          <span>统计分析</span>
-        </button>
+        <div class="asset-actions" data-export-ignore>
+          <button
+            type="button"
+            class="asset-analysis-btn"
+            title="打开持仓分析"
+            @click="openAnalysis"
+          >
+            <AppIcon name="chart-pie" :size="14" />
+            <span>统计分析</span>
+          </button>
+          <button
+            type="button"
+            class="asset-analysis-btn"
+            title="将当前全部持仓（不含已清仓）同步到今日统计快照"
+            :disabled="Boolean(updatingKey) || historyRecording"
+            @click="recordAllSnapshot"
+          >
+            <AppIcon
+              name="refresh"
+              :size="14"
+              :class="{ 'animate-spin': updatingKey === ALL_SCOPE_KEY }"
+            />
+            <span>一键更新</span>
+          </button>
+        </div>
       </div>
 
       <div v-if="segments.length" class="asset-allocation">
@@ -127,15 +142,19 @@
           :portfolio="cashPortfolio"
           :loading="cashLoading"
           :error-msg="cashErrorMsg"
+          :updating-key="updatingKey"
           @refresh="cashRefresh"
           @trend="openTrend"
+          @update-snapshot="updateSnapshot"
         />
         <MarketFundSection
           :portfolio="fundPortfolio"
           :loading="fundLoading"
           :error-msg="fundErrorMsg"
+          :updating-key="updatingKey"
           @refresh="fundRefresh"
           @trend="openTrend"
+          @update-snapshot="updateSnapshot"
         />
         <p class="asset-footer">
           总资产 = 基金市值 + 现金/存款余额；当日收益中，基金取盘中估值或已公布净值，
@@ -158,12 +177,13 @@
       :error-msg="historyErrorMsg"
       @update:scope="trendScope = $event"
       @retry="fetchHistory"
-      @record="recordSnapshot"
+      @record="recordAllSnapshot"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ElMessage } from 'element-plus';
 import { useMarketCashPortfolio } from '../hooks/useMarketCashPortfolio';
 import {
   formatCny,
@@ -210,6 +230,23 @@ const {
   fetchHistory,
   recordSnapshot,
 } = useMarketHoldingHistory();
+
+const ALL_SCOPE_KEY = 'all';
+const updatingKey = ref('');
+
+/** 更新统计快照：keys 为空表示全部持仓，否则只更新对应大类 / 小类 */
+const updateSnapshot = async (keys: string[], label: string) => {
+  if (updatingKey.value) return;
+  updatingKey.value = keys.length === 1 ? keys[0] : ALL_SCOPE_KEY;
+  try {
+    const success = await recordSnapshot(keys);
+    if (success) ElMessage.success(`「${label}」统计已更新`);
+  } finally {
+    updatingKey.value = '';
+  }
+};
+
+const recordAllSnapshot = () => updateSnapshot([], '全部资产');
 
 const {
   portfolio: fundPortfolio,
@@ -452,14 +489,14 @@ const stale = computed(() =>
 
 const exportImage = () =>
   exportElementAsImage(rootRef.value, {
-    title: '我的持仓',
+    title: '我的资产 · 金融资产',
     subtitle: [
       updateTime.value ? `更新于 ${updateTime.value}` : '',
       stale.value ? '数据可能延迟' : '',
     ]
       .filter(Boolean)
       .join(' · '),
-    filename: '我的持仓',
+    filename: '我的资产-金融资产',
   });
 
 defineExpose({
@@ -564,13 +601,20 @@ defineExpose({
   }
 }
 
+.asset-actions {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: auto;
+}
+
 .asset-analysis-btn {
   display: inline-flex;
-  flex: none;
   align-items: center;
+  justify-content: center;
   gap: 5px;
   padding: 6px 14px;
-  margin-left: auto;
   font-size: 12px;
   color: var(--theme-color);
   background: var(--theme-hover);
@@ -579,8 +623,13 @@ defineExpose({
   cursor: pointer;
   transition: border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
 
-  &:hover {
+  &:hover:not(:disabled) {
     border-color: var(--theme-color);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 }
 
